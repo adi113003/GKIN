@@ -1,0 +1,69 @@
+============================================================
+WELFake Baseline — TF-IDF + Logistic Regression
+============================================================
+
+Total samples:  72073
+Train size:     57658
+Test size:      14415
+
+Accuracy: 0.9705
+
+Classification report:
+              precision    recall  f1-score   support
+
+        real       0.98      0.96      0.97      7006
+        fake       0.97      0.98      0.97      7409
+
+    accuracy                           0.97     14415
+   macro avg       0.97      0.97      0.97     14415
+weighted avg       0.97      0.97      0.97     14415
+
+
+Confusion matrix (rows = actual, cols = predicted):
+              pred_real  pred_fake
+actual_real        6744        262
+actual_fake         163       7246
+
+Top 20 features predicting FAKE:
+  video                          16.228
+  featured image                 15.093
+  image                          13.226
+  featured                       12.724
+  twitter com                    11.216
+  hillary                        9.821
+  getty                          9.806
+  breaking                       9.611
+  read                           9.210
+  october                        9.131
+  getty images                   8.917
+  2016                           8.357
+  com                            7.747
+  entire story                   7.713
+  anti                           7.243
+  watch                          7.231
+  november                       7.093
+  just                           6.638
+  november 2016                  6.579
+  obama                          6.463
+
+Top 20 features predicting REAL:
+  reuters                        -40.306
+  breitbart                      -23.036
+  said                           -16.552
+  washington reuters             -13.866
+  york times                     -11.194
+  president donald               -10.976
+  twitter                        -10.581
+  follow                         -10.324
+  2017                           -7.904
+  thursday                       -7.445
+  ms                             -6.752
+  monday                         -6.553
+  friday                         -6.525
+  new york                       -6.500
+  percent                        -6.477
+  tuesday                        -6.381
+  follow twitter                 -6.366
+  mr                             -6.348
+  york                           -6.235
+  reuters president              -6.186
