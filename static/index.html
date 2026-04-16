@@ -3,515 +3,345 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GKIN · Truth Navigator</title>
+<title>GKIN · Truth Navigator v2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0e0c;
-    --bg-2: #1a1816;
-    --bg-3: #262320;
-    --ink: #f4efe6;
-    --ink-2: #b8b2a4;
-    --ink-3: #736d5e;
-    --accent: #e8c547;
-    --accent-2: #f5e6a3;
-    --danger: #e85c4a;
-    --ok: #7cb342;
-    --border: rgba(244, 239, 230, 0.08);
-    --border-2: rgba(244, 239, 230, 0.15);
-    --shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 4px 24px rgba(0,0,0,0.4);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: "Inter Tight", -apple-system, sans-serif;
-    font-size: 15px;
-    line-height: 1.55;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(circle at 20% 10%, rgba(232, 197, 71, 0.06), transparent 40%),
-      radial-gradient(circle at 85% 80%, rgba(232, 92, 74, 0.04), transparent 45%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .wrap {
-    position: relative;
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 48px 28px 96px;
-    z-index: 1;
-  }
+:root {
+  --bg: #0f0e0c; --bg-2: #1a1816; --bg-3: #262320;
+  --ink: #f4efe6; --ink-2: #b8b2a4; --ink-3: #736d5e;
+  --accent: #e8c547; --accent-2: #f5e6a3;
+  --danger: #e85c4a; --ok: #7cb342; --warn: #e8914a;
+  --border: rgba(244,239,230,0.08); --border-2: rgba(244,239,230,0.15);
+  --shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 4px 24px rgba(0,0,0,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg); color: var(--ink);
+  font-family: "Inter Tight", -apple-system, sans-serif;
+  font-size: 15px; line-height: 1.55; min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(232,197,71,0.06), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(232,92,74,0.04), transparent 45%);
+  pointer-events: none; z-index: 0;
+}
+.wrap { position: relative; max-width: 980px; margin: 0 auto; padding: 48px 28px 96px; z-index: 1; }
 
-  /* Header */
-  header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding-bottom: 28px;
-    margin-bottom: 40px;
-    border-bottom: 1px solid var(--border);
-  }
-  .brand {
-    font-family: "Fraunces", serif;
-    font-weight: 500;
-    font-size: 32px;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-  .brand em {
-    font-style: italic;
-    font-weight: 300;
-    color: var(--accent);
-  }
-  .tagline {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    color: var(--ink-3);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
+/* ── Header ── */
+header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding-bottom: 28px; margin-bottom: 40px; border-bottom: 1px solid var(--border);
+}
+.brand { font-family: "Fraunces", serif; font-weight: 500; font-size: 32px; letter-spacing: -0.02em; line-height: 1; }
+.brand em { font-style: italic; font-weight: 300; color: var(--accent); }
+.tagline { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3); letter-spacing: 0.05em; text-transform: uppercase; }
 
-  /* Section labels */
-  .label {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .label::before {
-    content: "";
-    display: inline-block;
-    width: 18px;
-    height: 1px;
-    background: var(--ink-3);
-  }
+/* ── Section labels ── */
+.label {
+  font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.label::before { content: ""; display: inline-block; width: 18px; height: 1px; background: var(--ink-3); }
 
-  /* Input card */
-  .card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-    margin-bottom: 32px;
-  }
-  textarea {
-    width: 100%;
-    min-height: 180px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--ink);
-    padding: 16px;
-    font-family: "Fraunces", serif;
-    font-size: 15px;
-    line-height: 1.6;
-    resize: vertical;
-    transition: border-color 0.15s;
-  }
-  textarea:focus {
-    outline: none;
-    border-color: var(--border-2);
-  }
-  textarea::placeholder {
-    color: var(--ink-3);
-    font-style: italic;
-  }
-  .controls {
-    display: flex;
-    gap: 10px;
-    margin-top: 16px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  button {
-    font-family: "Inter Tight", sans-serif;
-    font-weight: 500;
-    font-size: 13px;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    padding: 11px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    letter-spacing: 0.01em;
-    transition: transform 0.1s, background 0.15s;
-  }
-  button:hover:not(:disabled) { background: var(--accent-2); }
-  button:active:not(:disabled) { transform: translateY(1px); }
-  button:disabled {
-    background: var(--bg-3);
-    color: var(--ink-3);
-    cursor: not-allowed;
-  }
-  button.ghost {
-    background: transparent;
-    color: var(--ink-2);
-    border: 1px solid var(--border-2);
-  }
-  button.ghost:hover:not(:disabled) { background: var(--bg-3); color: var(--ink); }
-  .char-count {
-    margin-left: auto;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    color: var(--ink-3);
-  }
+/* ── Cards ── */
+.card {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 24px; box-shadow: var(--shadow); margin-bottom: 32px;
+}
 
-  /* Results */
-  .results { display: none; margin-bottom: 32px; }
-  .results.show { display: block; animation: fadeUp 0.5s ease; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+/* ── Tabs ── */
+.tab-bar {
+  display: flex; gap: 2px; background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 3px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.tab {
+  font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.06em;
+  text-transform: uppercase; background: transparent; color: var(--ink-3); border: none;
+  padding: 7px 16px; border-radius: 5px; cursor: pointer; transition: all 0.15s; flex: 1;
+}
+.tab:hover:not(:disabled) { color: var(--ink-2); }
+.tab.active { background: var(--bg-2); color: var(--ink); border: 1px solid var(--border-2); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
 
-  .verdict {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 28px;
-    align-items: center;
-    padding: 28px;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 20px;
-  }
-  .gauge {
-    position: relative;
-    width: 120px;
-    height: 120px;
-  }
-  .gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-  .gauge-bg { fill: none; stroke: var(--bg-3); stroke-width: 8; }
-  .gauge-fg {
-    fill: none;
-    stroke: var(--accent);
-    stroke-width: 8;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1s ease, stroke 0.3s;
-  }
-  .gauge-label {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .gauge-num {
-    font-family: "Fraunces", serif;
-    font-size: 36px;
-    font-weight: 500;
-    line-height: 1;
-  }
-  .gauge-denom {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    color: var(--ink-3);
-    margin-top: 4px;
-  }
-  .verdict-text h2 {
-    font-family: "Fraunces", serif;
-    font-size: 22px;
-    font-weight: 500;
-    margin-bottom: 6px;
-    letter-spacing: -0.01em;
-  }
-  .verdict-text p {
-    color: var(--ink-2);
-    font-size: 14px;
-  }
-  .verdict-tag {
-    display: inline-block;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 3px 10px;
-    border-radius: 4px;
-    margin-top: 10px;
-  }
+/* ── Textarea ── */
+textarea {
+  width: 100%; min-height: 180px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--ink); padding: 16px;
+  font-family: "Fraunces", serif; font-size: 15px; line-height: 1.6; resize: vertical;
+  transition: border-color 0.15s;
+}
+textarea:focus { outline: none; border-color: var(--border-2); }
+textarea::placeholder { color: var(--ink-3); font-style: italic; }
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
-  .panel {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px;
-  }
-  .panel h3 {
-    font-family: "Fraunces", serif;
-    font-size: 15px;
-    font-weight: 500;
-    margin-bottom: 14px;
-    color: var(--ink);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .count {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    color: var(--ink-3);
-    font-weight: 400;
-  }
+/* ── Controls ── */
+.controls { display: flex; gap: 10px; margin-top: 16px; align-items: center; flex-wrap: wrap; }
+.char-count { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3); }
 
-  .technique {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .technique:last-child { border-bottom: none; }
-  .technique-name {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-  }
-  .technique-span {
-    font-family: "Fraunces", serif;
-    font-style: italic;
-    color: var(--ink);
-    font-size: 14px;
-    margin-bottom: 6px;
-    line-height: 1.5;
-  }
-  .technique-span::before { content: "\201C"; color: var(--accent); margin-right: 2px; }
-  .technique-span::after { content: "\201D"; color: var(--accent); margin-left: 2px; }
-  .technique-why { color: var(--ink-2); font-size: 13px; }
+/* ── Buttons ── */
+button {
+  font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 13px;
+  background: var(--accent); color: var(--bg); border: none; padding: 11px 20px;
+  border-radius: 6px; cursor: pointer; letter-spacing: 0.01em; transition: transform 0.1s, background 0.15s;
+}
+button:hover:not(:disabled) { background: var(--accent-2); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { background: var(--bg-3); color: var(--ink-3); cursor: not-allowed; }
+button.ghost {
+  background: transparent; color: var(--ink-2); border: 1px solid var(--border-2);
+}
+button.ghost:hover:not(:disabled) { background: var(--bg-3); color: var(--ink); }
 
-  .gap-item {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .gap-item:last-child { border-bottom: none; }
-  .gap-title { color: var(--ink); font-size: 14px; margin-bottom: 4px; }
-  .gap-why { color: var(--ink-2); font-size: 13px; }
+/* ── Drop zones ── */
+.drop-zone {
+  position: relative; border: 1.5px dashed var(--border-2); border-radius: 10px;
+  padding: 40px 24px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent); background: rgba(232,197,71,0.04);
+}
+.drop-zone.drop-selected { border-color: var(--ok); background: rgba(124,179,66,0.04); border-style: solid; }
+.drop-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.drop-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.6; }
+.drop-label { color: var(--ink-2); font-size: 14px; margin-bottom: 5px; }
+.drop-formats { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
 
-  .emotion-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    font-size: 12px;
-  }
-  .emotion-row:last-child { margin-bottom: 0; }
-  .emotion-name {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    width: 72px;
-    letter-spacing: 0.06em;
-  }
-  .emotion-bar {
-    flex: 1;
-    height: 4px;
-    background: var(--bg-3);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .emotion-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.8s ease;
-  }
-  .emotion-val {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    color: var(--ink-2);
-    width: 24px;
-    text-align: right;
-  }
+/* ── Image preview ── */
+.image-preview { margin-top: 14px; border-radius: 8px; overflow: hidden; display: none; text-align: center; }
+.image-preview img { max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 6px; }
 
-  /* Chat */
-  .chat-card { display: none; margin-top: 32px; }
-  .chat-card.show { display: block; animation: fadeUp 0.5s ease; }
-  .chat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .chat-header h3 {
-    font-family: "Fraunces", serif;
-    font-size: 18px;
-    font-weight: 500;
-    font-style: italic;
-  }
-  .chat-header h3::before {
-    content: "●";
-    color: var(--ok);
-    margin-right: 8px;
-    font-size: 10px;
-    vertical-align: middle;
-  }
-  .chat-log {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    min-height: 140px;
-    max-height: 400px;
-    overflow-y: auto;
-    margin-bottom: 12px;
-  }
-  .chat-log::-webkit-scrollbar { width: 6px; }
-  .chat-log::-webkit-scrollbar-thumb {
-    background: var(--bg-3);
-    border-radius: 3px;
-  }
-  .msg {
-    margin-bottom: 14px;
-    animation: fadeIn 0.3s ease;
-  }
-  .msg:last-child { margin-bottom: 0; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .msg-role {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--ink-3);
-    margin-bottom: 4px;
-  }
-  .msg.user .msg-role { color: var(--accent); }
-  .msg.assistant .msg-role { color: var(--ok); }
-  .msg-text {
-    color: var(--ink);
-    font-size: 14px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-  }
-  .msg.hint {
-    color: var(--ink-3);
-    font-style: italic;
-    font-size: 13px;
-    text-align: center;
-    padding: 20px 0;
-  }
-  .chat-input {
-    display: flex;
-    gap: 8px;
-  }
-  .chat-input input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px 14px;
-    color: var(--ink);
-    font-family: "Inter Tight", sans-serif;
-    font-size: 14px;
-  }
-  .chat-input input:focus {
-    outline: none;
-    border-color: var(--border-2);
-  }
+/* ── Compare tab ── */
+.compare-articles { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.compare-article { position: relative; }
+.compare-article-label {
+  font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;
+}
+.compare-remove {
+  position: absolute; top: 0; right: 0; background: transparent; color: var(--ink-3);
+  border: none; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 4px;
+}
+.compare-remove:hover { color: var(--danger); background: transparent; }
+.compare-article textarea { min-height: 110px; }
 
-  .suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .suggestion {
-    font-family: "Inter Tight", sans-serif;
-    font-size: 12px;
-    background: var(--bg-3);
-    color: var(--ink-2);
-    border: 1px solid var(--border);
-    padding: 6px 12px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .suggestion:hover {
-    background: var(--bg);
-    color: var(--ink);
-    border-color: var(--border-2);
-  }
+/* ── Results ── */
+.results { display: none; margin-bottom: 32px; }
+.results.show { display: block; animation: fadeUp 0.5s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  .loading {
-    display: none;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    color: var(--ink-3);
-    margin-top: 12px;
-  }
-  .loading.show { display: block; }
-  .loading::after {
-    content: "";
-    display: inline-block;
-    width: 6px;
-    animation: dots 1.2s steps(4, end) infinite;
-  }
-  @keyframes dots {
-    0%,20% { content: ""; }
-    40% { content: "."; }
-    60% { content: ".."; }
-    80%,100% { content: "..."; }
-  }
+/* ── Reasoning trace ── */
+.reasoning-section {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 16px; overflow: hidden;
+}
+.reasoning-toggle {
+  width: 100%; background: transparent; color: var(--ink-2); border: none; padding: 14px 18px;
+  text-align: left; font-family: "JetBrains Mono", monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.reasoning-toggle:hover { color: var(--ink); background: transparent; }
+.r-badge {
+  font-size: 9px; background: rgba(232,197,71,0.12); color: var(--accent);
+  padding: 2px 8px; border-radius: 4px; letter-spacing: 0.1em; margin-left: 8px;
+}
+.reasoning-body {
+  display: none; padding: 16px 18px 18px; color: var(--ink-2);
+  font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.7;
+  white-space: pre-wrap; max-height: 380px; overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+.reasoning-body.open { display: block; }
+.reasoning-body::-webkit-scrollbar { width: 5px; }
+.reasoning-body::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
 
-  .error {
-    display: none;
-    background: rgba(232, 92, 74, 0.1);
-    border: 1px solid rgba(232, 92, 74, 0.3);
-    color: var(--danger);
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin-top: 12px;
-  }
-  .error.show { display: block; }
+/* ── Verdict gauge ── */
+.verdict {
+  display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center;
+  padding: 28px; background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 20px;
+}
+.gauge { position: relative; width: 120px; height: 120px; }
+.gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gauge-bg { fill: none; stroke: var(--bg-3); stroke-width: 8; }
+.gauge-fg { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease, stroke 0.3s; }
+.gauge-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-num { font-family: "Fraunces", serif; font-size: 36px; font-weight: 500; line-height: 1; }
+.gauge-denom { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3); margin-top: 4px; }
+.verdict-text h2 { font-family: "Fraunces", serif; font-size: 22px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.01em; }
+.verdict-text p { color: var(--ink-2); font-size: 14px; }
+.verdict-tag {
+  display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.12em; padding: 3px 10px; border-radius: 4px; margin-top: 10px;
+}
 
-  .wel-tag {
-    display: inline-block;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    margin-left: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-  .wel-tag.fake { background: rgba(232, 92, 74, 0.15); color: var(--danger); }
-  .wel-tag.real { background: rgba(124, 179, 66, 0.15); color: var(--ok); }
+/* ── Grid & panels ── */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+.panel { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+.panel h3 {
+  font-family: "Fraunces", serif; font-size: 15px; font-weight: 500; margin-bottom: 14px;
+  color: var(--ink); display: flex; justify-content: space-between; align-items: center;
+}
+.count { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3); font-weight: 400; }
+
+/* ── Techniques ── */
+.technique { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.technique:last-child { border-bottom: none; }
+.technique-name { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.technique-span { font-family: "Fraunces", serif; font-style: italic; color: var(--ink); font-size: 14px; margin-bottom: 6px; line-height: 1.5; }
+.technique-span::before { content: "\201C"; color: var(--accent); margin-right: 2px; }
+.technique-span::after { content: "\201D"; color: var(--accent); margin-left: 2px; }
+.technique-why { color: var(--ink-2); font-size: 13px; }
+
+/* ── Gaps ── */
+.gap-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.gap-item:last-child { border-bottom: none; }
+.gap-title { color: var(--ink); font-size: 14px; margin-bottom: 4px; }
+.gap-why { color: var(--ink-2); font-size: 13px; }
+
+/* ── Emotions ── */
+.emotion-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.emotion-row:last-child { margin-bottom: 0; }
+.emotion-name { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; color: var(--ink-3); width: 80px; letter-spacing: 0.06em; }
+.emotion-bar { flex: 1; height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden; }
+.emotion-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.8s ease; }
+.emotion-val { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-2); width: 24px; text-align: right; }
+
+/* ── Claims with verification ── */
+.claim-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.claim-item:last-child { border-bottom: none; }
+.claim-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+.claim-type { font-family: "JetBrains Mono", monospace; font-size: 9px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em; }
+.claim-text { color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+.claim-verdict {
+  display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 9px;
+  text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px;
+}
+.verdict-accurate          { background: rgba(124,179,66,0.12); color: var(--ok); }
+.verdict-partially_accurate{ background: rgba(232,197,71,0.12); color: var(--accent); }
+.verdict-misleading        { background: rgba(232,145,74,0.15); color: var(--warn); }
+.verdict-false             { background: rgba(232,92,74,0.15);  color: var(--danger); }
+.verdict-unverifiable      { background: rgba(115,109,94,0.15); color: var(--ink-3); }
+.claim-verify-note { font-size: 11px; color: var(--ink-3); margin-top: 4px; font-style: italic; }
+
+/* ── Compare results ── */
+.compare-results { display: none; margin-bottom: 32px; }
+.compare-results.show { display: block; animation: fadeUp 0.5s ease; }
+.coord-card {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 24px;
+}
+.coord-num { font-family: "Fraunces", serif; font-size: 52px; font-weight: 500; line-height: 1; flex-shrink: 0; }
+.coord-info { flex: 1; }
+.coord-sublabel { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3); margin-bottom: 6px; }
+.coord-explanation { color: var(--ink-2); font-size: 14px; }
+.compare-mini-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.compare-mini { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.compare-mini-title { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); margin-bottom: 8px; }
+.compare-mini-mi { font-family: "Fraunces", serif; font-size: 32px; font-weight: 500; line-height: 1; margin-bottom: 4px; }
+.compare-mini-cluster { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3); text-transform: uppercase; }
+.contradiction-item { background: rgba(232,92,74,0.05); border: 1px solid rgba(232,92,74,0.15); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+.contradiction-item:last-child { margin-bottom: 0; }
+.contra-head { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--danger); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.contra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
+.contra-side-label { font-family: "JetBrains Mono", monospace; font-size: 9px; color: var(--ink-3); text-transform: uppercase; margin-bottom: 3px; }
+.contra-claim-text { color: var(--ink-2); font-size: 13px; font-style: italic; }
+.contra-note { font-size: 12px; color: var(--ink-3); }
+
+/* ── Chat ── */
+.chat-card { display: none; margin-top: 32px; }
+.chat-card.show { display: block; animation: fadeUp 0.5s ease; }
+.chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.chat-header h3 { font-family: "Fraunces", serif; font-size: 18px; font-weight: 500; font-style: italic; }
+.chat-header h3::before { content: "●"; color: var(--ok); margin-right: 8px; font-size: 10px; vertical-align: middle; }
+.mode-toggle { display: flex; background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 2px; }
+.mode-btn { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; background: transparent; color: var(--ink-3); border: none; padding: 6px 14px; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
+.mode-btn:hover:not(:disabled) { color: var(--ink-2); background: transparent; }
+.mode-btn.active { background: var(--bg-2); color: var(--ink); border: 1px solid var(--border-2); }
+.mode-btn.active.open-btn { color: var(--accent); }
+.mode-badge { display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+.mode-badge.context-mode { background: rgba(124,179,66,0.12); color: var(--ok); }
+.mode-badge.open-mode { background: rgba(232,197,71,0.12); color: var(--accent); }
+.mode-description { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3); margin-bottom: 14px; padding: 8px 12px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
+
+/* ── Chat log ── */
+.chat-log { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-height: 140px; max-height: 480px; overflow-y: auto; margin-bottom: 12px; }
+.chat-log::-webkit-scrollbar { width: 6px; }
+.chat-log::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+.msg { margin-bottom: 14px; animation: fadeIn 0.3s ease; }
+.msg:last-child { margin-bottom: 0; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.msg-role { font-family: "JetBrains Mono", monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3); margin-bottom: 4px; }
+.msg.user .msg-role { color: var(--accent); }
+.msg.assistant .msg-role { color: var(--ok); }
+.msg-text { color: var(--ink); font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+.msg.hint { color: var(--ink-3); font-style: italic; font-size: 13px; text-align: center; padding: 20px 0; }
+
+/* ── Tool badges in chat ── */
+.tool-badges { margin-bottom: 6px; display: flex; flex-wrap: wrap; gap: 5px; }
+.tool-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(232,197,71,0.08); border: 1px solid rgba(232,197,71,0.2);
+  color: var(--accent); font-family: "JetBrains Mono", monospace; font-size: 9px;
+  padding: 3px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.05em;
+  animation: fadeIn 0.2s ease;
+}
+.tool-badge em { font-style: normal; color: var(--ink-2); text-transform: none; letter-spacing: 0; }
+.tool-icon { font-style: normal; }
+
+/* ── Suggestions ── */
+.suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; min-height: 30px; }
+.suggestion { font-family: "Inter Tight", sans-serif; font-size: 12px; background: var(--bg-3); color: var(--ink-2); border: 1px solid var(--border); padding: 6px 12px; border-radius: 14px; cursor: pointer; transition: all 0.15s; }
+.suggestion:hover { background: var(--bg); color: var(--ink); border-color: var(--border-2); }
+.suggestions-loading { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3); padding: 6px 0; }
+
+/* ── Chat input ── */
+.chat-input { display: flex; gap: 8px; }
+.chat-input input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; color: var(--ink); font-family: "Inter Tight", sans-serif; font-size: 14px; }
+.chat-input input:focus { outline: none; border-color: var(--border-2); }
+
+/* ── Loading & error ── */
+.loading { display: none; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3); margin-top: 12px; }
+.loading.show { display: block; }
+.loading::after { content: ""; display: inline-block; width: 6px; animation: dots 1.2s steps(4,end) infinite; }
+@keyframes dots { 0%,20%{content:""} 40%{content:"."} 60%{content:".."} 80%,100%{content:"..."} }
+.error { display: none; background: rgba(232,92,74,0.1); border: 1px solid rgba(232,92,74,0.3); color: var(--danger); padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-top: 12px; }
+.error.show { display: block; }
+.wel-tag { display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 10px; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
+.wel-tag.fake { background: rgba(232,92,74,0.15); color: var(--danger); }
+.wel-tag.real { background: rgba(124,179,66,0.15); color: var(--ok); }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <header>
-    <div>
-      <div class="brand">gkin <em>/ truth navigator</em></div>
-    </div>
-    <div class="tagline">global knowledge intelligence network</div>
-  </header>
+<header>
+  <div>
+    <div class="brand">gkin <em>/ truth navigator</em></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-3);margin-top:5px;letter-spacing:0.07em;text-transform:uppercase;">v2 · R1 reasoning · agent search · whisper · vision</div>
+  </div>
+  <div class="tagline">global knowledge intelligence network</div>
+</header>
 
-  <div class="label">Paste an article</div>
-  <div class="card">
+<div class="label">Input</div>
+<div class="card">
+  <div class="tab-bar">
+    <button class="tab active" data-tab="text">Paste text</button>
+    <button class="tab" data-tab="audio">Audio / Video</button>
+    <button class="tab" data-tab="image">Screenshot</button>
+    <button class="tab" data-tab="compare">Compare</button>
+  </div>
+
+  <!-- ── Text tab ── -->
+  <div class="tab-pane active" id="tab-text">
     <textarea id="article" placeholder="Paste the full text of any news article here..."></textarea>
     <div class="controls">
       <button id="analyze-btn">Analyze article</button>
@@ -519,106 +349,182 @@
       <button class="ghost" id="clear-btn">Clear</button>
       <div class="char-count" id="char-count">0 chars</div>
     </div>
-    <div class="loading" id="loading">Reading the article</div>
-    <div class="error" id="error"></div>
   </div>
 
-  <div class="results" id="results">
-    <div class="label">Analysis</div>
-    <div class="verdict">
-      <div class="gauge">
-        <svg viewBox="0 0 120 120">
-          <circle class="gauge-bg" cx="60" cy="60" r="52"/>
-          <circle class="gauge-fg" id="gauge-fg" cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="327"/>
-        </svg>
-        <div class="gauge-label">
-          <div class="gauge-num" id="gauge-num">0</div>
-          <div class="gauge-denom">/ 100</div>
-        </div>
-      </div>
-      <div class="verdict-text">
-        <h2 id="verdict-title">Manipulation index</h2>
-        <p id="verdict-desc">How persuasive is this article's construction?</p>
-        <span class="verdict-tag" id="verdict-tag"></span>
-      </div>
+  <!-- ── Audio tab ── -->
+  <div class="tab-pane" id="tab-audio">
+    <div class="drop-zone" id="audio-drop">
+      <input type="file" class="drop-input" id="audio-input" accept="audio/*,video/*,.mp3,.wav,.mp4,.m4a,.webm,.ogg">
+      <div class="drop-icon">🎙</div>
+      <div class="drop-label" id="audio-filename">Drop audio or video file here, or click to browse</div>
+      <div class="drop-formats">MP3 · WAV · MP4 · M4A · WEBM · OGG · max 25 MB</div>
     </div>
-
-    <div class="grid">
-      <div class="panel">
-        <h3>Persuasion techniques <span class="count" id="tech-count"></span></h3>
-        <div id="techniques"></div>
-      </div>
-      <div class="panel">
-        <h3>Missing context <span class="count" id="gap-count"></span></h3>
-        <div id="gaps"></div>
-      </div>
-      <div class="panel">
-        <h3>Emotional framing</h3>
-        <div id="emotions"></div>
-      </div>
-      <div class="panel">
-        <h3>Narrative pattern</h3>
-        <div id="narrative" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-2); padding-top: 4px;"></div>
-        <h3 style="margin-top: 18px;">Claims <span class="count" id="claim-count"></span></h3>
-        <div id="claims" style="color: var(--ink-2); font-size: 13px;"></div>
-      </div>
+    <div class="controls" style="margin-top:16px;">
+      <button id="transcribe-btn" disabled>Transcribe &amp; Analyze</button>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);">Groq Whisper large-v3</span>
     </div>
   </div>
 
-  <div class="chat-card card" id="chat-card">
-    <div class="chat-header">
-      <h3>ask truth navigator</h3>
-      <button class="ghost" id="chat-reset" style="font-size: 11px; padding: 6px 12px;">Reset chat</button>
+  <!-- ── Image tab ── -->
+  <div class="tab-pane" id="tab-image">
+    <div class="drop-zone" id="image-drop">
+      <input type="file" class="drop-input" id="image-input" accept="image/png,image/jpeg,image/webp,image/gif">
+      <div class="drop-icon">🖼</div>
+      <div class="drop-label" id="image-filename">Drop a screenshot or article image, or click to browse</div>
+      <div class="drop-formats">PNG · JPG · WEBP · max 3 MB</div>
     </div>
-    <div class="suggestions" id="suggestions">
-      <div class="suggestion" data-q="Which persuasion technique is strongest here?">Strongest technique?</div>
-      <div class="suggestion" data-q="Is this article trustworthy?">Trustworthy?</div>
-      <div class="suggestion" data-q="What are the biggest red flags?">Red flags?</div>
-      <div class="suggestion" data-q="What context is missing that I should know?">Missing context?</div>
+    <div class="image-preview" id="image-preview">
+      <img id="image-preview-img" src="" alt="Preview">
     </div>
-    <div class="chat-log" id="chat-log">
-      <div class="msg hint">Ask a question about the article above.</div>
-    </div>
-    <div class="chat-input">
-      <input id="chat-input" placeholder="Ask about the article..." />
-      <button id="chat-send">Send</button>
+    <div class="controls" style="margin-top:16px;">
+      <button id="analyze-image-btn" disabled>Analyze Screenshot</button>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);">Llama 3.2 Vision</span>
     </div>
   </div>
 
+  <!-- ── Compare tab ── -->
+  <div class="tab-pane" id="tab-compare">
+    <div class="compare-articles" id="compare-articles"></div>
+    <div class="controls">
+      <button id="compare-btn">Compare articles</button>
+      <button class="ghost" id="add-article-btn">+ Add article</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">Processing</div>
+  <div class="error" id="error"></div>
 </div>
 
-<script>
-const $ = id => document.getElementById(id);
-const articleEl = $("article");
-const charCount = $("char-count");
-const loading = $("loading");
-const errorEl = $("error");
-const results = $("results");
-const chatCard = $("chat-card");
-const chatLog = $("chat-log");
-const chatInput = $("chat-input");
+<!-- ── Main analysis results ── -->
+<div class="results" id="results">
+  <div class="label">Analysis</div>
 
+  <div class="reasoning-section" id="reasoning-section" style="display:none;">
+    <button class="reasoning-toggle" id="reasoning-toggle">
+      <span>⟡ AI Reasoning Trace <span class="r-badge">DeepSeek R1</span></span>
+      <span id="reasoning-arrow">▼</span>
+    </button>
+    <div class="reasoning-body" id="reasoning-body"></div>
+  </div>
+
+  <div class="verdict">
+    <div class="gauge">
+      <svg viewBox="0 0 120 120">
+        <circle class="gauge-bg" cx="60" cy="60" r="52"/>
+        <circle class="gauge-fg" id="gauge-fg" cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="327"/>
+      </svg>
+      <div class="gauge-label">
+        <div class="gauge-num" id="gauge-num">0</div>
+        <div class="gauge-denom">/ 100</div>
+      </div>
+    </div>
+    <div class="verdict-text">
+      <h2 id="verdict-title">Manipulation index</h2>
+      <p id="verdict-desc">How persuasive is this article's construction?</p>
+      <span class="verdict-tag" id="verdict-tag"></span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>Persuasion techniques <span class="count" id="tech-count"></span></h3>
+      <div id="techniques"></div>
+    </div>
+    <div class="panel">
+      <h3>Missing context <span class="count" id="gap-count"></span></h3>
+      <div id="gaps"></div>
+    </div>
+    <div class="panel">
+      <h3>Emotional framing</h3>
+      <div id="emotions"></div>
+    </div>
+    <div class="panel">
+      <h3>Narrative pattern</h3>
+      <div id="narrative" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-2);padding-top:4px;margin-bottom:18px;"></div>
+      <h3>Claims <span class="count" id="claim-count"></span></h3>
+      <div id="claims"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Comparison results ── -->
+<div class="compare-results" id="compare-results">
+  <div class="label">Comparison</div>
+  <div id="compare-content"></div>
+</div>
+
+<!-- ── Chat ── -->
+<div class="chat-card card" id="chat-card">
+  <div class="chat-header">
+    <h3>ask truth navigator <span class="mode-badge context-mode" id="mode-badge">context</span></h3>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-context">Context only</button>
+        <button class="mode-btn open-btn" id="mode-open">Open research</button>
+      </div>
+      <button class="ghost" id="chat-reset" style="font-size:11px;padding:6px 12px;">Reset chat</button>
+    </div>
+  </div>
+  <div class="mode-description" id="mode-description">Answers are grounded in the article analysis only.</div>
+  <div class="suggestions" id="suggestions">
+    <span class="suggestions-loading">Loading suggestions...</span>
+  </div>
+  <div class="chat-log" id="chat-log">
+    <div class="msg hint">Ask a question about the article above.</div>
+  </div>
+  <div class="chat-input">
+    <input id="chat-input" placeholder="Ask anything about the article..." />
+    <button id="chat-send">Send</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function showError(msg) {
+  $("error").textContent = msg; $("error").classList.add("show");
+  setTimeout(() => $("error").classList.remove("show"), 7000);
+}
+function hideError() { $("error").classList.remove("show"); }
+
+// ── State ─────────────────────────────────────────────────────────────────────
 let currentAnalysis = null;
 let chatHistory = [];
+let chatMode = "context";
 
-articleEl.addEventListener("input", () => {
-  charCount.textContent = `${articleEl.value.length.toLocaleString()} chars`;
+const MODE_DESC = {
+  context: "Answers are grounded in the article analysis only.",
+  open: "Draws on web search, historical context, and world knowledge — beyond just this article."
+};
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    $("tab-" + t.dataset.tab).classList.add("active");
+    hideError();
+  });
 });
 
-function showError(msg) {
-  errorEl.textContent = msg;
-  errorEl.classList.add("show");
-  setTimeout(() => errorEl.classList.remove("show"), 6000);
-}
-function hideError() { errorEl.classList.remove("show"); }
+// ── Text tab ──────────────────────────────────────────────────────────────────
+const articleEl = $("article");
+articleEl.addEventListener("input", () => {
+  $("char-count").textContent = `${articleEl.value.length.toLocaleString()} chars`;
+});
 
 $("clear-btn").addEventListener("click", () => {
-  articleEl.value = "";
-  charCount.textContent = "0 chars";
-  results.classList.remove("show");
-  chatCard.classList.remove("show");
-  currentAnalysis = null;
-  chatHistory = [];
+  articleEl.value = ""; $("char-count").textContent = "0 chars";
+  $("results").classList.remove("show");
+  $("compare-results").classList.remove("show");
+  $("chat-card").classList.remove("show");
+  currentAnalysis = null; chatHistory = [];
   hideError();
 });
 
@@ -629,86 +535,244 @@ $("random-btn").addEventListener("click", async () => {
     if (!r.ok) throw new Error("Random article endpoint failed. Is WELFake loaded?");
     const data = await r.json();
     articleEl.value = data.text;
-    charCount.textContent = `${data.text.length.toLocaleString()} chars`;
+    $("char-count").textContent = `${data.text.length.toLocaleString()} chars`;
     articleEl.dataset.welLabel = data.label;
-  } catch (e) {
-    showError(e.message);
-  }
+  } catch (e) { showError(e.message); }
 });
 
 $("analyze-btn").addEventListener("click", async () => {
   const text = articleEl.value.trim();
-  if (text.length < 200) {
-    showError("Article needs to be at least 200 characters.");
-    return;
-  }
+  if (text.length < 200) { showError("Article needs to be at least 200 characters."); return; }
   hideError();
-  loading.classList.add("show");
+  $("loading").textContent = "Deep reasoning in progress";
+  $("loading").classList.add("show");
   $("analyze-btn").disabled = true;
-
   try {
     const r = await fetch("/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ article: text })
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({article: text})
     });
-    if (!r.ok) {
-      const err = await r.text();
-      throw new Error(err || "Analysis failed");
-    }
+    if (!r.ok) throw new Error(await r.text());
     currentAnalysis = await r.json();
-    renderAnalysis(currentAnalysis);
-    results.classList.add("show");
-    chatCard.classList.add("show");
-    chatHistory = [];
-    chatLog.innerHTML = '<div class="msg hint">Ask a question about the article above.</div>';
+    showAnalysisResults(currentAnalysis);
   } catch (e) {
     showError("Analysis failed: " + e.message);
   } finally {
-    loading.classList.remove("show");
+    $("loading").classList.remove("show");
     $("analyze-btn").disabled = false;
   }
 });
 
+// ── Drop zone helper ──────────────────────────────────────────────────────────
+function setupDropZone(zoneId, inputId, onFile) {
+  const zone = $(zoneId), input = $(inputId);
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault(); zone.classList.remove("dragover");
+    const file = e.dataTransfer.files[0]; if (file) onFile(file);
+  });
+  input.addEventListener("change", () => { if (input.files[0]) onFile(input.files[0]); });
+}
+
+// ── Audio tab ─────────────────────────────────────────────────────────────────
+let audioFile = null;
+setupDropZone("audio-drop", "audio-input", file => {
+  audioFile = file;
+  $("audio-filename").textContent = `✓ ${file.name}`;
+  $("audio-drop").classList.add("drop-selected");
+  $("transcribe-btn").disabled = false;
+});
+
+$("transcribe-btn").addEventListener("click", async () => {
+  if (!audioFile) return;
+  hideError();
+  $("loading").textContent = "Transcribing with Whisper";
+  $("loading").classList.add("show");
+  $("transcribe-btn").disabled = true;
+  try {
+    const fd = new FormData(); fd.append("file", audioFile);
+    const r = await fetch("/transcribe", {method: "POST", body: fd});
+    if (!r.ok) throw new Error(await r.text());
+    const {transcript} = await r.json();
+    // Switch to text tab, fill, auto-analyze
+    articleEl.value = transcript;
+    $("char-count").textContent = `${transcript.length.toLocaleString()} chars`;
+    document.querySelector(".tab[data-tab='text']").click();
+    $("loading").textContent = "Deep reasoning in progress";
+    const r2 = await fetch("/analyze", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({article: transcript})
+    });
+    if (!r2.ok) throw new Error(await r2.text());
+    currentAnalysis = await r2.json();
+    showAnalysisResults(currentAnalysis);
+  } catch (e) {
+    showError("Transcription/analysis failed: " + e.message);
+  } finally {
+    $("loading").classList.remove("show");
+    $("transcribe-btn").disabled = false;
+  }
+});
+
+// ── Image tab ─────────────────────────────────────────────────────────────────
+let imageFile = null;
+setupDropZone("image-drop", "image-input", file => {
+  imageFile = file;
+  $("image-filename").textContent = `✓ ${file.name}`;
+  $("image-drop").classList.add("drop-selected");
+  $("analyze-image-btn").disabled = false;
+  const reader = new FileReader();
+  reader.onload = e => {
+    $("image-preview-img").src = e.target.result;
+    $("image-preview").style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
+
+$("analyze-image-btn").addEventListener("click", async () => {
+  if (!imageFile) return;
+  hideError();
+  $("loading").textContent = "Extracting text from image";
+  $("loading").classList.add("show");
+  $("analyze-image-btn").disabled = true;
+  try {
+    const fd = new FormData(); fd.append("file", imageFile);
+    const r = await fetch("/analyze-image", {method: "POST", body: fd});
+    if (!r.ok) throw new Error(await r.text());
+    currentAnalysis = await r.json();
+    showAnalysisResults(currentAnalysis);
+  } catch (e) {
+    showError("Image analysis failed: " + e.message);
+  } finally {
+    $("loading").classList.remove("show");
+    $("analyze-image-btn").disabled = false;
+  }
+});
+
+// ── Compare tab ───────────────────────────────────────────────────────────────
+function renderCompareInputs() {
+  const container = $("compare-articles");
+  const count = parseInt(container.dataset.count || "2");
+  container.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const saved = container.dataset["a" + i] || "";
+    const div = document.createElement("div");
+    div.className = "compare-article";
+    div.innerHTML = `
+      <div class="compare-article-label">Article ${i+1}${i >= 2 ? `<button class="compare-remove ghost" data-i="${i}" style="float:right;padding:2px 8px;font-size:10px;">✕ Remove</button>` : ''}</div>
+      <textarea id="cmp-${i}" placeholder="Paste article ${i+1} text here..." style="min-height:110px;width:100%;"></textarea>
+    `;
+    container.appendChild(div);
+  }
+  container.querySelectorAll(".compare-remove").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = parseInt(btn.dataset.i);
+      const c = $("compare-articles");
+      const newCount = parseInt(c.dataset.count) - 1;
+      // Save existing values
+      for (let j = 0; j < parseInt(c.dataset.count); j++) {
+        const ta = $("cmp-" + j);
+        c.dataset["a" + j] = ta ? ta.value : "";
+      }
+      // Shift values
+      for (let j = i; j < newCount; j++) {
+        c.dataset["a" + j] = c.dataset["a" + (j+1)] || "";
+      }
+      c.dataset.count = newCount;
+      renderCompareInputs();
+      $("add-article-btn").disabled = newCount >= 4;
+    });
+  });
+}
+const compareContainer = $("compare-articles");
+compareContainer.dataset.count = "2";
+renderCompareInputs();
+
+$("add-article-btn").addEventListener("click", () => {
+  const c = $("compare-articles");
+  const count = parseInt(c.dataset.count);
+  if (count >= 4) return;
+  // Save current values
+  for (let i = 0; i < count; i++) {
+    const ta = $("cmp-" + i); if (ta) c.dataset["a" + i] = ta.value;
+  }
+  c.dataset.count = count + 1;
+  renderCompareInputs();
+  $("add-article-btn").disabled = count + 1 >= 4;
+});
+
+$("compare-btn").addEventListener("click", async () => {
+  const c = $("compare-articles");
+  const count = parseInt(c.dataset.count);
+  const articles = [];
+  for (let i = 0; i < count; i++) {
+    const ta = $("cmp-" + i); if (ta && ta.value.trim().length >= 200) articles.push(ta.value.trim());
+  }
+  if (articles.length < 2) { showError("Need at least 2 articles with 200+ characters each."); return; }
+  hideError();
+  $("loading").textContent = `Analyzing ${articles.length} articles in parallel`;
+  $("loading").classList.add("show");
+  $("compare-btn").disabled = true;
+  try {
+    const r = await fetch("/compare", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({articles})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    renderCompareResults(data);
+    $("compare-results").classList.add("show");
+    currentAnalysis = data.analyses[0];
+    $("chat-card").classList.add("show");
+    fetchSuggestions(currentAnalysis);
+    resetChatLog();
+  } catch (e) {
+    showError("Comparison failed: " + e.message);
+  } finally {
+    $("loading").classList.remove("show");
+    $("compare-btn").disabled = false;
+  }
+});
+
+// ── Show analysis results ─────────────────────────────────────────────────────
+function showAnalysisResults(a) {
+  renderAnalysis(a);
+  $("results").classList.add("show");
+  $("compare-results").classList.remove("show");
+  $("chat-card").classList.add("show");
+  chatHistory = [];
+  resetChatLog();
+  fetchSuggestions(a);
+}
+
+// ── Render analysis ───────────────────────────────────────────────────────────
 function renderAnalysis(a) {
   const mi = a.manipulation_index || 0;
-  const num = $("gauge-num");
-  const fg = $("gauge-fg");
-  const CIRC = 327;
+  const fg = $("gauge-fg"); const CIRC = 327;
   fg.style.strokeDashoffset = CIRC - (CIRC * mi / 100);
-
-  // Color the gauge by score
   let color = "#7cb342";
   if (mi >= 60) color = "#e85c4a";
   else if (mi >= 40) color = "#e8c547";
   else if (mi >= 20) color = "#f5e6a3";
   fg.style.stroke = color;
-
-  // Animate number
-  let cur = 0;
-  const step = Math.max(1, Math.ceil(mi / 30));
+  let cur = 0; const step = Math.max(1, Math.ceil(mi / 30));
   const tick = setInterval(() => {
-    cur += step;
-    if (cur >= mi) { cur = mi; clearInterval(tick); }
-    num.textContent = cur;
+    cur += step; if (cur >= mi) { cur = mi; clearInterval(tick); }
+    $("gauge-num").textContent = cur;
   }, 20);
-
-  // Verdict tag
   const tag = $("verdict-tag");
   let label = "STRAIGHT REPORTING";
   if (mi >= 80) label = "BLATANT PROPAGANDA";
   else if (mi >= 60) label = "HEAVY MANIPULATION";
   else if (mi >= 40) label = "NOTICEABLE PERSUASION";
   else if (mi >= 20) label = "MILD FRAMING";
-  tag.textContent = label;
-  tag.style.background = color + "20";
-  tag.style.color = color;
+  tag.textContent = label; tag.style.background = color + "22"; tag.style.color = color;
 
-  // WELFake label if present
+  // WELFake label
   if (articleEl.dataset.welLabel !== undefined) {
     const wel = parseInt(articleEl.dataset.welLabel);
-    const existing = document.querySelector(".wel-tag");
-    if (existing) existing.remove();
+    document.querySelector(".wel-tag")?.remove();
     if (wel === 0 || wel === 1) {
       const span = document.createElement("span");
       span.className = "wel-tag " + (wel === 1 ? "fake" : "real");
@@ -717,19 +781,27 @@ function renderAnalysis(a) {
     }
   }
 
-  // Persuasion techniques
+  // Reasoning trace
+  if (a.reasoning_trace && a.reasoning_trace.length > 20) {
+    $("reasoning-section").style.display = "";
+    $("reasoning-body").textContent = a.reasoning_trace;
+  } else {
+    $("reasoning-section").style.display = "none";
+  }
+
+  // Techniques
   const techs = a.persuasion_techniques || [];
   $("tech-count").textContent = techs.length;
   $("techniques").innerHTML = techs.length
     ? techs.map(t => `
       <div class="technique">
-        <div class="technique-name">${t.technique.replace(/_/g, " ")}</div>
+        <div class="technique-name">${t.technique.replace(/_/g," ")}</div>
         <div class="technique-span">${escapeHtml(t.span)}</div>
         <div class="technique-why">${escapeHtml(t.explanation)}</div>
       </div>`).join("")
-    : '<div style="color: var(--ink-3); font-style: italic; font-size: 13px;">None detected.</div>';
+    : '<div style="color:var(--ink-3);font-style:italic;font-size:13px;">None detected.</div>';
 
-  // Missing context
+  // Gaps
   const gaps = a.missing_context || [];
   $("gap-count").textContent = gaps.length;
   $("gaps").innerHTML = gaps.length
@@ -738,110 +810,260 @@ function renderAnalysis(a) {
         <div class="gap-title">${escapeHtml(g.gap)}</div>
         <div class="gap-why">${escapeHtml(g.why_it_matters)}</div>
       </div>`).join("")
-    : '<div style="color: var(--ink-3); font-style: italic; font-size: 13px;">None flagged.</div>';
+    : '<div style="color:var(--ink-3);font-style:italic;font-size:13px;">None flagged.</div>';
 
   // Emotions
   const emo = a.emotion_scores || {};
-  const order = ["fear", "anger", "disgust", "hope", "guilt", "ingroup_framing"];
+  const order = ["fear","anger","disgust","hope","guilt","ingroup_framing"];
   $("emotions").innerHTML = order.map(k => `
     <div class="emotion-row">
-      <div class="emotion-name">${k.replace(/_/g, " ")}</div>
-      <div class="emotion-bar"><div class="emotion-fill" style="width: ${emo[k] || 0}%"></div></div>
-      <div class="emotion-val">${emo[k] || 0}</div>
-    </div>
-  `).join("");
+      <div class="emotion-name">${k.replace(/_/g," ")}</div>
+      <div class="emotion-bar"><div class="emotion-fill" style="width:${emo[k]||0}%"></div></div>
+      <div class="emotion-val">${emo[k]||0}</div>
+    </div>`).join("");
 
-  // Narrative + claims
+  // Narrative
   $("narrative").textContent = a.narrative_cluster || "none";
+
+  // Claims with verification
   const claims = a.claims || [];
   $("claim-count").textContent = claims.length;
-  $("claims").innerHTML = claims.length
-    ? claims.slice(0, 6).map(c =>
-        `<div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
-          <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-3); text-transform: uppercase;">${c.type}</span><br/>
-          ${escapeHtml(c.text)}
-         </div>`
-      ).join("")
-      + (claims.length > 6 ? `<div style="padding-top: 8px; color: var(--ink-3); font-size: 12px;">+ ${claims.length - 6} more</div>` : "")
-    : '<div style="color: var(--ink-3); font-style: italic;">No claims extracted.</div>';
+  if (claims.length) {
+    $("claims").innerHTML = claims.slice(0, 8).map(c => {
+      const v = c.verification || {};
+      const verdict = v.verdict || "";
+      const verdictHtml = verdict
+        ? `<span class="claim-verdict verdict-${verdict}">${verdict.replace(/_/g," ")}</span>`
+        : "";
+      const noteHtml = v.explanation
+        ? `<div class="claim-verify-note">${escapeHtml(v.explanation)}</div>`
+        : "";
+      return `
+        <div class="claim-item">
+          <div class="claim-meta">
+            <span class="claim-type">${escapeHtml(c.type)}</span>
+            ${verdictHtml}
+          </div>
+          <div class="claim-text">${escapeHtml(c.text)}</div>
+          ${noteHtml}
+        </div>`;
+    }).join("") + (claims.length > 8 ? `<div style="padding-top:8px;color:var(--ink-3);font-size:12px;">+ ${claims.length - 8} more</div>` : "");
+  } else {
+    $("claims").innerHTML = '<div style="color:var(--ink-3);font-style:italic;font-size:13px;">No claims extracted.</div>';
+  }
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
+// ── Reasoning trace toggle ────────────────────────────────────────────────────
+$("reasoning-toggle").addEventListener("click", () => {
+  const body = $("reasoning-body"); const arrow = $("reasoning-arrow");
+  body.classList.toggle("open");
+  arrow.textContent = body.classList.contains("open") ? "▲" : "▼";
+});
+
+// ── Compare results rendering ─────────────────────────────────────────────────
+function renderCompareResults(data) {
+  const { analyses, comparison: c } = data;
+  const score = c.coordination_score || 0;
+  let scoreColor = "#7cb342";
+  if (score >= 60) scoreColor = "#e85c4a";
+  else if (score >= 30) scoreColor = "#e8c547";
+
+  let html = `
+    <div class="coord-card">
+      <div class="coord-num" style="color:${scoreColor}">${score}</div>
+      <div class="coord-info">
+        <div class="coord-sublabel">Coordination score / 100</div>
+        <div class="coord-explanation">${escapeHtml(c.coordination_explanation || "")}</div>
+        ${c.narrative_divergence ? `<div style="margin-top:10px;color:var(--ink-3);font-size:13px;">${escapeHtml(c.narrative_divergence)}</div>` : ""}
+      </div>
+    </div>
+    <div class="compare-mini-grid">
+      ${analyses.map((a, i) => {
+        const mi = a.manipulation_index || 0;
+        let mc = "#7cb342"; if (mi>=60) mc="#e85c4a"; else if (mi>=40) mc="#e8c547";
+        return `
+          <div class="compare-mini">
+            <div class="compare-mini-title">Article ${i+1}</div>
+            <div class="compare-mini-mi" style="color:${mc}">${mi}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${mc};text-transform:uppercase;margin-bottom:6px;">/ 100</div>
+            <div class="compare-mini-cluster">${escapeHtml(a.narrative_cluster || "none")}</div>
+          </div>`;
+      }).join("")}
+    </div>`;
+
+  if (c.coordinated_techniques?.length) {
+    html += `<div class="panel" style="margin-bottom:16px;">
+      <h3>Shared techniques</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${c.coordinated_techniques.map(t => `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(232,197,71,0.1);color:var(--accent);padding:3px 10px;border-radius:4px;text-transform:uppercase;">${escapeHtml(t.replace(/_/g," "))}</span>`).join("")}
+      </div>
+    </div>`;
+  }
+
+  const contradictions = c.factual_contradictions || [];
+  if (contradictions.length) {
+    html += `<div class="panel" style="margin-bottom:16px;">
+      <h3>Factual contradictions <span class="count">${contradictions.length}</span></h3>
+      ${contradictions.map(con => `
+        <div class="contradiction-item">
+          <div class="contra-head">⚡ Contradiction</div>
+          <div class="contra-grid">
+            <div>
+              <div class="contra-side-label">Article ${(con.article_index_a ?? 0) + 1}</div>
+              <div class="contra-claim-text">${escapeHtml(con.claim_a || "")}</div>
+            </div>
+            <div>
+              <div class="contra-side-label">Article ${(con.article_index_b ?? 1) + 1}</div>
+              <div class="contra-claim-text">${escapeHtml(con.claim_b || "")}</div>
+            </div>
+          </div>
+          <div class="contra-note">${escapeHtml(con.contradiction || "")}</div>
+        </div>`).join("")}
+    </div>`;
+  }
+
+  $("compare-content").innerHTML = html;
 }
 
-// Chat
-document.querySelectorAll(".suggestion").forEach(s => {
-  s.addEventListener("click", () => {
-    chatInput.value = s.dataset.q;
-    sendChat();
+// ── Dynamic suggestions ───────────────────────────────────────────────────────
+async function fetchSuggestions(analysis) {
+  $("suggestions").innerHTML = '<span class="suggestions-loading">Generating questions...</span>';
+  try {
+    const r = await fetch("/suggestions", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({analysis})
+    });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    renderSuggestions(data.suggestions || []);
+  } catch {
+    renderSuggestions([
+      "Which persuasion technique is most concerning?",
+      "What context is missing?",
+      "How does this fit broader media patterns?",
+      "What historical events does this echo?",
+      "What should I fact-check first?"
+    ]);
+  }
+}
+
+function renderSuggestions(list) {
+  $("suggestions").innerHTML = list.map(q =>
+    `<div class="suggestion" data-q="${escapeHtml(q)}">${escapeHtml(q.length > 45 ? q.slice(0,45)+"…" : q)}</div>`
+  ).join("");
+  document.querySelectorAll(".suggestion").forEach(el => {
+    el.addEventListener("click", () => { $("chat-input").value = el.dataset.q; sendChat(); });
   });
-});
+}
 
-$("chat-send").addEventListener("click", sendChat);
-chatInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") sendChat();
-});
-$("chat-reset").addEventListener("click", () => {
+// ── Mode toggle ───────────────────────────────────────────────────────────────
+function setMode(mode) {
+  chatMode = mode;
+  $("mode-context").classList.toggle("active", mode === "context");
+  $("mode-open").classList.toggle("active", mode === "open");
+  const badge = $("mode-badge");
+  badge.textContent = mode === "open" ? "open research" : "context";
+  badge.className = "mode-badge " + (mode === "open" ? "open-mode" : "context-mode");
+  $("mode-description").textContent = MODE_DESC[mode];
+}
+$("mode-context").addEventListener("click", () => setMode("context"));
+$("mode-open").addEventListener("click", () => setMode("open"));
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+function resetChatLog() {
   chatHistory = [];
-  chatLog.innerHTML = '<div class="msg hint">Ask a question about the article above.</div>';
-});
+  $("chat-log").innerHTML = '<div class="msg hint">Ask a question about the article above.</div>';
+}
+$("chat-reset").addEventListener("click", resetChatLog);
+$("chat-send").addEventListener("click", sendChat);
+$("chat-input").addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+
+function appendMessage(role, text) {
+  const hint = $("chat-log").querySelector(".msg.hint"); if (hint) hint.remove();
+  const div = document.createElement("div");
+  div.className = "msg " + role;
+  div.innerHTML = `<div class="msg-role">${role === "user" ? "you" : "truth navigator"}</div><div class="msg-text">${escapeHtml(text)}</div>`;
+  $("chat-log").appendChild(div);
+  $("chat-log").scrollTop = $("chat-log").scrollHeight;
+  return div;
+}
+
+const TOOL_ICONS = { search_web: "🔍", fact_check_claim: "⚖", find_historical_parallel: "📜" };
+const TOOL_LABELS = { search_web: "Searching", fact_check_claim: "Fact-checking", find_historical_parallel: "History" };
+
+function addToolBadge(toolInfo, container) {
+  const icon = TOOL_ICONS[toolInfo.name] || "⚙";
+  const label = TOOL_LABELS[toolInfo.name] || toolInfo.name;
+  const badge = document.createElement("div");
+  badge.className = "tool-badge";
+  badge.innerHTML = `<span class="tool-icon">${icon}</span> ${escapeHtml(label)}: <em>${escapeHtml(toolInfo.query)}</em>`;
+  container.appendChild(badge);
+  $("chat-log").scrollTop = $("chat-log").scrollHeight;
+}
 
 async function sendChat() {
-  const msg = chatInput.value.trim();
+  const msg = $("chat-input").value.trim();
   if (!msg || !currentAnalysis) return;
-  chatInput.value = "";
+  $("chat-input").value = "";
 
-  // Remove hint if present
-  const hint = chatLog.querySelector(".msg.hint");
-  if (hint) hint.remove();
-
-  // Add user message
   appendMessage("user", msg);
-  chatHistory.push({ role: "user", content: msg });
+  chatHistory.push({role: "user", content: msg});
 
-  // Add assistant placeholder for streaming
-  const assistantEl = appendMessage("assistant", "");
-  const textEl = assistantEl.querySelector(".msg-text");
+  // Placeholder for assistant response
+  const hint2 = $("chat-log").querySelector(".msg.hint"); if (hint2) hint2.remove();
+  const assistantDiv = document.createElement("div");
+  assistantDiv.className = "msg assistant";
+  assistantDiv.innerHTML = `<div class="msg-role">truth navigator</div><div class="tool-badges" id="tool-badges-${Date.now()}"></div><div class="msg-text"></div>`;
+  $("chat-log").appendChild(assistantDiv);
+  const toolContainer = assistantDiv.querySelector(".tool-badges");
+  const textEl = assistantDiv.querySelector(".msg-text");
 
   try {
     const r = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
-        message: msg,
-        analysis: currentAnalysis,
-        history: chatHistory.slice(0, -1)
+        message: msg, analysis: currentAnalysis,
+        history: chatHistory.slice(0, -1), mode: chatMode
       })
     });
     if (!r.ok) throw new Error("Chat request failed");
 
     const reader = r.body.getReader();
     const decoder = new TextDecoder();
-    let full = "";
+    let lineBuffer = "";
+    let textContent = "";
+
     while (true) {
-      const { done, value } = await reader.read();
+      const {done, value} = await reader.read();
       if (done) break;
-      const chunk = decoder.decode(value);
-      full += chunk;
-      textEl.textContent = full;
-      chatLog.scrollTop = chatLog.scrollHeight;
+      lineBuffer += decoder.decode(value, {stream: true});
+      const lines = lineBuffer.split("\n");
+      lineBuffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (line.startsWith("⚙:")) {
+          try { addToolBadge(JSON.parse(line.slice(2)), toolContainer); } catch {}
+        } else {
+          textContent += line + "\n";
+        }
+      }
+      // Show partial incomplete line as text too
+      textEl.textContent = textContent + lineBuffer;
+      $("chat-log").scrollTop = $("chat-log").scrollHeight;
     }
-    chatHistory.push({ role: "assistant", content: full });
+    // Flush remaining buffer
+    if (lineBuffer) {
+      if (lineBuffer.startsWith("⚙:")) {
+        try { addToolBadge(JSON.parse(lineBuffer.slice(2)), toolContainer); } catch {}
+      } else {
+        textContent += lineBuffer;
+      }
+    }
+    textEl.textContent = textContent;
+    chatHistory.push({role: "assistant", content: textContent});
   } catch (e) {
     textEl.textContent = "Error: " + e.message;
   }
-}
-
-function appendMessage(role, text) {
-  const div = document.createElement("div");
-  div.className = "msg " + role;
-  div.innerHTML = `<div class="msg-role">${role === "user" ? "you" : "truth navigator"}</div><div class="msg-text">${escapeHtml(text)}</div>`;
-  chatLog.appendChild(div);
-  chatLog.scrollTop = chatLog.scrollHeight;
-  return div;
 }
 </script>
 </body>
