@@ -345,6 +345,29 @@ button.ghost:hover:not(:disabled) { background: var(--bg-3); color: var(--ink); 
 .wel-tag { display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 10px; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
 .wel-tag.fake { background: rgba(232,92,74,0.15); color: var(--danger); }
 .wel-tag.real { background: rgba(124,179,66,0.15); color: var(--ok); }
+
+/* ── Export bar ── */
+.export-bar { display: none; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.export-bar.show { display: flex; }
+.export-bar-label { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── Library ── */
+.library-empty { color: var(--ink-3); font-style: italic; font-size: 13px; padding: 32px 0; text-align: center; }
+.lib-item {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.lib-item:last-child { margin-bottom: 0; }
+.lib-item:hover { border-color: var(--border-2); }
+.lib-mi { font-family: "Fraunces", serif; font-size: 30px; font-weight: 500; line-height: 1; flex-shrink: 0; width: 44px; text-align: center; }
+.lib-info { flex: 1; min-width: 0; }
+.lib-cluster { font-family: "JetBrains Mono", monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); margin-bottom: 4px; }
+.lib-snippet { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-date { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3); flex-shrink: 0; }
+.lib-del { background: transparent; color: var(--ink-3); border: none; padding: 4px 8px; font-size: 14px; cursor: pointer; border-radius: 4px; flex-shrink: 0; line-height: 1; }
+.lib-del:hover { color: var(--danger); background: transparent; }
+
 </style>
 </head>
 <body>
@@ -366,6 +389,7 @@ button.ghost:hover:not(:disabled) { background: var(--bg-3); color: var(--ink); 
     <button class="tab" data-tab="audio">Audio / Video</button>
     <button class="tab" data-tab="image">Screenshot</button>
     <button class="tab" data-tab="compare">Compare</button>
+    <button class="tab" data-tab="library" id="library-tab">Library</button>
   </div>
 
   <!-- ── Text tab ── -->
@@ -429,6 +453,12 @@ button.ghost:hover:not(:disabled) { background: var(--bg-3); color: var(--ink); 
     </div>
   </div>
 
+  <!-- ── Library tab ── -->
+  <div class="tab-pane" id="tab-library">
+    <div class="library-empty" id="library-empty">No saved analyses yet. Analyze an article then click <strong>Save to library</strong>.</div>
+    <div id="library-list"></div>
+  </div>
+
   <!-- ── Compare tab ── -->
   <div class="tab-pane" id="tab-compare">
     <div class="compare-articles" id="compare-articles"></div>
@@ -440,6 +470,14 @@ button.ghost:hover:not(:disabled) { background: var(--bg-3); color: var(--ink); 
 
   <div class="loading" id="loading">Processing</div>
   <div class="error" id="error"></div>
+</div>
+
+<!-- ── Export bar ── -->
+<div class="export-bar" id="export-bar">
+  <span class="export-bar-label">Export</span>
+  <button class="ghost" id="save-library-btn" style="font-size:12px;padding:8px 14px;">Save to library</button>
+  <button class="ghost" id="export-json-btn" style="font-size:12px;padding:8px 14px;">Download JSON</button>
+  <button class="ghost" id="export-pdf-btn" style="font-size:12px;padding:8px 14px;">Export PDF</button>
 </div>
 
 <!-- ── Main analysis results ── -->
@@ -527,6 +565,7 @@ button.ghost:hover:not(:disabled) { background: var(--bg-3); color: var(--ink); 
 
 </div><!-- /wrap -->
 
+
 <script>
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -557,6 +596,7 @@ document.querySelectorAll(".tab").forEach(t => {
     t.classList.add("active");
     $("tab-" + t.dataset.tab).classList.add("active");
     hideError();
+    if (t.dataset.tab === "library") renderLibrary();
   });
 });
 
@@ -569,9 +609,11 @@ articleEl.addEventListener("input", () => {
 $("clear-btn").addEventListener("click", () => {
   articleEl.value = ""; $("char-count").textContent = "0 chars";
   $("results").classList.remove("show");
+  $("export-bar").classList.remove("show");
   $("compare-results").classList.remove("show");
   $("chat-card").classList.remove("show");
   currentAnalysis = null; chatHistory = [];
+  delete articleEl.dataset.welLabel;
   hideError();
 });
 
@@ -845,6 +887,7 @@ $("compare-btn").addEventListener("click", async () => {
 function showAnalysisResults(a) {
   renderAnalysis(a);
   $("results").classList.add("show");
+  $("export-bar").classList.add("show");
   $("compare-results").classList.remove("show");
   $("chat-card").classList.add("show");
   chatHistory = [];
@@ -1171,6 +1214,206 @@ async function sendChat() {
     textEl.textContent = "Error: " + e.message;
   }
 }
+
+// ── Library ───────────────────────────────────────────────────────────────────
+const LIBRARY_KEY = "gkin_library";
+const LIBRARY_MAX = 20;
+
+function getLibrary() {
+  try { return JSON.parse(localStorage.getItem(LIBRARY_KEY) || "[]"); } catch { return []; }
+}
+function setLibrary(items) { localStorage.setItem(LIBRARY_KEY, JSON.stringify(items)); }
+
+function miColor(mi) {
+  if (mi >= 60) return "#e85c4a";
+  if (mi >= 40) return "#e8c547";
+  if (mi >= 20) return "#f5e6a3";
+  return "#7cb342";
+}
+
+function renderLibraryTabLabel() {
+  const items = getLibrary();
+  $("library-tab").textContent = items.length > 0 ? `Library (${items.length})` : "Library";
+}
+
+function saveToLibrary() {
+  if (!currentAnalysis) return;
+  const snippet = (articleEl.value.trim() || "(no text)").slice(0, 150);
+  const item = {
+    id: Date.now().toString(),
+    timestamp: new Date().toISOString(),
+    articleText: articleEl.value.trim().slice(0, 8000),
+    snippet,
+    analysis: currentAnalysis
+  };
+  const items = getLibrary();
+  items.unshift(item);
+  if (items.length > LIBRARY_MAX) items.length = LIBRARY_MAX;
+  setLibrary(items);
+  renderLibraryTabLabel();
+  const btn = $("save-library-btn");
+  const prev = btn.textContent;
+  btn.textContent = "Saved!";
+  setTimeout(() => { btn.textContent = prev; }, 1600);
+}
+
+function renderLibrary() {
+  const items = getLibrary();
+  const empty = $("library-empty");
+  const list = $("library-list");
+  if (items.length === 0) {
+    empty.style.display = "block"; list.innerHTML = ""; return;
+  }
+  empty.style.display = "none";
+  list.innerHTML = items.map(item => {
+    const mi = item.analysis?.manipulation_index || 0;
+    const color = miColor(mi);
+    const date = new Date(item.timestamp).toLocaleDateString(undefined, {month:"short", day:"numeric", year:"numeric"});
+    const cluster = (item.analysis?.narrative_cluster || "none").replace(/_/g, " ");
+    return `
+      <div class="lib-item" data-id="${escapeHtml(item.id)}">
+        <div class="lib-mi" style="color:${color}">${mi}</div>
+        <div class="lib-info">
+          <div class="lib-cluster">${escapeHtml(cluster)}</div>
+          <div class="lib-snippet">${escapeHtml(item.snippet)}</div>
+        </div>
+        <div class="lib-date">${escapeHtml(date)}</div>
+        <button class="ghost lib-load" data-id="${escapeHtml(item.id)}" style="font-size:11px;padding:6px 10px;flex-shrink:0;">Load</button>
+        <button class="lib-del" data-id="${escapeHtml(item.id)}" title="Delete">✕</button>
+      </div>`;
+  }).join("");
+
+  list.querySelectorAll(".lib-item").forEach(el => {
+    el.addEventListener("click", e => {
+      if (!e.target.classList.contains("lib-load") && !e.target.classList.contains("lib-del"))
+        loadFromLibrary(el.dataset.id);
+    });
+  });
+  list.querySelectorAll(".lib-load").forEach(btn => {
+    btn.addEventListener("click", e => { e.stopPropagation(); loadFromLibrary(btn.dataset.id); });
+  });
+  list.querySelectorAll(".lib-del").forEach(btn => {
+    btn.addEventListener("click", e => { e.stopPropagation(); deleteFromLibrary(btn.dataset.id); });
+  });
+}
+
+function loadFromLibrary(id) {
+  const item = getLibrary().find(x => x.id === id);
+  if (!item) return;
+  currentAnalysis = item.analysis;
+  if (item.articleText) {
+    articleEl.value = item.articleText;
+    $("char-count").textContent = `${item.articleText.length.toLocaleString()} chars`;
+  }
+  document.querySelector(".tab[data-tab='text']").click();
+  showAnalysisResults(currentAnalysis);
+}
+
+function deleteFromLibrary(id) {
+  setLibrary(getLibrary().filter(x => x.id !== id));
+  renderLibrary();
+  renderLibraryTabLabel();
+}
+
+// ── Export JSON ───────────────────────────────────────────────────────────────
+function exportJSON() {
+  if (!currentAnalysis) return;
+  const blob = new Blob([JSON.stringify(currentAnalysis, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `gkin-analysis-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Export PDF ────────────────────────────────────────────────────────────────
+function exportPDF() {
+  if (!currentAnalysis) return;
+  const a = currentAnalysis;
+  const mi = a.manipulation_index || 0;
+  let label = "STRAIGHT REPORTING";
+  if (mi >= 80) label = "BLATANT PROPAGANDA";
+  else if (mi >= 60) label = "HEAVY MANIPULATION";
+  else if (mi >= 40) label = "NOTICEABLE PERSUASION";
+  else if (mi >= 20) label = "MILD FRAMING";
+
+  const techsHtml = (a.persuasion_techniques || []).map(t =>
+    `<div class="item"><strong>${t.technique.replace(/_/g," ")}</strong> — &ldquo;${escapeHtml(t.span)}&rdquo;<br><span class="note">${escapeHtml(t.explanation)}</span></div>`
+  ).join("") || "<div class='item muted'>None detected.</div>";
+
+  const gapsHtml = (a.missing_context || []).map(g =>
+    `<div class="item"><strong>${escapeHtml(g.gap)}</strong><br><span class="note">${escapeHtml(g.why_it_matters)}</span></div>`
+  ).join("") || "<div class='item muted'>None flagged.</div>";
+
+  const emo = a.emotion_scores || {};
+  const emoHtml = ["fear","anger","disgust","hope","guilt","ingroup_framing"].map(k =>
+    `<div class="kv"><span class="kv-label">${k.replace(/_/g," ")}</span><span>${emo[k]||0} / 100</span></div>`
+  ).join("");
+
+  const claimsHtml = (a.claims || []).map(c => {
+    const v = c.verification || {};
+    return `<div class="item">[${escapeHtml(c.type)}${v.verdict ? ` · <strong>${v.verdict.replace(/_/g," ")}</strong>` : ""}] ${escapeHtml(c.text)}${v.explanation ? `<br><span class="note">${escapeHtml(v.explanation)}</span>` : ""}</div>`;
+  }).join("") || "<div class='item muted'>No claims extracted.</div>";
+
+  const miColor = mi >= 60 ? "#c0392b" : mi >= 40 ? "#d4a017" : mi >= 20 ? "#888" : "#27ae60";
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GKIN Analysis Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; font-size: 13px; color: #111; padding: 36px 48px; line-height: 1.6; max-width: 780px; margin: 0 auto; }
+  .header { border-bottom: 2px solid #111; padding-bottom: 14px; margin-bottom: 28px; }
+  .header h1 { font-size: 20px; letter-spacing: -0.01em; }
+  .header .meta { font-family: monospace; font-size: 11px; color: #666; margin-top: 4px; }
+  .section { margin-bottom: 24px; page-break-inside: avoid; }
+  .section h2 { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: #666; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 12px; }
+  .mi { font-size: 56px; font-weight: bold; line-height: 1; color: ${miColor}; }
+  .mi-denom { font-size: 20px; color: #999; }
+  .verdict-label { font-size: 15px; font-weight: bold; margin: 6px 0 10px; }
+  .kv { display: flex; gap: 12px; margin-bottom: 5px; }
+  .kv-label { font-family: monospace; font-size: 11px; min-width: 140px; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+  .item { border-left: 3px solid #ddd; padding: 6px 10px; margin-bottom: 8px; }
+  .note { color: #555; font-size: 12px; }
+  .muted { color: #999; font-style: italic; border-left-color: #eee; }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>GKIN Truth Navigator — Analysis Report</h1>
+    <div class="meta">Generated ${new Date().toLocaleString()}</div>
+  </div>
+  <div class="section">
+    <h2>Verdict</h2>
+    <div class="mi">${mi}<span class="mi-denom"> / 100</span></div>
+    <div class="verdict-label">${label}</div>
+    <div class="kv"><span class="kv-label">Narrative cluster</span><span>${escapeHtml((a.narrative_cluster||"none").replace(/_/g," "))}</span></div>
+  </div>
+  <div class="section"><h2>Persuasion Techniques</h2>${techsHtml}</div>
+  <div class="section"><h2>Missing Context</h2>${gapsHtml}</div>
+  <div class="section"><h2>Emotional Framing</h2>${emoHtml}</div>
+  <div class="section"><h2>Claims &amp; Verification</h2>${claimsHtml}</div>
+</body>
+</html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) { alert("Pop-up blocked — please allow pop-ups for localhost and try again."); return; }
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => win.print();
+}
+
+// ── Wire up export buttons ────────────────────────────────────────────────────
+$("save-library-btn").addEventListener("click", saveToLibrary);
+$("export-json-btn").addEventListener("click", exportJSON);
+$("export-pdf-btn").addEventListener("click", exportPDF);
+
+// Init
+renderLibraryTabLabel();
 </script>
 </body>
 </html>
