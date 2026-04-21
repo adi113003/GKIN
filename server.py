@@ -15,13 +15,14 @@ Endpoints:
   POST /chat           {message, analysis, history, mode} → streaming text
   POST /transcribe     multipart: audio file             → {transcript}
   POST /analyze-image  multipart: image file             → enriched analysis JSON
+  POST /fetch-url      {url}                             → {title, text}
   POST /compare        {articles[]}                      → {analyses[], comparison}
   POST /suggestions    {analysis}                        → {suggestions[]}
   GET  /random         → {title, text, label}
   GET  /               → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search
+  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search trafilatura
   export GROQ_API_KEY="your_key"
   python server.py
 """
@@ -40,6 +41,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import AsyncGroq
 import pandas as pd
+import trafilatura
 
 # ── Model IDs ─────────────────────────────────────────────────────────────────
 MODEL_REASON  = "deepseek-r1-distill-llama-70b"   # chain-of-thought reasoning
@@ -321,6 +323,9 @@ class CompareRequest(BaseModel):
 class SuggestionsRequest(BaseModel):
     analysis: dict
 
+class FetchUrlRequest(BaseModel):
+    url: str
+
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────
 
@@ -485,6 +490,46 @@ async def chat(req: ChatRequest):
             yield chunk
 
     return StreamingResponse(generate(), media_type="text/plain")
+
+
+# ── URL fetch ─────────────────────────────────────────────────────────────────
+
+MAX_WORDS_URL = 3000
+
+def _fetch_article_sync(url: str):
+    downloaded = trafilatura.fetch_url(url)
+    if not downloaded:
+        return None, None
+    result = trafilatura.extract(
+        downloaded,
+        output_format="json",
+        with_metadata=True,
+        include_comments=False,
+        include_tables=False,
+        favor_precision=True,
+    )
+    if not result:
+        return None, None
+    data = json.loads(result)
+    title = (data.get("title") or "").strip()
+    text = (data.get("text") or "").strip()
+    words = text.split()
+    if len(words) > MAX_WORDS_URL:
+        text = " ".join(words[:MAX_WORDS_URL]) + " [...truncated]"
+    return title, text
+
+@app.post("/fetch-url")
+async def fetch_url(req: FetchUrlRequest):
+    url = req.url.strip()
+    if not url.startswith(("http://", "https://")):
+        raise HTTPException(400, "URL must start with http:// or https://")
+    try:
+        title, text = await asyncio.to_thread(_fetch_article_sync, url)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to fetch URL: {e}")
+    if not text or len(text) < 100:
+        raise HTTPException(422, "Could not extract enough article text from that URL. Try pasting the text directly.")
+    return {"title": title, "text": text}
 
 
 # ── Transcription ──────────────────────────────────────────────────────────────
