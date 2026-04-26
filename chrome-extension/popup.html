@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GKIN Truth Navigator</title>
+<style>
+:root {
+  --bg: #0f0e0c; --bg-2: #1a1816; --bg-3: #262320;
+  --ink: #f4efe6; --ink-2: #b8b2a4; --ink-3: #736d5e;
+  --accent: #e8c547; --danger: #e85c4a; --ok: #7cb342; --warn: #e8914a;
+  --conspiracy: #a855f7;
+  --border: rgba(244,239,230,0.08); --border-2: rgba(244,239,230,0.15);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { width: 380px; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: -apple-system, "Inter", sans-serif;
+  font-size: 13px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ── */
+.header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brand {
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink);
+}
+.brand em { color: var(--accent); font-style: italic; font-weight: 400; }
+.server-btn {
+  font-size: 10px; color: var(--ink-3); background: transparent; border: none;
+  cursor: pointer; padding: 3px 6px; border-radius: 4px; transition: color 0.15s;
+  font-family: monospace;
+}
+.server-btn:hover { color: var(--ink-2); background: var(--bg-3); }
+
+/* ── Sections ── */
+.section { padding: 14px 16px; }
+
+/* ── Auth section ── */
+.auth-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-3); font-family: monospace; margin-bottom: 8px;
+}
+.auth-field { margin-bottom: 8px; }
+.auth-field input {
+  width: 100%; background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--ink); padding: 8px 10px;
+  font-size: 12px; transition: border-color 0.15s;
+}
+.auth-field input:focus { outline: none; border-color: var(--border-2); }
+.auth-field input::placeholder { color: var(--ink-3); }
+.btn {
+  width: 100%; padding: 9px; font-size: 12px; font-weight: 600;
+  background: var(--accent); color: var(--bg); border: none;
+  border-radius: 5px; cursor: pointer; transition: background 0.15s;
+}
+.btn:hover:not(:disabled) { background: #f5e6a3; }
+.btn:disabled { background: var(--bg-3); color: var(--ink-3); cursor: not-allowed; }
+.btn.ghost {
+  background: transparent; color: var(--ink-2); border: 1px solid var(--border-2);
+}
+.btn.ghost:hover { background: var(--bg-3); }
+.auth-switch {
+  text-align: center; margin-top: 8px; font-size: 11px; color: var(--ink-3);
+}
+.auth-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
+.auth-switch a:hover { text-decoration: underline; }
+.auth-error {
+  background: rgba(232,92,74,0.1); color: var(--danger);
+  padding: 7px 10px; border-radius: 4px; font-size: 11px;
+  margin-top: 8px; display: none;
+}
+.auth-error.show { display: block; }
+
+/* ── Logged in section ── */
+.user-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.user-info { font-size: 11px; color: var(--ink-3); }
+.user-info strong { color: var(--accent); font-weight: 500; }
+.logout-link {
+  font-size: 10px; color: var(--ink-3); cursor: pointer;
+  font-family: monospace; text-transform: uppercase; letter-spacing: 0.06em;
+  background: none; border: none; padding: 0;
+}
+.logout-link:hover { color: var(--danger); }
+
+/* ── Analyze section ── */
+.page-title {
+  font-size: 11px; color: var(--ink-2); margin-bottom: 10px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding: 8px 10px; background: var(--bg-3); border-radius: 5px;
+  border: 1px solid var(--border);
+}
+.page-title span { font-size: 9px; font-family: monospace; color: var(--ink-3); text-transform: uppercase; display: block; margin-bottom: 3px; }
+.chars-note { font-size: 10px; font-family: monospace; color: var(--ink-3); margin-bottom: 10px; }
+
+/* ── Gauge ── */
+.result-box {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px; margin-top: 10px; display: none;
+  animation: fadeIn 0.3s ease;
+}
+.result-box.show { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.result-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.mini-gauge { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.mini-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gauge-bg { fill: none; stroke: var(--bg-3); stroke-width: 7; }
+.gauge-fg { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease, stroke 0.3s; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-num { font-size: 18px; font-weight: 700; line-height: 1; }
+.gauge-sub { font-size: 8px; font-family: monospace; color: var(--ink-3); }
+.verdict-label { flex: 1; }
+.verdict-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.verdict-tag {
+  display: inline-block; font-size: 9px; font-family: monospace;
+  text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 3px;
+}
+
+/* ── Techniques ── */
+.techniques-list { display: flex; flex-direction: column; gap: 5px; }
+.tech-item {
+  background: var(--bg-3); border-radius: 4px; padding: 6px 10px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+}
+.tech-name {
+  font-family: monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent); flex-shrink: 0;
+}
+.tech-span { font-size: 10px; color: var(--ink-2); font-style: italic; text-align: right; max-width: 180px; }
+
+/* ── Conspiracy in extension ── */
+.conspiracy-note {
+  font-size: 9px; font-family: monospace; color: rgba(168,85,247,0.7);
+  background: rgba(168,85,247,0.07); border: 1px solid rgba(168,85,247,0.2);
+  padding: 5px 8px; border-radius: 4px; margin-top: 6px; display: none;
+}
+.conspiracy-note.show { display: block; }
+
+/* ── Actions ── */
+.actions { display: flex; gap: 6px; margin-top: 10px; }
+.actions .btn { flex: 1; padding: 8px; font-size: 11px; }
+.open-btn { background: transparent; color: var(--accent); border: 1px solid rgba(232,197,71,0.3); }
+.open-btn:hover { background: rgba(232,197,71,0.08); }
+
+/* ── Server settings ── */
+.settings-box { display: none; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg-2); }
+.settings-box.show { display: block; }
+.settings-box label { font-size: 9px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); display: block; margin-bottom: 6px; }
+.settings-box input {
+  width: 100%; background: var(--bg-3); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--ink); padding: 7px 10px; font-size: 11px; font-family: monospace;
+}
+.settings-box input:focus { outline: none; border-color: var(--border-2); }
+.settings-row { display: flex; gap: 6px; margin-top: 8px; }
+.settings-row .btn { flex: 1; padding: 7px; font-size: 11px; }
+
+/* ── Loading / status ── */
+.status {
+  font-size: 10px; font-family: monospace; color: var(--ink-3);
+  padding: 6px 0; text-align: center; display: none;
+}
+.status.show { display: block; }
+.status::after { content: ""; animation: dots 1s steps(4,end) infinite; }
+@keyframes dots { 0%{content:""} 25%{content:"."} 50%{content:".."} 75%,100%{content:"..."} }
+
+/* ── Cluster badge ── */
+.cluster {
+  font-family: monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 6px;
+}
+
+/* ── Divider ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">gkin <em>/ truth navigator</em></div>
+  <button class="server-btn" id="settings-toggle">⚙ server</button>
+</div>
+
+<!-- Server settings panel -->
+<div class="settings-box" id="settings-box">
+  <label>Server URL</label>
+  <input type="text" id="server-url" placeholder="http://localhost:8000" />
+  <div class="settings-row">
+    <button class="btn ghost" id="save-server">Save</button>
+    <button class="btn ghost" id="cancel-settings">Cancel</button>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- Auth section — shown when not logged in -->
+<div class="section" id="auth-section">
+  <div class="auth-label" id="auth-form-label">Sign in</div>
+
+  <div id="login-form">
+    <div class="auth-field">
+      <input type="text" id="ext-username" placeholder="Username" autocomplete="username" />
+    </div>
+    <div class="auth-field">
+      <input type="password" id="ext-password" placeholder="Password" autocomplete="current-password" />
+    </div>
+    <button class="btn" id="ext-login-btn">Sign in</button>
+    <div class="auth-switch">No account? <a id="show-register">Create one</a></div>
+    <div class="auth-error" id="ext-login-error"></div>
+  </div>
+
+  <div id="register-form" style="display:none;">
+    <div class="auth-field">
+      <input type="text" id="ext-reg-username" placeholder="Username" autocomplete="username" />
+    </div>
+    <div class="auth-field">
+      <input type="email" id="ext-reg-email" placeholder="Email" autocomplete="email" />
+    </div>
+    <div class="auth-field">
+      <input type="password" id="ext-reg-password" placeholder="Password (min 6 chars)" autocomplete="new-password" />
+    </div>
+    <button class="btn" id="ext-register-btn">Create account</button>
+    <div class="auth-switch">Already have one? <a id="show-login">Sign in</a></div>
+    <div class="auth-error" id="ext-reg-error"></div>
+  </div>
+</div>
+
+<!-- Analyze section — shown when logged in -->
+<div class="section" id="analyze-section" style="display:none;">
+  <div class="user-row">
+    <div class="user-info">Signed in as <strong id="ext-username-display"></strong></div>
+    <button class="logout-link" id="ext-logout">Logout</button>
+  </div>
+
+  <div class="page-title" id="page-title-box">
+    <span>Current page</span>
+    <span id="page-title-text">Loading...</span>
+  </div>
+  <div class="chars-note" id="chars-note"></div>
+
+  <button class="btn" id="analyze-btn">Analyze this article</button>
+  <div class="status" id="status">Analyzing</div>
+
+  <div class="result-box" id="result-box">
+    <div class="result-row">
+      <div class="mini-gauge">
+        <svg viewBox="0 0 64 64">
+          <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+          <circle class="gauge-fg" id="ext-gauge-fg" cx="32" cy="32" r="26"
+            stroke-dasharray="163" stroke-dashoffset="163"/>
+        </svg>
+        <div class="gauge-center">
+          <div class="gauge-num" id="ext-gauge-num">0</div>
+          <div class="gauge-sub">/100</div>
+        </div>
+      </div>
+      <div class="verdict-label">
+        <div class="verdict-title" id="ext-verdict-title">Manipulation index</div>
+        <span class="verdict-tag" id="ext-verdict-tag"></span>
+      </div>
+    </div>
+
+    <div class="cluster" id="ext-cluster"></div>
+
+    <div class="techniques-list" id="ext-techniques"></div>
+
+    <div class="conspiracy-note" id="ext-conspiracy-note">
+      ⚠ High manipulation detected. Try Conspiracy Mode in the full app.
+    </div>
+
+    <div class="actions">
+      <button class="btn open-btn" id="open-full-btn">Open full analysis</button>
+    </div>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
