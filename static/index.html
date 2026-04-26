@@ -348,6 +348,33 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 .scan-eye { width: 16px; height: 16px; }
 
 /* ── Drop zones ── */
+/* ── URL tab ── */
+.url-input-row {
+  display: flex; gap: 10px; align-items: center;
+}
+.url-input-row input[type="url"] {
+  flex: 1; background: var(--bg-3); border: 1.5px solid var(--border-2);
+  border-radius: 8px; color: var(--ink); font-family: "JetBrains Mono", monospace;
+  font-size: 13px; padding: 10px 14px; outline: none;
+  transition: border-color 0.2s;
+}
+.url-input-row input[type="url"]:focus { border-color: var(--accent); }
+.url-input-row input[type="url"]::placeholder { color: var(--ink-3); }
+.url-fetched-card {
+  margin-top: 14px; background: var(--bg-3); border: 1px solid var(--border-2);
+  border-radius: 8px; padding: 12px 14px;
+}
+.url-fetched-meta { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.url-fetched-title { font-size: 13px; color: var(--ink); font-weight: 500; flex: 1; min-width: 0; }
+.url-fetched-words { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ok); white-space: nowrap; }
+.url-toggle-text { font-size: 11px; padding: 3px 8px; }
+.url-extracted-textarea {
+  width: 100%; margin-top: 10px; min-height: 120px; max-height: 220px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  color: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 11px;
+  padding: 10px; resize: vertical; outline: none;
+}
+
 .drop-zone {
   position: relative; border: 1px dashed var(--border-2); border-radius: 2px;
   padding: 40px 24px; text-align: center; cursor: pointer;
@@ -964,6 +991,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 <div class="tome">
   <div class="tab-bar" id="main-tab-bar">
     <button class="tab active" data-tab="text">Paste Scroll</button>
+    <button class="tab" data-tab="url">Scan URL</button>
     <button class="tab" data-tab="audio">Voice Transcript</button>
     <button class="tab" data-tab="image">Vision Scan</button>
     <button class="tab" data-tab="compare">Cross-Reference</button>
@@ -983,6 +1011,25 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
       <button class="ghost" id="random-btn">Draw from Archive</button>
       <button class="ghost" id="clear-btn">Clear Scroll</button>
       <div class="char-count" id="char-count">0 glyphs</div>
+    </div>
+  </div>
+
+  <!-- ── URL tab ── -->
+  <div class="tab-pane" id="tab-url">
+    <div class="url-input-row">
+      <input type="url" id="url-input" placeholder="https://example.com/news/article" spellcheck="false" autocomplete="off">
+      <button id="fetch-url-btn">Analyze URL</button>
+    </div>
+    <div id="url-fetched-card" class="url-fetched-card" style="display:none">
+      <div class="url-fetched-meta">
+        <span id="url-fetched-title" class="url-fetched-title"></span>
+        <span id="url-fetched-words" class="url-fetched-words"></span>
+      </div>
+      <button class="ghost url-toggle-text" id="url-toggle-text-btn">View extracted text ▼</button>
+      <textarea id="url-extracted-textarea" class="url-extracted-textarea" readonly style="display:none"></textarea>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);margin-top:10px;">
+      Paste any news URL — text is extracted and analyzed automatically
     </div>
   </div>
 
@@ -1319,6 +1366,63 @@ $("analyze-btn").addEventListener("click", async () => {
     showAnalysisResults(currentAnalysis);
   } catch(e){ showError("The ritual failed: "+e.message); }
   finally { $("loading").classList.remove("show"); $("analyze-btn").disabled=false; }
+});
+
+// ── URL tab ───────────────────────────────────────────────────────────────────
+let urlTextToggleOpen = false;
+
+$("url-toggle-text-btn").addEventListener("click", () => {
+  urlTextToggleOpen = !urlTextToggleOpen;
+  $("url-extracted-textarea").style.display = urlTextToggleOpen ? "block" : "none";
+  $("url-toggle-text-btn").textContent = urlTextToggleOpen ? "Hide extracted text ▲" : "View extracted text ▼";
+});
+
+$("fetch-url-btn").addEventListener("click", async () => {
+  const url = $("url-input").value.trim();
+  if (!url) { showError("Please enter a URL."); return; }
+  hideError();
+  $("url-fetched-card").style.display = "none";
+  $("loading").textContent = "Fetching article from URL";
+  $("loading").classList.add("show");
+  $("fetch-url-btn").disabled = true;
+  try {
+    const r = await fetch("/fetch-url", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({url})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const {text, title} = await r.json();
+
+    const wordCount = text.trim().split(/\s+/).length;
+    $("url-fetched-title").textContent = title || new URL(url).hostname;
+    $("url-fetched-words").textContent = `${wordCount.toLocaleString()} words extracted`;
+    $("url-extracted-textarea").value = text;
+    urlTextToggleOpen = false;
+    $("url-extracted-textarea").style.display = "none";
+    $("url-toggle-text-btn").textContent = "View extracted text ▼";
+    $("url-fetched-card").style.display = "block";
+
+    articleEl.value = text;
+    $("char-count").textContent = `${text.length.toLocaleString()} glyphs`;
+
+    $("loading").textContent = "The Order deliberates";
+    const r2 = await fetch("/analyze", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({article: text})
+    });
+    if (!r2.ok) throw new Error(await r2.text());
+    currentAnalysis = await r2.json();
+    showAnalysisResults(currentAnalysis);
+  } catch (e) {
+    showError("URL analysis failed: " + e.message);
+  } finally {
+    $("loading").classList.remove("show");
+    $("fetch-url-btn").disabled = false;
+  }
+});
+
+$("url-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") $("fetch-url-btn").click();
 });
 
 // ── Drop zones ────────────────────────────────────────────────────────────────

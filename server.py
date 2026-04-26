@@ -23,13 +23,14 @@ Endpoints:
   POST /chat          {message, ...}     (auth)         → streaming text
   POST /transcribe    multipart          (auth)         → {transcript}
   POST /analyze-image multipart          (auth)         → enriched analysis JSON
+  POST /fetch-url     {url}              (auth)         → {title, text}
   POST /compare       {articles[]}       (auth)         → {analyses[], comparison}
   POST /suggestions   {analysis}         (auth)         → {suggestions[]}
   GET  /random        (auth)                            → {title, text, label}
   GET  /              → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt]
+  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura
   export GROQ_API_KEY="your_key"
   export SECRET_KEY="your-secret-key"   # optional, auto-generated if omitted
   python server.py
@@ -53,6 +54,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from groq import AsyncGroq
 import pandas as pd
+import trafilatura
 
 try:
     from jose import JWTError, jwt
@@ -449,6 +451,9 @@ class CompareRequest(BaseModel):
 class SuggestionsRequest(BaseModel):
     analysis: dict
 
+class FetchUrlRequest(BaseModel):
+    url: str
+
 
 # ── Auth endpoints ─────────────────────────────────────────────────────────────
 
@@ -660,6 +665,46 @@ async def chat(req: ChatRequest, user: dict = Depends(require_auth)):
             yield chunk
 
     return StreamingResponse(generate(), media_type="text/plain")
+
+
+# ── URL fetch ─────────────────────────────────────────────────────────────────
+
+MAX_WORDS_URL = 3000
+
+def _fetch_article_sync(url: str):
+    downloaded = trafilatura.fetch_url(url)
+    if not downloaded:
+        return None, None
+    result = trafilatura.extract(
+        downloaded,
+        output_format="json",
+        with_metadata=True,
+        include_comments=False,
+        include_tables=False,
+        favor_precision=True,
+    )
+    if not result:
+        return None, None
+    data = json.loads(result)
+    title = (data.get("title") or "").strip()
+    text = (data.get("text") or "").strip()
+    words = text.split()
+    if len(words) > MAX_WORDS_URL:
+        text = " ".join(words[:MAX_WORDS_URL]) + " [...truncated]"
+    return title, text
+
+@app.post("/fetch-url")
+async def fetch_url(req: FetchUrlRequest):
+    url = req.url.strip()
+    if not url.startswith(("http://", "https://")):
+        raise HTTPException(400, "URL must start with http:// or https://")
+    try:
+        title, text = await asyncio.to_thread(_fetch_article_sync, url)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to fetch URL: {e}")
+    if not text or len(text) < 100:
+        raise HTTPException(422, "Could not extract enough article text from that URL. Try pasting the text directly.")
+    return {"title": title, "text": text}
 
 
 # ── Transcription ──────────────────────────────────────────────────────────────
