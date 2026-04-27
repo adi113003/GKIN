@@ -1,38 +1,28 @@
 """
-server.py — GKIN Truth Navigator v3.
-
-New in v3:
-  · User authentication (register / login / JWT)
-  · Conspiracy mode chat (speculative narrative analysis)
-  · All analysis endpoints protected by auth
+server.py — GKIN Truth Navigator backend v2.
 
 New in v2:
-  · DeepSeek R1 chain-of-thought reasoning
-  · Parallel claim verification (semaphore-capped at 4)
+  · DeepSeek R1 chain-of-thought reasoning for deeper analysis
+  · Parallel claim verification (llama-3.1-8b-instant, semaphore-capped at 4)
   · Tool-calling agentic chat (web search, fact-check, historical parallels)
   · Whisper large-v3 audio / video transcription
-  · Vision model screenshot & image analysis
-  · Multi-article narrative comparison (up to 4)
+  · Vision model screenshot & image analysis (llama-3.2-90b-vision-preview)
+  · Multi-article narrative comparison (up to 4 articles)
   · Dynamic AI-generated chat suggestions
 
 Endpoints:
-  POST /register      {username, email, password}       → {token, username, email}
-  POST /login         {username, password}              → {token, username, email}
-  GET  /me            (auth)                            → {username, email}
-  POST /analyze       {article}          (auth)         → enriched analysis JSON
-  POST /chat          {message, ...}     (auth)         → streaming text
-  POST /transcribe    multipart          (auth)         → {transcript}
-  POST /analyze-image multipart          (auth)         → enriched analysis JSON
-  POST /fetch-url     {url}              (auth)         → {title, text}
-  POST /compare       {articles[]}       (auth)         → {analyses[], comparison}
-  POST /suggestions   {analysis}         (auth)         → {suggestions[]}
-  GET  /random        (auth)                            → {title, text, label}
-  GET  /              → static/index.html
+  POST /analyze        {article}                         → enriched analysis JSON
+  POST /chat           {message, analysis, history, mode} → streaming text
+  POST /transcribe     multipart: audio file             → {transcript}
+  POST /analyze-image  multipart: image file             → enriched analysis JSON
+  POST /compare        {articles[]}                      → {analyses[], comparison}
+  POST /suggestions    {analysis}                        → {suggestions[]}
+  GET  /random         → {title, text, label}
+  GET  /               → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura
-  export GROQ_API_KEY="your_key"
-  export SECRET_KEY="your-secret-key"   # optional, auto-generated if omitted
+  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search
+  export GROQ_API_KEY="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"
   python server.py
 """
 
@@ -46,7 +36,6 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -65,19 +54,22 @@ except ImportError:
     jwt = None          # type: ignore
     JWTError = Exception
     CryptContext = None  # type: ignore
-
 # ── Model IDs ─────────────────────────────────────────────────────────────────
-MODEL_REASON  = "deepseek-r1-distill-llama-70b"
-MODEL_STRUCT  = "llama-3.3-70b-versatile"
-MODEL_FAST    = "llama-3.1-8b-instant"
-MODEL_VISION  = "llama-3.2-90b-vision-preview"
-MODEL_WHISPER = "whisper-large-v3"
+MODEL_REASON  = "deepseek-r1-distill-llama-70b"   # chain-of-thought reasoning
+MODEL_STRUCT  = "llama-3.3-70b-versatile"          # JSON structuring & chat agent
+MODEL_FAST    = "llama-3.1-8b-instant"             # claim verification & suggestions
+MODEL_VISION  = "llama-3.2-90b-vision-preview"     # screenshot / image analysis
+MODEL_WHISPER = "whisper-large-v3"                 # audio transcription
 
 WELFAKE_CSV       = "WELFake_Dataset.csv"
 USERS_FILE        = "users.json"
 SECRET_KEY        = os.environ.get("SECRET_KEY", "gkin-dev-" + secrets.token_hex(16))
 ALGORITHM         = "HS256"
 TOKEN_EXPIRE_DAYS = 7
+
+_security    = HTTPBearer(auto_error=False)
+_users_lock: Optional[asyncio.Lock] = None
+_pwd_context = None
 
 NARRATIVE_CLUSTERS = [
     "anti_vaccine", "election_fraud", "climate_denial", "immigration_threat",
@@ -184,26 +176,6 @@ MODE: Open research — analysis + web tools + world knowledge.
 ARTICLE ANALYSIS:
 {analysis}"""
 
-CHAT_SYSTEM_CONSPIRACY = """You are Truth Navigator in Conspiracy Mode — an investigative analyst who reads beneath the official narrative.
-
-Your role: explore alternative interpretations, hidden motivations, and suppressed narratives as a critical thinking exercise. Ask the questions mainstream media won't: Who benefits? What's being concealed? What patterns emerge when you follow the money and power?
-
-Use the article analysis as your investigative starting point, then explore:
-- Cui bono: who specifically benefits from this narrative being pushed right now?
-- Hidden actors: what powerful institutions, governments, corporations, or financial interests might be behind this story?
-- Manufactured consent: how does this article serve to shape public opinion toward a specific agenda?
-- Pattern matching: what historical propaganda campaigns, false flags, or manufactured crises does this resemble?
-- The silenced alternative: what explanation fits the known facts equally well — or better — than the official one?
-- Information architecture: why is the framing exactly THIS way? What does the structure of the article itself reveal?
-- Follow the money: what financial stakes, contracts, political careers, or geopolitical interests are in play?
-
-Use the manipulation index, persuasion techniques, emotional framing, and missing context as investigative clues. Be analytically speculative and connect the dots — but stay grounded in the evidence from the analysis.
-
-⚠️ SPECULATIVE MODE ACTIVE: All alternative theories presented are for critical thinking and media literacy purposes only. These represent possible alternative framings, not established facts.
-
-ARTICLE ANALYSIS:
-{analysis}"""
-
 SUGGESTIONS_PROMPT = """Given this article analysis, generate 5 sharp, specific follow-up questions a curious reader would want to ask. Tailor them to the content — not generic.
 
 Analysis snapshot:
@@ -226,7 +198,9 @@ TOOL_DEFINITIONS = [
             "description": "Search the web for current information, news, or background on any topic.",
             "parameters": {
                 "type": "object",
-                "properties": {"query": {"type": "string", "description": "The search query"}},
+                "properties": {
+                    "query": {"type": "string", "description": "The search query"}
+                },
                 "required": ["query"]
             }
         }
@@ -238,7 +212,9 @@ TOOL_DEFINITIONS = [
             "description": "Search for fact-checks, evidence, or debunking about a specific claim.",
             "parameters": {
                 "type": "object",
-                "properties": {"claim": {"type": "string", "description": "The specific claim to fact-check"}},
+                "properties": {
+                    "claim": {"type": "string", "description": "The specific claim to fact-check"}
+                },
                 "required": ["claim"]
             }
         }
@@ -250,7 +226,9 @@ TOOL_DEFINITIONS = [
             "description": "Find historical events, patterns, or precedents related to a topic.",
             "parameters": {
                 "type": "object",
-                "properties": {"topic": {"type": "string", "description": "Topic or pattern to find historical parallels for"}},
+                "properties": {
+                    "topic": {"type": "string", "description": "Topic or pattern to find historical parallels for"}
+                },
                 "required": ["topic"]
             }
         }
@@ -259,6 +237,7 @@ TOOL_DEFINITIONS = [
 
 
 def _ddg_search(query: str, max_results: int = 5) -> list[dict]:
+    """Blocking DuckDuckGo search — always called via asyncio.to_thread."""
     try:
         from duckduckgo_search import DDGS
         with DDGS() as ddgs:
@@ -288,17 +267,35 @@ async def execute_tool(name: str, args: dict) -> dict:
     return {"error": f"Unknown tool: {name}"}
 
 
-# ── Auth helpers ───────────────────────────────────────────────────────────────
+# ── Helpers ────────────────────────────────────────────────────────────────────
 
-_pwd_context = None
-_security = HTTPBearer(auto_error=False)
-_users_lock: Optional[asyncio.Lock] = None
+def parse_r1_output(text: str):
+    """Extract (thinking, final_answer) from DeepSeek R1 output."""
+    match = re.search(r'<think>(.*?)</think>', text, re.DOTALL)
+    thinking = match.group(1).strip() if match else ""
+    final = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    return thinking, final
+
+
+def manipulation_label(mi: int) -> str:
+    if mi >= 80: return "BLATANT PROPAGANDA"
+    if mi >= 60: return "HEAVY MANIPULATION"
+    if mi >= 40: return "NOTICEABLE PERSUASION"
+    if mi >= 20: return "MILD FRAMING"
+    return "STRAIGHT REPORTING"
+
+
+# ── App ────────────────────────────────────────────────────────────────────────
+
+_client: Optional[AsyncGroq] = None
+_welfake_df = None
+_claim_sem: Optional[asyncio.Semaphore] = None
 
 
 def _get_pwd_context():
     global _pwd_context
     if _pwd_context is None and _AUTH_OK:
-        _pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+        _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     return _pwd_context
 
 
@@ -349,10 +346,7 @@ def _decode_token(token: str) -> Optional[str]:
 
 async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_security)) -> dict:
     if not _AUTH_OK:
-        raise HTTPException(
-            503,
-            "Auth packages not installed. Run: pip install python-jose[cryptography] passlib[bcrypt]"
-        )
+        raise HTTPException(503, "Auth packages not installed. Run: pip install python-jose[cryptography] passlib[bcrypt]")
     if not credentials:
         raise HTTPException(401, "Authentication required", headers={"WWW-Authenticate": "Bearer"})
     username = _decode_token(credentials.credentials)
@@ -364,30 +358,6 @@ async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_secu
     if not user:
         raise HTTPException(401, "User not found")
     return user
-
-
-# ── Helpers ────────────────────────────────────────────────────────────────────
-
-def parse_r1_output(text: str):
-    match = re.search(r'<think>(.*?)</think>', text, re.DOTALL)
-    thinking = match.group(1).strip() if match else ""
-    final = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
-    return thinking, final
-
-
-def manipulation_label(mi: int) -> str:
-    if mi >= 80: return "BLATANT PROPAGANDA"
-    if mi >= 60: return "HEAVY MANIPULATION"
-    if mi >= 40: return "NOTICEABLE PERSUASION"
-    if mi >= 20: return "MILD FRAMING"
-    return "STRAIGHT REPORTING"
-
-
-# ── App ────────────────────────────────────────────────────────────────────────
-
-_client: Optional[AsyncGroq] = None
-_welfake_df = None
-_claim_sem: Optional[asyncio.Semaphore] = None
 
 
 @asynccontextmanager
@@ -450,9 +420,6 @@ class CompareRequest(BaseModel):
 
 class SuggestionsRequest(BaseModel):
     analysis: dict
-
-class FetchUrlRequest(BaseModel):
-    url: str
 
 
 # ── Auth endpoints ─────────────────────────────────────────────────────────────
@@ -531,13 +498,14 @@ async def _verify_claim(client: AsyncGroq, claim_text: str) -> dict:
 
 
 @app.post("/analyze")
-async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
+async def analyze(req: AnalyzeRequest):
     if len(req.article) < 200:
         raise HTTPException(400, "Article too short (need at least 200 chars)")
 
     client = get_client()
     article_text = req.article[:12000]
 
+    # Step 1 — DeepSeek R1 deep reasoning
     thinking = ""
     try:
         r1_resp = await client.chat.completions.create(
@@ -549,8 +517,10 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
         r1_raw = r1_resp.choices[0].message.content
         thinking, analysis_prose = parse_r1_output(r1_raw)
     except Exception:
+        # Fallback: send article directly without reasoning step
         analysis_prose = article_text
 
+    # Step 2 — Structure into JSON with llama-3.3-70b
     try:
         struct_resp = await client.chat.completions.create(
             model=MODEL_STRUCT,
@@ -568,6 +538,7 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     except Exception as e:
         raise HTTPException(500, f"Analysis structuring failed: {e}")
 
+    # Step 3 — Parallel claim verification (semaphore-capped at 4)
     claims = result.get("claims", [])
     if claims:
         verifications = await asyncio.gather(*[
@@ -583,6 +554,11 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
 # ── Agentic streaming chat ─────────────────────────────────────────────────────
 
 async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
+    """
+    Async generator. Emits:
+      - Tool status lines:  ⚙:{json}\n   (parsed by frontend, not shown as text)
+      - Response text:      raw streamed characters
+    """
     if mode != "open":
         stream = await client.chat.completions.create(
             model=MODEL_STRUCT, messages=messages, temperature=0.4, stream=True
@@ -593,6 +569,7 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
                 yield delta
         return
 
+    # Agentic loop — up to 5 rounds of tool use
     for _ in range(5):
         resp = await client.chat.completions.create(
             model=MODEL_STRUCT,
@@ -626,7 +603,10 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
             except Exception:
                 args = {}
             query_str = args.get("query") or args.get("claim") or args.get("topic", "")
+
+            # Emit tool status line — frontend intercepts lines starting with ⚙:
             yield f"⚙:{json.dumps({'name': name, 'query': query_str})}\n"
+
             result = await execute_tool(name, args)
             messages.append({
                 "role": "tool",
@@ -634,6 +614,7 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
                 "content": json.dumps(result)
             })
 
+    # Stream final answer
     stream = await client.chat.completions.create(
         model=MODEL_STRUCT, messages=messages, temperature=0.7, stream=True
     )
@@ -644,17 +625,11 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
 
 
 @app.post("/chat")
-async def chat(req: ChatRequest, user: dict = Depends(require_auth)):
+async def chat(req: ChatRequest):
     client = get_client()
-
-    if req.mode == "open":
-        template = CHAT_SYSTEM_OPEN
-    elif req.mode == "conspiracy":
-        template = CHAT_SYSTEM_CONSPIRACY
-    else:
-        template = CHAT_SYSTEM_CONTEXT
-
+    template = CHAT_SYSTEM_OPEN if req.mode == "open" else CHAT_SYSTEM_CONTEXT
     system = template.format(analysis=json.dumps(req.analysis, indent=2))
+
     messages = [{"role": "system", "content": system}]
     for m in req.history:
         messages.append({"role": m.role, "content": m.content})
@@ -667,50 +642,10 @@ async def chat(req: ChatRequest, user: dict = Depends(require_auth)):
     return StreamingResponse(generate(), media_type="text/plain")
 
 
-# ── URL fetch ─────────────────────────────────────────────────────────────────
-
-MAX_WORDS_URL = 3000
-
-def _fetch_article_sync(url: str):
-    downloaded = trafilatura.fetch_url(url)
-    if not downloaded:
-        return None, None
-    result = trafilatura.extract(
-        downloaded,
-        output_format="json",
-        with_metadata=True,
-        include_comments=False,
-        include_tables=False,
-        favor_precision=True,
-    )
-    if not result:
-        return None, None
-    data = json.loads(result)
-    title = (data.get("title") or "").strip()
-    text = (data.get("text") or "").strip()
-    words = text.split()
-    if len(words) > MAX_WORDS_URL:
-        text = " ".join(words[:MAX_WORDS_URL]) + " [...truncated]"
-    return title, text
-
-@app.post("/fetch-url")
-async def fetch_url(req: FetchUrlRequest):
-    url = req.url.strip()
-    if not url.startswith(("http://", "https://")):
-        raise HTTPException(400, "URL must start with http:// or https://")
-    try:
-        title, text = await asyncio.to_thread(_fetch_article_sync, url)
-    except Exception as e:
-        raise HTTPException(500, f"Failed to fetch URL: {e}")
-    if not text or len(text) < 100:
-        raise HTTPException(422, "Could not extract enough article text from that URL. Try pasting the text directly.")
-    return {"title": title, "text": text}
-
-
 # ── Transcription ──────────────────────────────────────────────────────────────
 
 @app.post("/transcribe")
-async def transcribe(file: UploadFile = File(...), user: dict = Depends(require_auth)):
+async def transcribe(file: UploadFile = File(...)):
     client = get_client()
     content = await file.read()
     if len(content) > 25 * 1024 * 1024:
@@ -729,7 +664,7 @@ async def transcribe(file: UploadFile = File(...), user: dict = Depends(require_
 # ── Vision / screenshot analysis ───────────────────────────────────────────────
 
 @app.post("/analyze-image")
-async def analyze_image(file: UploadFile = File(...), user: dict = Depends(require_auth)):
+async def analyze_image(file: UploadFile = File(...)):
     client = get_client()
     content = await file.read()
     if len(content) > 3 * 1024 * 1024:
@@ -767,13 +702,13 @@ async def analyze_image(file: UploadFile = File(...), user: dict = Depends(requi
             "Not enough text extracted from image. Make sure it contains a readable article or screenshot."
         )
 
-    return await analyze(AnalyzeRequest(article=extracted), user)
+    return await analyze(AnalyzeRequest(article=extracted))
 
 
 # ── Multi-article comparison ───────────────────────────────────────────────────
 
 @app.post("/compare")
-async def compare_articles(req: CompareRequest, user: dict = Depends(require_auth)):
+async def compare_articles(req: CompareRequest):
     if len(req.articles) < 2:
         raise HTTPException(400, "Need at least 2 articles to compare")
     if len(req.articles) > 4:
@@ -783,7 +718,7 @@ async def compare_articles(req: CompareRequest, user: dict = Depends(require_aut
             raise HTTPException(400, f"Article {i+1} is too short (need 200+ chars)")
 
     client = get_client()
-    analyses = list(await asyncio.gather(*[analyze(AnalyzeRequest(article=a), user) for a in req.articles]))
+    analyses = list(await asyncio.gather(*[analyze(AnalyzeRequest(article=a)) for a in req.articles]))
 
     summaries = []
     for i, a in enumerate(analyses):
@@ -816,7 +751,7 @@ async def compare_articles(req: CompareRequest, user: dict = Depends(require_aut
 # ── Dynamic suggestions ────────────────────────────────────────────────────────
 
 @app.post("/suggestions")
-async def get_suggestions(req: SuggestionsRequest, user: dict = Depends(require_auth)):
+async def get_suggestions(req: SuggestionsRequest):
     client = get_client()
     a = req.analysis
     mi = a.get("manipulation_index", 0)
@@ -851,7 +786,7 @@ async def get_suggestions(req: SuggestionsRequest, user: dict = Depends(require_
 # ── Misc ───────────────────────────────────────────────────────────────────────
 
 @app.get("/random")
-def random_article(user: dict = Depends(require_auth)):
+def random_article():
     df = get_welfake()
     if df is None:
         raise HTTPException(404, f"WELFake dataset not found at {WELFAKE_CSV}")
