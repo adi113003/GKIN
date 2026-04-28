@@ -30,9 +30,10 @@ Endpoints:
   GET  /              → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura
+  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura motor
   export GROQ_API_KEY="your_key"
   export SECRET_KEY="your-secret-key"   # optional, auto-generated if omitted
+  export MONGODB_URI="mongodb://localhost:27017"  # optional, defaults to localhost
   python server.py
 """
 
@@ -46,6 +47,11 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
+from dotenv import load_dotenv
+load_dotenv()
+
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from fastapi.responses import StreamingResponse, FileResponse
@@ -74,7 +80,7 @@ MODEL_VISION  = "llama-3.2-90b-vision-preview"
 MODEL_WHISPER = "whisper-large-v3"
 
 WELFAKE_CSV       = "WELFake_Dataset.csv"
-USERS_FILE        = "users.json"
+MONGODB_URI       = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
 SECRET_KEY        = os.environ.get("SECRET_KEY", "gkin-dev-" + secrets.token_hex(16))
 ALGORITHM         = "HS256"
 TOKEN_EXPIRE_DAYS = 7
@@ -292,7 +298,8 @@ async def execute_tool(name: str, args: dict) -> dict:
 
 _pwd_context = None
 _security = HTTPBearer(auto_error=False)
-_users_lock: Optional[asyncio.Lock] = None
+_mongo_client: Optional[AsyncIOMotorClient] = None
+_users_col = None
 
 
 def _get_pwd_context():
@@ -302,18 +309,10 @@ def _get_pwd_context():
     return _pwd_context
 
 
-def _load_users() -> dict:
-    p = pathlib.Path(USERS_FILE)
-    if p.exists():
-        try:
-            return json.loads(p.read_text())
-        except Exception:
-            return {}
-    return {}
-
-
-def _save_users(users: dict) -> None:
-    pathlib.Path(USERS_FILE).write_text(json.dumps(users, indent=2))
+def _get_users_col():
+    if _users_col is None:
+        raise HTTPException(503, "Database not ready")
+    return _users_col
 
 
 def _hash_password(password: str) -> str:
@@ -358,9 +357,7 @@ async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_secu
     username = _decode_token(credentials.credentials)
     if not username:
         raise HTTPException(401, "Invalid or expired token", headers={"WWW-Authenticate": "Bearer"})
-    async with _users_lock:
-        users = _load_users()
-    user = users.get(username)
+    user = await _get_users_col().find_one({"username": username}, {"_id": 0})
     if not user:
         raise HTTPException(401, "User not found")
     return user
@@ -392,14 +389,18 @@ _claim_sem: Optional[asyncio.Semaphore] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _client, _claim_sem, _users_lock
+    global _client, _claim_sem, _mongo_client, _users_col
     api_key = os.environ.get("GROQ_API_KEY")
     if api_key:
         _client = AsyncGroq(api_key=api_key)
     _claim_sem = asyncio.Semaphore(4)
-    _users_lock = asyncio.Lock()
+    _mongo_client = AsyncIOMotorClient(MONGODB_URI)
+    _users_col = _mongo_client["gkin"]["users"]
+    await _users_col.create_index("username", unique=True)
+    await _users_col.create_index("email", unique=True)
     _get_pwd_context()
     yield
+    _mongo_client.close()
 
 
 app = FastAPI(title="GKIN Truth Navigator v3", lifespan=lifespan)
@@ -470,19 +471,21 @@ async def register(req: RegisterRequest):
     if "@" not in req.email:
         raise HTTPException(400, "Invalid email address")
 
-    async with _users_lock:
-        users = _load_users()
-        if req.username in users:
-            raise HTTPException(409, "Username already taken")
-        if any(u.get("email") == req.email for u in users.values()):
-            raise HTTPException(409, "Email already registered")
-        users[req.username] = {
+    col = _get_users_col()
+    try:
+        await col.insert_one({
             "username": req.username,
             "email": req.email,
             "hashed_password": _hash_password(req.password),
             "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        _save_users(users)
+        })
+    except Exception as e:
+        err = str(e)
+        if "username" in err:
+            raise HTTPException(409, "Username already taken")
+        if "email" in err:
+            raise HTTPException(409, "Email already registered")
+        raise HTTPException(500, "Registration failed")
 
     token = _create_token(req.username)
     return {"token": token, "username": req.username, "email": req.email}
@@ -492,9 +495,7 @@ async def register(req: RegisterRequest):
 async def login(req: LoginRequest):
     if not _AUTH_OK:
         raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] passlib[bcrypt]")
-    async with _users_lock:
-        users = _load_users()
-    user = users.get(req.username)
+    user = await _get_users_col().find_one({"username": req.username}, {"_id": 0})
     if not user or not _verify_password(req.password, user["hashed_password"]):
         raise HTTPException(401, "Invalid username or password")
     token = _create_token(req.username)
@@ -694,7 +695,7 @@ def _fetch_article_sync(url: str):
     return title, text
 
 @app.post("/fetch-url")
-async def fetch_url(req: FetchUrlRequest):
+async def fetch_url(req: FetchUrlRequest, _user: dict = Depends(require_auth)):
     url = req.url.strip()
     if not url.startswith(("http://", "https://")):
         raise HTTPException(400, "URL must start with http:// or https://")
