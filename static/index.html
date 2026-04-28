@@ -4,34 +4,35 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GKIN · Truth Navigator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:      #07080f;
-  --bg-2:    #0d0f1a;
-  --bg-3:    #131525;
-  --bg-4:    #1c1e30;
-  --ink:     #e8eaf0;
-  --ink-2:   #9096b0;
-  --ink-3:   #50566e;
-  --gold:    #c8963c;
-  --gold-2:  #e8b84a;
-  --gold-dim: rgba(200,150,60,0.10);
-  --steel:   #5878b0;
-  --steel-2: #90aad8;
-  --red:     #7a1c1c;
-  --red-2:   #e05858;
-  --green:   #2a5c14;
-  --green-2: #72c040;
-  --indigo:  #3a2880;
-  --violet:  #7040c0;
-  --border:  rgba(90,110,180,0.18);
-  --border-2:rgba(90,110,180,0.35);
-  --border-gold: rgba(200,150,60,0.28);
-  --glow:    rgba(200,150,60,0.07);
-  --shadow:  0 4px 40px rgba(0,0,0,0.9);
+  --bg:       #ffffff;
+  --bg-2:     #f8f8f8;
+  --bg-3:     #f0f0f0;
+  --bg-4:     #e8e8e8;
+  --ink:      #000000;
+  --ink-2:    #4b4b4b;
+  --ink-3:    #afafaf;
+  --gold:     #000000;
+  --gold-2:   #000000;
+  --gold-dim: rgba(0,0,0,0.06);
+  --steel:    #000000;
+  --steel-2:  #4b4b4b;
+  --red:      #7a1c1c;
+  --red-2:    #cc2222;
+  --green:    #1a5c10;
+  --green-2:  #2a8a18;
+  --indigo:   #000000;
+  --violet:   #333333;
+  --border:   rgba(0,0,0,0.12);
+  --border-2: rgba(0,0,0,0.22);
+  --border-gold: rgba(0,0,0,0.22);
+  --glow:     rgba(0,0,0,0.04);
+  --shadow:   rgba(0,0,0,0.12) 0px 4px 16px 0px;
+  --danger:   #cc2222;
+  --ok:       #2a8a18;
+  --accent:   #000000;
+  --chip:     #efefef;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -781,6 +782,289 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 .lib-del { background: transparent; color: var(--ink-3); border: none; padding: 4px 8px; font-size: 14px; cursor: pointer; border-radius: 4px; flex-shrink: 0; line-height: 1; }
 .lib-del:hover { color: var(--danger); background: transparent; }
 </style>
+<style id="uber-theme">
+/* ─── Uber theme override ─── */
+
+html, body {
+  background: #ffffff !important;
+  color: #000000 !important;
+  font-family: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+body::before, body::after { display: none !important; }
+.bg-sigil { display: none !important; }
+body.conspiracy-active { background: #f8f8f8 !important; }
+body.conspiracy-active::before { display: none !important; }
+
+/* Auth overlay */
+#auth-overlay { background: rgba(255,255,255,0.95) !important; backdrop-filter: blur(8px); }
+.auth-box {
+  background: #ffffff !important; border: 1px solid rgba(0,0,0,0.12) !important;
+  border-radius: 8px !important; box-shadow: rgba(0,0,0,0.12) 0px 4px 32px !important;
+}
+.auth-eye svg { color: #000000 !important; }
+.auth-brand { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; font-size: 24px !important; letter-spacing: -0.01em !important; }
+.auth-tagline { font-family: system-ui,-apple-system,sans-serif !important; font-size: 13px !important; color: #afafaf !important; }
+.auth-divider { background: rgba(0,0,0,0.1) !important; }
+.auth-tabs { background: #efefef !important; border: none !important; border-radius: 999px !important; padding: 4px !important; }
+.auth-tab { font-family: system-ui,-apple-system,sans-serif !important; border-radius: 999px !important; color: #afafaf !important; }
+.auth-tab.active { background: #000000 !important; color: #ffffff !important; box-shadow: none !important; }
+.auth-field label { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.auth-field input {
+  background: #ffffff !important; border: 1px solid #000000 !important; border-radius: 8px !important;
+  color: #000000 !important; font-family: system-ui,-apple-system,sans-serif !important;
+}
+.auth-field input:focus { box-shadow: 0 0 0 3px rgba(0,0,0,0.1) !important; border-color: #000000 !important; }
+.auth-field input::placeholder { color: #afafaf !important; }
+.auth-submit {
+  background: #000000 !important; color: #ffffff !important; border-radius: 999px !important;
+  font-family: system-ui,-apple-system,sans-serif !important; font-size: 14px !important; font-weight: 500 !important;
+}
+.auth-submit:hover { opacity: 0.82 !important; }
+.auth-submit:disabled { background: #efefef !important; color: #afafaf !important; }
+.auth-error { background: rgba(204,34,34,0.06) !important; border-color: rgba(204,34,34,0.2) !important; color: #cc2222 !important; border-radius: 8px !important; }
+
+/* Nav */
+nav {
+  background: #ffffff !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+  backdrop-filter: none !important; position: sticky !important; top: 0 !important;
+}
+.nav-links { display: flex !important; gap: 6px !important; padding: 10px 0 !important; }
+.nav-link {
+  font-family: system-ui,-apple-system,sans-serif !important; font-size: 13px !important; font-weight: 500 !important;
+  background: #efefef !important; color: #4b4b4b !important; border-radius: 999px !important;
+  border-bottom: none !important; padding: 8px 16px !important;
+}
+.nav-link:hover { background: #e2e2e2 !important; color: #000000 !important; }
+.nav-link.active { background: #000000 !important; color: #ffffff !important; border-bottom: none !important; }
+.nav-username { color: #000000 !important; font-weight: 600 !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.nav-logout {
+  font-family: system-ui,-apple-system,sans-serif !important; border-radius: 999px !important;
+  border-color: rgba(0,0,0,0.2) !important; color: #4b4b4b !important;
+}
+.nav-logout:hover { background: #000000 !important; color: #ffffff !important; border-color: #000000 !important; }
+.nav-user { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+
+/* Site header */
+.site-header { background: #ffffff !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important; padding: 56px 20px 40px !important; }
+.header-eye svg { color: #000000 !important; filter: none !important; }
+.site-brand { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; letter-spacing: -0.02em !important; text-shadow: none !important; font-size: clamp(32px,5vw,52px) !important; font-weight: 700 !important; }
+.site-brand em { color: #000000 !important; }
+.site-tagline { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; font-size: 14px !important; text-transform: none !important; letter-spacing: normal !important; }
+
+/* Cards */
+.tome { background: #ffffff !important; border: 1px solid rgba(0,0,0,0.1) !important; border-radius: 8px !important; box-shadow: rgba(0,0,0,0.06) 0px 2px 8px !important; backdrop-filter: none !important; }
+.panel { background: #ffffff !important; border: 1px solid rgba(0,0,0,0.1) !important; border-radius: 8px !important; backdrop-filter: none !important; }
+.panel h3 { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: 0.08em !important; }
+
+/* Section labels */
+.ritual-label { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; letter-spacing: 0.08em !important; font-size: 11px !important; }
+.ritual-label::before, .ritual-label::after { background: rgba(0,0,0,0.1) !important; }
+
+/* Tabs */
+.tab-bar { background: #efefef !important; border: none !important; border-radius: 999px !important; }
+.tab { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; border-radius: 999px !important; }
+.tab.active { background: #000000 !important; color: #ffffff !important; box-shadow: none !important; }
+.tab:hover:not(:disabled) { color: #4b4b4b !important; }
+
+/* Textarea & inputs */
+textarea {
+  background: #ffffff !important; border: 1px solid #000000 !important; border-radius: 8px !important;
+  color: #000000 !important; font-family: system-ui,-apple-system,sans-serif !important;
+}
+textarea:focus { box-shadow: 0 0 0 3px rgba(0,0,0,0.1) !important; border-color: #000000 !important; }
+textarea::placeholder { color: #afafaf !important; }
+
+/* Buttons — pill-shaped black */
+button {
+  font-family: system-ui,-apple-system,sans-serif !important;
+  background: #000000 !important; color: #ffffff !important;
+  border-radius: 999px !important; border: none !important;
+  font-size: 13px !important; font-weight: 500 !important;
+}
+button:hover:not(:disabled) { opacity: 0.82 !important; }
+button:active:not(:disabled) { opacity: 0.68 !important; transform: none !important; }
+button:disabled { background: #efefef !important; color: #afafaf !important; box-shadow: none !important; }
+button.ghost { background: #efefef !important; color: #000000 !important; border: none !important; }
+button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !important; }
+.scan-btn {
+  background: #000000 !important; color: #ffffff !important; border-radius: 999px !important;
+  font-family: system-ui,-apple-system,sans-serif !important; font-weight: 500 !important;
+  box-shadow: none !important;
+}
+.scan-btn:hover:not(:disabled) { opacity: 0.82 !important; box-shadow: none !important; }
+.scan-btn:disabled { background: #efefef !important; color: #afafaf !important; }
+
+/* URL input */
+.url-input-row input[type="url"] {
+  background: #ffffff !important; border: 1px solid #000000 !important; border-radius: 8px !important;
+  color: #000000 !important; font-family: system-ui,-apple-system,sans-serif !important;
+}
+.url-input-row input[type="url"]:focus { box-shadow: 0 0 0 3px rgba(0,0,0,0.1) !important; border-color: #000000 !important; }
+.url-input-row input[type="url"]::placeholder { color: #afafaf !important; }
+.url-fetched-card { background: #f8f8f8 !important; border: 1px solid rgba(0,0,0,0.08) !important; border-radius: 8px !important; }
+.url-fetched-title { color: #000000 !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.url-fetched-words { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.url-extracted-textarea { background: #ffffff !important; border-color: rgba(0,0,0,0.12) !important; color: #4b4b4b !important; }
+
+/* Drop zones */
+.drop-zone { background: #efefef !important; border: 1px dashed rgba(0,0,0,0.2) !important; border-radius: 8px !important; }
+.drop-zone:hover, .drop-zone.dragover { background: #e2e2e2 !important; border-color: #000000 !important; }
+.drop-zone.drop-selected { border-color: #000000 !important; }
+.drop-label { color: #4b4b4b !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.drop-formats { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; letter-spacing: 0.06em !important; }
+
+/* Loading & error */
+.loading { color: #afafaf !important; font-family: system-ui,-apple-system,sans-serif !important; text-transform: none !important; letter-spacing: normal !important; }
+.error { background: rgba(204,34,34,0.06) !important; border-color: rgba(204,34,34,0.18) !important; color: #cc2222 !important; border-radius: 8px !important; }
+
+/* Reasoning section */
+.reasoning-section { background: #f8f8f8 !important; border-color: rgba(0,0,0,0.08) !important; border-radius: 8px !important; }
+.reasoning-toggle { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.reasoning-toggle:hover { color: #000000 !important; }
+.r-badge { background: rgba(0,0,0,0.08) !important; color: #4b4b4b !important; border-radius: 999px !important; border: none !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.reasoning-body { font-family: monospace !important; color: #4b4b4b !important; border-top-color: rgba(0,0,0,0.08) !important; }
+
+/* Verdict card */
+.verdict-card { background: #ffffff !important; border: 1px solid rgba(0,0,0,0.1) !important; border-radius: 8px !important; box-shadow: rgba(0,0,0,0.06) 0px 2px 8px !important; }
+.verdict-card::before { display: none !important; }
+.verdict-subtitle { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; letter-spacing: 0.08em !important; }
+.verdict-headline { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; font-size: 22px !important; font-weight: 700 !important; }
+.verdict-headline span { color: #000000 !important; }
+.verdict-description { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; font-style: normal !important; }
+.fabrication-label { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; letter-spacing: 0.06em !important; }
+.fabrication-bar { background: #efefef !important; border: none !important; border-radius: 999px !important; height: 8px !important; }
+.fabrication-fill { background: #000000 !important; border-radius: 999px !important; }
+.wel-tag { font-family: system-ui,-apple-system,sans-serif !important; border-radius: 999px !important; border: none !important; }
+.wel-tag.fake { background: rgba(204,34,34,0.1) !important; color: #cc2222 !important; }
+.wel-tag.real { background: rgba(42,138,24,0.1) !important; color: #2a8a18 !important; }
+
+/* Technique & claim cards */
+.technique { border-bottom-color: rgba(0,0,0,0.08) !important; }
+.technique-name { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; }
+.technique-span { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; }
+.technique-why { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.gap-item { border-bottom-color: rgba(0,0,0,0.08) !important; }
+.gap-title { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; }
+.gap-why { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.claim-item { border-bottom-color: rgba(0,0,0,0.08) !important; }
+.claim-type { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.claim-text { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.claim-verify-note { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.claim-verdict { font-family: system-ui,-apple-system,sans-serif !important; border-radius: 999px !important; border: none !important; }
+.verdict-accurate           { background: rgba(42,138,24,0.1) !important; color: #2a8a18 !important; }
+.verdict-partially_accurate { background: rgba(180,130,0,0.1) !important; color: #8a6000 !important; }
+.verdict-misleading         { background: rgba(180,100,0,0.1) !important; color: #8a5000 !important; }
+.verdict-false              { background: rgba(204,34,34,0.1) !important; color: #cc2222 !important; }
+.verdict-unverifiable       { background: rgba(0,0,0,0.06) !important; color: #afafaf !important; }
+
+/* Emotion bars */
+.emotion-name { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.emotion-bar { background: #efefef !important; border-radius: 999px !important; }
+.emotion-fill { background: #000000 !important; border-radius: 999px !important; }
+.emotion-val { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+
+/* Compare cards */
+.coord-card { background: #ffffff !important; border: 1px solid rgba(0,0,0,0.1) !important; border-radius: 8px !important; box-shadow: rgba(0,0,0,0.06) 0px 2px 8px !important; }
+.coord-num { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; text-shadow: none !important; }
+.coord-sublabel { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.coord-explanation { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.compare-mini { background: #f8f8f8 !important; border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 8px !important; }
+.compare-mini-title { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.compare-mini-mi { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; }
+.compare-mini-cluster { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.contradiction-item { background: rgba(204,34,34,0.04) !important; border-color: rgba(204,34,34,0.15) !important; border-radius: 8px !important; }
+.contra-head { font-family: system-ui,-apple-system,sans-serif !important; color: #cc2222 !important; }
+.contra-side-label { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.contra-claim-text { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.contra-note { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+
+/* Chat / oracle */
+.oracle-title { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; font-weight: 700 !important; }
+.oracle-title em { color: #000000 !important; }
+.mode-row { background: #efefef !important; border: none !important; border-radius: 999px !important; }
+.mode-btn { font-family: system-ui,-apple-system,sans-serif !important; border-radius: 999px !important; color: #afafaf !important; }
+.mode-btn.active { background: #000000 !important; color: #ffffff !important; box-shadow: none !important; }
+.mode-btn.active.open-btn { color: #ffffff !important; }
+.mode-btn.active.conspiracy-btn { background: #000000 !important; color: #ffffff !important; }
+.mode-badge { font-family: system-ui,-apple-system,sans-serif !important; background: #efefef !important; color: #4b4b4b !important; border-radius: 999px !important; border: none !important; }
+.mode-badge.context-mode { background: rgba(42,138,24,0.1) !important; color: #2a8a18 !important; }
+.mode-badge.open-mode    { background: rgba(0,0,0,0.08) !important; color: #000000 !important; }
+.mode-badge.conspiracy-mode { background: rgba(0,0,0,0.08) !important; color: #000000 !important; }
+.mode-description { font-family: system-ui,-apple-system,sans-serif !important; background: #efefef !important; border: none !important; border-radius: 999px !important; color: #afafaf !important; }
+.mode-description.conspiracy-active { background: rgba(0,0,0,0.06) !important; color: #4b4b4b !important; border: none !important; }
+.conspiracy-banner { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; color: #4b4b4b !important; border-radius: 8px !important; font-family: system-ui,-apple-system,sans-serif !important; text-transform: none !important; letter-spacing: normal !important; }
+
+/* Conspiracy switch */
+.conspiracy-switch-label { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; letter-spacing: 0.08em !important; }
+.switch-housing { background: #efefef !important; border-color: rgba(0,0,0,0.15) !important; border-radius: 8px !important; box-shadow: rgba(0,0,0,0.08) 0px 2px 4px !important; }
+.switch-label-i, .switch-label-o { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.switch-lever { background: #e2e2e2 !important; border-color: rgba(0,0,0,0.12) !important; border-radius: 6px !important; box-shadow: rgba(0,0,0,0.1) 0px 1px 3px !important; }
+.switch-housing.on .switch-lever { background: #000000 !important; border-color: #000000 !important; box-shadow: none !important; }
+.switch-housing.on .switch-label-o { color: #000000 !important; }
+.switch-housing.on { border-color: rgba(0,0,0,0.3) !important; box-shadow: rgba(0,0,0,0.1) 0px 2px 8px !important; }
+
+/* Chat log */
+.chat-log { background: #f8f8f8 !important; border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 8px !important; }
+.msg-role { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.msg.user .msg-role { color: #000000 !important; }
+.msg.assistant .msg-role { color: #4b4b4b !important; }
+.msg.assistant.conspiracy-msg .msg-role { color: #000000 !important; }
+.msg-text { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; }
+.msg.hint { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.tool-badge { background: #efefef !important; border-color: rgba(0,0,0,0.08) !important; color: #4b4b4b !important; border-radius: 999px !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.tool-badge em { color: #afafaf !important; }
+
+/* Suggestions */
+.suggestion { background: #ffffff !important; color: #4b4b4b !important; border: 1px solid rgba(0,0,0,0.12) !important; border-radius: 999px !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.suggestion:hover { background: #efefef !important; color: #000000 !important; border-color: rgba(0,0,0,0.2) !important; }
+.suggestions-loading { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+
+/* Chat input */
+.chat-input-row input {
+  background: #ffffff !important; border: 1px solid #000000 !important; border-radius: 999px !important;
+  color: #000000 !important; font-family: system-ui,-apple-system,sans-serif !important; padding: 11px 18px !important;
+}
+.chat-input-row input:focus { border-color: #000000 !important; box-shadow: 0 0 0 3px rgba(0,0,0,0.1) !important; }
+.chat-input-row input::placeholder { color: #afafaf !important; }
+.send-btn { border-radius: 999px !important; }
+.send-btn.conspiracy-send { background: #000000 !important; color: #ffffff !important; }
+
+/* Reaction bar */
+.reaction-label { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; text-transform: none !important; letter-spacing: normal !important; }
+.reaction-btn { background: #ffffff !important; border: 1px solid rgba(0,0,0,0.12) !important; border-radius: 999px !important; color: #4b4b4b !important; }
+.reaction-btn:hover:not(:disabled) { background: #efefef !important; border-color: rgba(0,0,0,0.2) !important; }
+.reaction-btn.active { background: #efefef !important; border-color: rgba(0,0,0,0.25) !important; }
+.reaction-btn.active.thumbs-up   { background: rgba(42,138,24,0.1) !important; border-color: rgba(42,138,24,0.3) !important; }
+.reaction-btn.active.thumbs-down { background: rgba(204,34,34,0.1) !important; border-color: rgba(204,34,34,0.3) !important; }
+.reaction-count { font-family: monospace !important; color: #afafaf !important; }
+
+/* Export bar */
+.export-bar-label { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; letter-spacing: 0.06em !important; }
+
+/* Library */
+.library-empty { font-family: system-ui,-apple-system,sans-serif !important; font-style: normal !important; color: #afafaf !important; }
+.lib-item { background: #ffffff !important; border: 1px solid rgba(0,0,0,0.1) !important; border-radius: 8px !important; box-shadow: rgba(0,0,0,0.04) 0px 1px 3px !important; }
+.lib-item:hover { border-color: rgba(0,0,0,0.2) !important; box-shadow: rgba(0,0,0,0.1) 0px 4px 12px !important; }
+.lib-mi { font-family: system-ui,-apple-system,sans-serif !important; color: #000000 !important; }
+.lib-cluster { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.lib-snippet { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.lib-date { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.lib-del { font-family: system-ui,-apple-system,sans-serif !important; border-radius: 999px !important; }
+.lib-del:hover { color: #cc2222 !important; background: rgba(204,34,34,0.08) !important; }
+
+/* Compare article labels */
+.compare-article-label { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.compare-remove { font-family: system-ui,-apple-system,sans-serif !important; background: transparent !important; border-radius: 999px !important; color: #afafaf !important; }
+.compare-remove:hover { color: #cc2222 !important; background: rgba(204,34,34,0.08) !important; }
+
+/* Count / char badges */
+.count { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+.char-count { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
+#narrative { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
+.image-preview img { border-radius: 8px !important; border-color: rgba(0,0,0,0.1) !important; }
+</style>
 </head>
 <body>
 
@@ -931,51 +1215,44 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 <div id="auth-overlay">
   <div class="auth-box">
     <div class="auth-eye">
-      <svg viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="50,5 5,85 95,85" stroke="currentColor" stroke-width="2" fill="none"/>
-        <ellipse cx="50" cy="56" rx="22" ry="13" stroke="currentColor" stroke-width="1.5" fill="none"/>
-        <circle cx="50" cy="56" r="6" fill="currentColor"/>
-        <circle cx="50" cy="56" r="2.5" fill="#080502"/>
-        <g stroke="currentColor" stroke-width="1" opacity="0.5">
-          <line x1="50" y1="2" x2="50" y2="20"/>
-          <line x1="18" y1="72" x2="8" y2="86"/>
-          <line x1="82" y1="72" x2="92" y2="86"/>
-        </g>
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:40px;height:40px;color:#000000;">
+        <circle cx="19" cy="19" r="13" stroke="currentColor" stroke-width="3"/>
+        <line x1="28.5" y1="28.5" x2="43" y2="43" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
       </svg>
     </div>
     <div class="auth-brand">GKIN</div>
-    <div class="auth-tagline">Truth Navigator · Uncovering the Hidden</div>
+    <div class="auth-tagline">Truth Navigator · Media Analysis & Fact-Checking</div>
     <div class="auth-divider"></div>
     <div class="auth-tabs">
-      <button class="auth-tab active" id="auth-tab-login">Enter the Archive</button>
-      <button class="auth-tab" id="auth-tab-register">Join the Order</button>
+      <button class="auth-tab active" id="auth-tab-login">Sign In</button>
+      <button class="auth-tab" id="auth-tab-register">Create Account</button>
     </div>
     <div class="auth-pane active" id="auth-pane-login">
       <div class="auth-field">
-        <label>Your Name in the Archive</label>
-        <input type="text" id="login-username" placeholder="username" autocomplete="username"/>
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="your username" autocomplete="username"/>
       </div>
       <div class="auth-field">
-        <label>The Cipher</label>
+        <label>Password</label>
         <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
       </div>
-      <button class="auth-submit" id="login-btn">Open the Gates</button>
+      <button class="auth-submit" id="login-btn">Sign In</button>
       <div class="auth-error" id="login-error"></div>
     </div>
     <div class="auth-pane" id="auth-pane-register">
       <div class="auth-field">
-        <label>Choose Your Name</label>
-        <input type="text" id="reg-username" placeholder="username" autocomplete="username"/>
+        <label>Username</label>
+        <input type="text" id="reg-username" placeholder="choose a username" autocomplete="username"/>
       </div>
       <div class="auth-field">
-        <label>Correspondence Seal</label>
+        <label>Email</label>
         <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email"/>
       </div>
       <div class="auth-field">
-        <label>The Cipher <span style="color:var(--ink-3);font-size:8px;">(min 6 chars)</span></label>
+        <label>Password <span style="color:var(--ink-3);font-size:11px;">(min 6 characters)</span></label>
         <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password"/>
       </div>
-      <button class="auth-submit" id="register-btn">Initiate the Rite</button>
+      <button class="auth-submit" id="register-btn">Create Account</button>
       <div class="auth-error" id="reg-error"></div>
     </div>
   </div>
@@ -985,15 +1262,15 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 <nav>
   <div class="nav-inner">
     <div class="nav-links">
-      <button class="nav-link active" data-tab="text" onclick="switchNavTab(this,'text')">The Archive</button>
-      <button class="nav-link" data-tab="audio" onclick="switchNavTab(this,'audio')">Ritual of Scanning</button>
-      <button class="nav-link" data-tab="image" onclick="switchNavTab(this,'image')">Codices</button>
-      <button class="nav-link" data-tab="compare" onclick="switchNavTab(this,'compare')">The Conclave</button>
+      <button class="nav-link active" data-tab="text" onclick="switchNavTab(this,'text')">Analyze</button>
+      <button class="nav-link" data-tab="audio" onclick="switchNavTab(this,'audio')">Audio</button>
+      <button class="nav-link" data-tab="image" onclick="switchNavTab(this,'image')">Image</button>
+      <button class="nav-link" data-tab="compare" onclick="switchNavTab(this,'compare')">Compare</button>
     </div>
     <div class="nav-user">
-      <span>Initiate:</span>
+      <span>Signed in as:</span>
       <span class="nav-username" id="header-username"></span>
-      <button class="nav-logout" id="logout-btn">Depart</button>
+      <button class="nav-logout" id="logout-btn">Sign Out</button>
     </div>
   </div>
 </nav>
@@ -1001,50 +1278,43 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 <!-- ── Site header ── -->
 <div class="site-header">
   <div class="header-eye">
-    <svg viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:70px;height:70px;color:var(--gold);filter:drop-shadow(0 0 14px rgba(200,150,60,0.45))">
-      <polygon points="50,4 4,86 96,86" stroke="currentColor" stroke-width="2.2" fill="none"/>
-      <ellipse cx="50" cy="57" rx="24" ry="14" stroke="currentColor" stroke-width="1.8" fill="none"/>
-      <circle cx="50" cy="57" r="7" fill="currentColor"/>
-      <circle cx="50" cy="57" r="2.8" fill="#080502"/>
-      <g stroke="currentColor" stroke-width="1.2" opacity="0.6">
-        <line x1="50" y1="1" x2="50" y2="22"/>
-        <line x1="15" y1="76" x2="5" y2="88"/>
-        <line x1="85" y1="76" x2="95" y2="88"/>
-      </g>
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:56px;height:56px;color:#000000;">
+      <circle cx="19" cy="19" r="13" stroke="currentColor" stroke-width="3"/>
+      <line x1="28.5" y1="28.5" x2="43" y2="43" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
     </svg>
   </div>
   <div class="site-brand">GKIN</div>
-  <div class="site-tagline">Truth Navigator · Uncovering the Hidden</div>
+  <div class="site-tagline">Truth Navigator · Media Analysis & Fact-Checking</div>
 </div>
 
 <div class="wrap">
 
 <!-- ── Input tome ── -->
-<div class="ritual-label">Decode Your Intel</div>
+<div class="ritual-label">Analyze an Article</div>
 <div class="tome">
   <div class="tab-bar" id="main-tab-bar">
-    <button class="tab active" data-tab="text">Paste Scroll</button>
-    <button class="tab" data-tab="url">Scan URL</button>
-    <button class="tab" data-tab="audio">Voice Transcript</button>
-    <button class="tab" data-tab="image">Vision Scan</button>
-    <button class="tab" data-tab="compare">Cross-Reference</button>
+    <button class="tab active" data-tab="text">Paste Text</button>
+    <button class="tab" data-tab="url">From URL</button>
+    <button class="tab" data-tab="audio">Audio / Video</button>
+    <button class="tab" data-tab="image">Image / Screenshot</button>
+    <button class="tab" data-tab="compare">Compare Articles</button>
     <button class="tab" data-tab="library" id="library-tab">Library</button>
   </div>
 
   <!-- Text -->
   <div class="tab-pane active" id="tab-text">
-    <textarea id="article" placeholder="Paste the full text of any news article, proclamation, or scroll here..."></textarea>
+    <textarea id="article" placeholder="Paste the full text of any news article here..."></textarea>
     <div class="controls">
       <button class="scan-btn" id="analyze-btn">
         <svg class="scan-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <ellipse cx="12" cy="12" rx="10" ry="6"/>
           <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
         </svg>
-        Scan
+        Analyze
       </button>
-      <button class="ghost" id="random-btn">Draw from Archive</button>
-      <button class="ghost" id="clear-btn">Clear Scroll</button>
-      <div class="char-count" id="char-count">0 glyphs</div>
+      <button class="ghost" id="random-btn">Load Random Article</button>
+      <button class="ghost" id="clear-btn">Clear</button>
+      <div class="char-count" id="char-count">0 characters</div>
     </div>
   </div>
 
@@ -1072,7 +1342,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
     <div class="drop-zone" id="audio-drop">
       <input type="file" class="drop-input" id="audio-input" accept="audio/*,video/*,.mp3,.wav,.mp4,.m4a,.webm,.ogg">
       <div class="drop-icon">🎙</div>
-      <div class="drop-label" id="audio-filename">Drop audio or video — the Order shall transcribe it</div>
+      <div class="drop-label" id="audio-filename">Drop an audio or video file here, or click to browse</div>
       <div class="drop-formats">MP3 · WAV · MP4 · M4A · WEBM · max 25 MB</div>
     </div>
     <div class="controls" style="margin-top:16px;">
@@ -1083,7 +1353,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
         </svg>
         Transcribe &amp; Analyze
       </button>
-      <span style="font-family:'Cinzel',serif;font-size:9px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.14em;">Whisper large-v3</span>
+      <span style="font-size:11px;color:var(--ink-3);">Powered by Whisper large-v3</span>
     </div>
   </div>
 
@@ -1092,7 +1362,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
     <div class="drop-zone" id="image-drop">
       <input type="file" class="drop-input" id="image-input" accept="image/png,image/jpeg,image/webp">
       <div class="drop-icon">🖼</div>
-      <div class="drop-label" id="image-filename">Drop a screenshot or article image</div>
+      <div class="drop-label" id="image-filename">Drop a screenshot or article image here, or click to browse</div>
       <div class="drop-formats">PNG · JPG · WEBP · max 3 MB</div>
     </div>
     <div class="image-preview" id="image-preview"><img id="image-preview-img" src="" alt="Preview"></div>
@@ -1102,9 +1372,9 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
           <ellipse cx="12" cy="12" rx="10" ry="6"/>
           <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
         </svg>
-        Analyze Vision
+        Analyze Image
       </button>
-      <span style="font-family:'Cinzel',serif;font-size:9px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.14em;">Llama 3.2 Vision</span>
+      <span style="font-size:11px;color:var(--ink-3);">Powered by Llama 3.2 Vision</span>
     </div>
   </div>
 
@@ -1123,13 +1393,13 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
           <ellipse cx="12" cy="12" rx="10" ry="6"/>
           <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
         </svg>
-        Cross-Reference
+        Compare Articles
       </button>
-      <button class="ghost" id="add-article-btn">+ Add Scroll</button>
+      <button class="ghost" id="add-article-btn">+ Add Article</button>
     </div>
   </div>
 
-  <div class="loading" id="loading">The Order deliberates</div>
+  <div class="loading" id="loading">Analyzing</div>
   <div class="error" id="error"></div>
 </div>
 
@@ -1143,22 +1413,22 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 
 <!-- ── Analysis results ── -->
 <div class="results" id="results">
-  <div class="ritual-label">The Verdict</div>
+  <div class="ritual-label">Analysis Results</div>
 
   <div class="reasoning-section" id="reasoning-section" style="display:none;">
     <button class="reasoning-toggle" id="reasoning-toggle">
-      <span>⟡ The Oracle's Reasoning <span class="r-badge">DeepSeek R1</span></span>
+      <span>⟡ AI Reasoning Chain <span class="r-badge">DeepSeek R1</span></span>
       <span id="reasoning-arrow">▼</span>
     </button>
     <div class="reasoning-body" id="reasoning-body"></div>
   </div>
 
   <div class="verdict-card">
-    <div class="verdict-subtitle">Intelligence Assessment</div>
-    <div class="verdict-headline">The Verdict: <span id="verdict-label-text">Analyzing...</span></div>
+    <div class="verdict-subtitle">Manipulation Assessment</div>
+    <div class="verdict-headline">Verdict: <span id="verdict-label-text">Analyzing...</span></div>
     <div class="fabrication-bar-wrap">
       <div class="fabrication-label" id="fabrication-label" style="color:var(--red-2);">
-        <span>Fabrication Index</span>
+        <span>Manipulation Index</span>
         <span id="fabrication-pct" style="font-family:'JetBrains Mono',monospace;font-size:14px;">0%</span>
       </div>
       <div class="fabrication-bar">
@@ -1206,7 +1476,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 
 <!-- ── Compare results ── -->
 <div class="compare-results" id="compare-results">
-  <div class="ritual-label">Cross-Reference Report</div>
+  <div class="ritual-label">Comparison Report</div>
   <div id="compare-content"></div>
 </div>
 
@@ -1214,16 +1484,16 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 <div class="oracle-card tome" id="chat-card">
   <div class="oracle-header">
     <div>
-      <div class="oracle-title">Consult <em>The Oracle</em> <span class="mode-badge context-mode" id="mode-badge">Context</span></div>
+      <div class="oracle-title">Ask the <em>AI Assistant</em> <span class="mode-badge context-mode" id="mode-badge">Context</span></div>
     </div>
     <div class="oracle-controls">
       <div class="mode-row">
-        <button class="mode-btn active" id="mode-context">Context</button>
-        <button class="mode-btn open-btn" id="mode-open">Open Research</button>
+        <button class="mode-btn active" id="mode-context">Article Only</button>
+        <button class="mode-btn open-btn" id="mode-open">Web Research</button>
       </div>
       <!-- Physical conspiracy switch -->
       <div class="conspiracy-switch-wrap">
-        <div class="conspiracy-switch-label">Activate<br>Conspiracy<br>Mode</div>
+        <div class="conspiracy-switch-label">Conspiracy<br>Mode</div>
         <div class="switch-housing" id="conspiracy-switch" onclick="toggleConspiracy()">
           <div class="switch-label-i">I</div>
           <div class="switch-lever"></div>
@@ -1236,16 +1506,16 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 
   <div class="mode-description" id="mode-description">Answers grounded in the article analysis only.</div>
   <div class="conspiracy-banner" id="conspiracy-banner">
-    ⚠ Speculative Mode Active — Alternative theories for critical thinking only. Not established facts.
+    ⚠ Speculative Mode — Alternative theories for critical thinking only. Not established facts.
   </div>
   <div class="suggestions" id="suggestions">
-    <span class="suggestions-loading">Divining questions...</span>
+    <span class="suggestions-loading">Loading suggested questions...</span>
   </div>
   <div class="chat-log" id="chat-log">
-    <div class="msg hint">Ask the Oracle anything about the article above.</div>
+    <div class="msg hint">Ask a question about the article above.</div>
   </div>
   <div class="chat-input-row">
-    <input id="chat-input" placeholder="Your query to the Oracle..." />
+    <input id="chat-input" placeholder="Type your question here..." />
     <button class="send-btn" id="chat-send">Send</button>
   </div>
 </div>
@@ -1346,9 +1616,9 @@ $("logout-btn").addEventListener("click", () => {
 let currentAnalysis = null, chatHistory = [], chatMode = "context";
 
 const MODE_DESC = {
-  context: "Answers grounded in the article analysis only.",
-  open: "Draws on web search, historical context, and world knowledge.",
-  conspiracy: "Explores hidden motivations, alternative narratives, and suppressed perspectives. Speculative."
+  context: "Answers based only on this article's analysis — no outside knowledge.",
+  open: "Uses web search, historical context, and world knowledge to answer.",
+  conspiracy: "Explores hidden motivations and alternative narratives as a critical thinking exercise. Speculative — not established facts."
 };
 
 // ── Nav tabs ──────────────────────────────────────────────────────────────────
@@ -1383,10 +1653,10 @@ document.querySelectorAll("#main-tab-bar .tab").forEach(t => {
 // ── Text tab ──────────────────────────────────────────────────────────────────
 const articleEl = $("article");
 articleEl.addEventListener("input", () => {
-  $("char-count").textContent = `${articleEl.value.length.toLocaleString()} glyphs`;
+  $("char-count").textContent = `${articleEl.value.length.toLocaleString()} characters`;
 });
 $("clear-btn").addEventListener("click", () => {
-  articleEl.value=""; $("char-count").textContent="0 glyphs";
+  articleEl.value=""; $("char-count").textContent="0 characters";
   $("results").classList.remove("show");
   $("export-bar").classList.remove("show");
   $("compare-results").classList.remove("show");
@@ -1400,18 +1670,18 @@ $("random-btn").addEventListener("click", async () => {
   try {
     const r = await authFetch("/random");
     if (r.status===401){clearAuth();return;}
-    if (!r.ok) throw new Error("Archive scroll unavailable.");
+    if (!r.ok) throw new Error("Could not load a random article.");
     const d = await r.json();
     articleEl.value = d.text;
-    $("char-count").textContent = `${d.text.length.toLocaleString()} glyphs`;
+    $("char-count").textContent = `${d.text.length.toLocaleString()} characters`;
     articleEl.dataset.welLabel = d.label;
   } catch(e){ showError(e.message); }
 });
 $("analyze-btn").addEventListener("click", async () => {
   const text = articleEl.value.trim();
-  if (text.length<200){ showError("The scroll must contain at least 200 glyphs."); return; }
+  if (text.length<200){ showError("Article must be at least 200 characters long."); return; }
   hideError();
-  $("loading").textContent = "The Order deliberates";
+  $("loading").textContent = "Analyzing";
   $("loading").classList.add("show"); $("analyze-btn").disabled=true;
   try {
     const r = await authFetch("/analyze", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({article:text}) });
@@ -1419,7 +1689,7 @@ $("analyze-btn").addEventListener("click", async () => {
     if (!r.ok) throw new Error(await r.text());
     currentAnalysis = await r.json();
     showAnalysisResults(currentAnalysis);
-  } catch(e){ showError("The ritual failed: "+e.message); }
+  } catch(e){ showError("Analysis failed: "+e.message); }
   finally { $("loading").classList.remove("show"); $("analyze-btn").disabled=false; }
 });
 
@@ -1437,7 +1707,7 @@ $("fetch-url-btn").addEventListener("click", async () => {
   if (!url) { showError("Please enter a URL."); return; }
   hideError();
   $("url-fetched-card").style.display = "none";
-  $("loading").textContent = "Fetching article from URL";
+  $("loading").textContent = "Fetching article";
   $("loading").classList.add("show");
   $("fetch-url-btn").disabled = true;
   try {
@@ -1458,9 +1728,9 @@ $("fetch-url-btn").addEventListener("click", async () => {
     $("url-fetched-card").style.display = "block";
 
     articleEl.value = text;
-    $("char-count").textContent = `${text.length.toLocaleString()} glyphs`;
+    $("char-count").textContent = `${text.length.toLocaleString()} characters`;
 
-    $("loading").textContent = "The Order deliberates";
+    $("loading").textContent = "Analyzing";
     const r2 = await fetch("/analyze", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({article: text})
@@ -1497,16 +1767,16 @@ setupDropZone("audio-drop","audio-input",file=>{
 });
 $("transcribe-btn").addEventListener("click", async () => {
   if(!audioFile)return; hideError();
-  $("loading").textContent="Whispering transcription";
+  $("loading").textContent="Transcribing audio";
   $("loading").classList.add("show"); $("transcribe-btn").disabled=true;
   try {
     const fd=new FormData(); fd.append("file",audioFile);
     const r=await authFetch("/transcribe",{method:"POST",body:fd});
     if(r.status===401){clearAuth();return;} if(!r.ok)throw new Error(await r.text());
     const {transcript}=await r.json();
-    articleEl.value=transcript; $("char-count").textContent=`${transcript.length.toLocaleString()} glyphs`;
+    articleEl.value=transcript; $("char-count").textContent=`${transcript.length.toLocaleString()} characters`;
     document.querySelector(".tab[data-tab='text']").click();
-    $("loading").textContent="The Order deliberates";
+    $("loading").textContent="Analyzing";
     const r2=await authFetch("/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({article:transcript})});
     if(r2.status===401){clearAuth();return;} if(!r2.ok)throw new Error(await r2.text());
     currentAnalysis=await r2.json(); showAnalysisResults(currentAnalysis);
@@ -1524,7 +1794,7 @@ setupDropZone("image-drop","image-input",file=>{
 });
 $("analyze-image-btn").addEventListener("click", async () => {
   if(!imageFile)return; hideError();
-  $("loading").textContent="Decoding the vision";
+  $("loading").textContent="Analyzing image";
   $("loading").classList.add("show"); $("analyze-image-btn").disabled=true;
   try {
     const fd=new FormData(); fd.append("file",imageFile);
@@ -1541,7 +1811,7 @@ function renderCompareInputs() {
   c.innerHTML="";
   for(let i=0;i<count;i++){
     const div=document.createElement("div"); div.className="compare-article";
-    div.innerHTML=`<div class="compare-article-label">Scroll ${i+1}${i>=2?`<button class="compare-remove ghost" data-i="${i}">✕ Remove</button>`:''}</div><textarea id="cmp-${i}" placeholder="Paste scroll ${i+1} here..." style="min-height:110px;width:100%;"></textarea>`;
+    div.innerHTML=`<div class="compare-article-label">Article ${i+1}${i>=2?`<button class="compare-remove ghost" data-i="${i}">✕ Remove</button>`:''}</div><textarea id="cmp-${i}" placeholder="Paste article ${i+1} here..." style="min-height:110px;width:100%;"></textarea>`;
     c.appendChild(div);
   }
   c.querySelectorAll(".compare-remove").forEach(btn=>{
@@ -1563,9 +1833,9 @@ $("add-article-btn").addEventListener("click",()=>{
 $("compare-btn").addEventListener("click", async () => {
   const c=$("compare-articles"), count=parseInt(c.dataset.count), articles=[];
   for(let i=0;i<count;i++){const ta=$("cmp-"+i);if(ta&&ta.value.trim().length>=200)articles.push(ta.value.trim());}
-  if(articles.length<2){showError("Need at least 2 scrolls with 200+ glyphs.");return;}
+  if(articles.length<2){showError("Need at least 2 articles with 200+ characters each.");return;}
   hideError();
-  $("loading").textContent=`Cross-referencing ${articles.length} scrolls`;
+  $("loading").textContent=`Comparing ${articles.length} articles`;
   $("loading").classList.add("show"); $("compare-btn").disabled=true;
   try {
     const r=await authFetch("/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({articles})});
@@ -1712,21 +1982,21 @@ function renderCompareResults(data) {
   const score=c.coordination_score||0;
   let sc="var(--green-2)"; if(score>=60)sc="var(--red-2)"; else if(score>=30)sc="#b07020";
   let html=`<div class="coord-card"><div class="coord-num" style="color:${sc}">${score}</div><div class="coord-info"><div class="coord-sublabel">Coordination Score / 100</div><div class="coord-explanation">${escapeHtml(c.coordination_explanation||"")}</div>${c.narrative_divergence?`<div style="margin-top:10px;color:var(--ink-3);font-size:14px;font-style:italic;">${escapeHtml(c.narrative_divergence)}</div>`:""}</div></div>`;
-  html+=`<div class="compare-mini-grid">${analyses.map((a,i)=>{const mi=a.manipulation_index||0;let mc="var(--green-2)";if(mi>=60)mc="var(--red-2)";else if(mi>=40)mc="#b07020";return`<div class="compare-mini"><div class="compare-mini-title">Scroll ${i+1}</div><div class="compare-mini-mi" style="color:${mc}">${mi}</div><div style="font-family:'Cinzel',serif;font-size:8px;color:${mc};text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">/ 100</div><div class="compare-mini-cluster">${escapeHtml(a.narrative_cluster||"none")}</div></div>`;}).join("")}</div>`;
+  html+=`<div class="compare-mini-grid">${analyses.map((a,i)=>{const mi=a.manipulation_index||0;let mc="var(--green-2)";if(mi>=60)mc="var(--red-2)";else if(mi>=40)mc="#b07020";return`<div class="compare-mini"><div class="compare-mini-title">Article ${i+1}</div><div class="compare-mini-mi" style="color:${mc}">${mi}</div><div style="font-family:'Cinzel',serif;font-size:8px;color:${mc};text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">/ 100</div><div class="compare-mini-cluster">${escapeHtml(a.narrative_cluster||"none")}</div></div>`;}).join("")}</div>`;
   if(c.coordinated_techniques?.length){html+=`<div class="panel" style="margin-bottom:14px;"><h3>Shared Techniques</h3><div style="display:flex;flex-wrap:wrap;gap:6px;">${c.coordinated_techniques.map(t=>`<span style="font-family:'Cinzel',serif;font-size:9px;background:var(--gold-dim);color:var(--gold);padding:3px 10px;border-radius:2px;text-transform:uppercase;border:1px solid var(--border);letter-spacing:0.1em;">${escapeHtml(t.replace(/_/g," "))}</span>`).join("")}</div></div>`;}
   const cons=c.factual_contradictions||[];
-  if(cons.length){html+=`<div class="panel" style="margin-bottom:14px;"><h3>Contradictions <span class="count">${cons.length}</span></h3>${cons.map(con=>`<div class="contradiction-item"><div class="contra-head">⚡ Contradiction</div><div class="contra-grid"><div><div class="contra-side-label">Scroll ${(con.article_index_a??0)+1}</div><div class="contra-claim-text">${escapeHtml(con.claim_a||"")}</div></div><div><div class="contra-side-label">Scroll ${(con.article_index_b??1)+1}</div><div class="contra-claim-text">${escapeHtml(con.claim_b||"")}</div></div></div><div class="contra-note">${escapeHtml(con.contradiction||"")}</div></div>`).join("")}</div>`;}
+  if(cons.length){html+=`<div class="panel" style="margin-bottom:14px;"><h3>Contradictions <span class="count">${cons.length}</span></h3>${cons.map(con=>`<div class="contradiction-item"><div class="contra-head">⚡ Contradiction</div><div class="contra-grid"><div><div class="contra-side-label">Article ${(con.article_index_a??0)+1}</div><div class="contra-claim-text">${escapeHtml(con.claim_a||"")}</div></div><div><div class="contra-side-label">Article ${(con.article_index_b??1)+1}</div><div class="contra-claim-text">${escapeHtml(con.claim_b||"")}</div></div></div><div class="contra-note">${escapeHtml(con.contradiction||"")}</div></div>`).join("")}</div>`;}
   $("compare-content").innerHTML=html;
 }
 
 // ── Suggestions ───────────────────────────────────────────────────────────────
 async function fetchSuggestions(analysis) {
-  $("suggestions").innerHTML='<span class="suggestions-loading">Divining questions...</span>';
+  $("suggestions").innerHTML='<span class="suggestions-loading">Loading suggested questions...</span>';
   try {
     const r=await authFetch("/suggestions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({analysis})});
     if(!r.ok)throw new Error();
     const d=await r.json(); renderSuggestions(d.suggestions||[]);
-  } catch { renderSuggestions(["Which technique is most dangerous here?","What context is being suppressed?","Who benefits from this narrative?","What historical event does this echo?","What should I verify first?"]); }
+  } catch { renderSuggestions(["Which technique is most concerning?","What context is missing?","Who benefits from this narrative?","Does this echo any historical events?","What should I verify first?"]); }
 }
 function renderSuggestions(list) {
   $("suggestions").innerHTML=list.map(q=>`<div class="suggestion" data-q="${escapeHtml(q)}">${escapeHtml(q.length>40?q.slice(0,40)+"…":q)}</div>`).join("");
@@ -1767,7 +2037,7 @@ $("mode-open").addEventListener("click",()=>setMode("open"));
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
 function resetChatLog() {
-  chatHistory=[]; $("chat-log").innerHTML='<div class="msg hint">Ask the Oracle anything about the article above.</div>';
+  chatHistory=[]; $("chat-log").innerHTML='<div class="msg hint">Ask a question about the article above.</div>';
 }
 $("chat-reset").addEventListener("click",resetChatLog);
 $("chat-send").addEventListener("click",sendChat);
@@ -1784,13 +2054,13 @@ async function sendChat() {
 
   const hint=$("chat-log").querySelector(".msg.hint"); if(hint)hint.remove();
   const uDiv=document.createElement("div"); uDiv.className="msg user";
-  uDiv.innerHTML=`<div class="msg-role">The Initiate</div><div class="msg-text">${escapeHtml(msg)}</div>`;
+  uDiv.innerHTML=`<div class="msg-role">You</div><div class="msg-text">${escapeHtml(msg)}</div>`;
   $("chat-log").appendChild(uDiv);
   chatHistory.push({role:"user",content:msg});
 
   const aDiv=document.createElement("div");
   aDiv.className="msg assistant"+(isConspiracy?" conspiracy-msg":"");
-  const roleLabel=isConspiracy?"⬡ The Oracle · Conspiracy Mode":"The Oracle";
+  const roleLabel=isConspiracy?"⬡ AI · Conspiracy Mode":"AI Assistant";
   aDiv.innerHTML=`<div class="msg-role">${roleLabel}</div><div class="tool-badges" id="tb-${Date.now()}"></div><div class="msg-text"></div>`;
   $("chat-log").appendChild(aDiv);
   const toolContainer=aDiv.querySelector(".tool-badges");
@@ -1799,7 +2069,7 @@ async function sendChat() {
 
   try {
     const r=await authFetch("/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg,analysis:currentAnalysis,history:chatHistory.slice(0,-1),mode:chatMode})});
-    if(r.status===401){clearAuth();return;} if(!r.ok)throw new Error("The Oracle is silent.");
+    if(r.status===401){clearAuth();return;} if(!r.ok)throw new Error("Failed to get a response.");
     const reader=r.body.getReader(); const decoder=new TextDecoder();
     let lineBuffer="", textContent="";
     while(true){
@@ -1816,7 +2086,7 @@ async function sendChat() {
     if(lineBuffer){if(!lineBuffer.startsWith("⚙:"))textContent+=lineBuffer;}
     textEl.textContent=textContent;
     chatHistory.push({role:"assistant",content:textContent});
-  } catch(e){ textEl.textContent="The Oracle cannot speak: "+e.message; }
+  } catch(e){ textEl.textContent="Error: "+e.message; }
 }
 
 // ── Library ───────────────────────────────────────────────────────────────────
@@ -1907,7 +2177,7 @@ function loadFromLibrary(id) {
   currentAnalysis = item.analysis;
   if (item.articleText) {
     articleEl.value = item.articleText;
-    $("char-count").textContent = `${item.articleText.length.toLocaleString()} chars`;
+    $("char-count").textContent = `${item.articleText.length.toLocaleString()} characters`;
   }
   document.querySelector(".tab[data-tab='text']").click();
   showAnalysisResults(currentAnalysis);
