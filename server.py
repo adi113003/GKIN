@@ -21,7 +21,7 @@ Endpoints:
   GET  /               → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search
+  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] bcrypt
   export GROQ_API_KEY="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"
   python server.py
 """
@@ -36,24 +36,27 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from groq import AsyncGroq
+import httpx
 import pandas as pd
 import trafilatura
+from gkin.verification import VerificationError, configure_verifier, verify_claim as block5_verify_claim
 
 try:
     from jose import JWTError, jwt
-    from passlib.context import CryptContext
+    import bcrypt
     _AUTH_OK = True
 except ImportError:
     _AUTH_OK = False
     jwt = None          # type: ignore
     JWTError = Exception
-    CryptContext = None  # type: ignore
+    bcrypt = None       # type: ignore
 # ── Model IDs ─────────────────────────────────────────────────────────────────
 MODEL_REASON  = "deepseek-r1-distill-llama-70b"   # chain-of-thought reasoning
 MODEL_STRUCT  = "llama-3.3-70b-versatile"          # JSON structuring & chat agent
@@ -69,7 +72,6 @@ TOKEN_EXPIRE_DAYS = 7
 
 _security    = HTTPBearer(auto_error=False)
 _users_lock: Optional[asyncio.Lock] = None
-_pwd_context = None
 
 NARRATIVE_CLUSTERS = [
     "anti_vaccine", "election_fraud", "climate_denial", "immigration_threat",
@@ -285,18 +287,36 @@ def manipulation_label(mi: int) -> str:
     return "STRAIGHT REPORTING"
 
 
+def _normalize_url(raw_url: str) -> str:
+    raw_url = raw_url.strip()
+    if not raw_url or re.search(r"\s", raw_url):
+        raise HTTPException(400, "Enter a valid http(s) URL")
+    parsed = urlparse(raw_url)
+    if not parsed.scheme:
+        raw_url = "https://" + raw_url
+        parsed = urlparse(raw_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or not parsed.hostname:
+        raise HTTPException(400, "Enter a valid http(s) URL")
+    return raw_url
+
+
+def _fallback_html_text(html: str) -> str:
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        return ""
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup(["script", "style", "noscript", "svg", "form", "nav", "footer", "header"]):
+        tag.decompose()
+    chunks = [p.get_text(" ", strip=True) for p in soup.find_all(["h1", "h2", "p", "li"])]
+    return "\n\n".join(chunk for chunk in chunks if chunk)
+
+
 # ── App ────────────────────────────────────────────────────────────────────────
 
 _client: Optional[AsyncGroq] = None
 _welfake_df = None
-_claim_sem: Optional[asyncio.Semaphore] = None
-
-
-def _get_pwd_context():
-    global _pwd_context
-    if _pwd_context is None and _AUTH_OK:
-        _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    return _pwd_context
+_verify_sem: Optional[asyncio.Semaphore] = None
 
 
 def _load_users() -> dict:
@@ -314,17 +334,24 @@ def _save_users(users: dict) -> None:
 
 
 def _hash_password(password: str) -> str:
-    ctx = _get_pwd_context()
-    if not ctx:
-        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] passlib[bcrypt]")
-    return ctx.hash(password)
+    if not _AUTH_OK:
+        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] bcrypt")
+    raw = password.encode("utf-8")
+    if len(raw) > 72:
+        raise HTTPException(400, "Password must be 72 bytes or fewer")
+    return bcrypt.hashpw(raw, bcrypt.gensalt()).decode("utf-8")
 
 
 def _verify_password(plain: str, hashed: str) -> bool:
-    ctx = _get_pwd_context()
-    if not ctx:
+    if not _AUTH_OK:
         return False
-    return ctx.verify(plain, hashed)
+    raw = plain.encode("utf-8")
+    if len(raw) > 72:
+        return False
+    try:
+        return bcrypt.checkpw(raw, hashed.encode("utf-8"))
+    except ValueError:
+        return False
 
 
 def _create_token(username: str) -> str:
@@ -346,7 +373,7 @@ def _decode_token(token: str) -> Optional[str]:
 
 async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_security)) -> dict:
     if not _AUTH_OK:
-        raise HTTPException(503, "Auth packages not installed. Run: pip install python-jose[cryptography] passlib[bcrypt]")
+        raise HTTPException(503, "Auth packages not installed. Run: pip install python-jose[cryptography] bcrypt")
     if not credentials:
         raise HTTPException(401, "Authentication required", headers={"WWW-Authenticate": "Bearer"})
     username = _decode_token(credentials.credentials)
@@ -362,13 +389,13 @@ async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_secu
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _client, _claim_sem, _users_lock
+    global _client, _verify_sem, _users_lock
     api_key = os.environ.get("GROQ_API_KEY")
     if api_key:
         _client = AsyncGroq(api_key=api_key)
-    _claim_sem = asyncio.Semaphore(4)
+    configure_verifier(_client)
+    _verify_sem = asyncio.Semaphore(5)
     _users_lock = asyncio.Lock()
-    _get_pwd_context()
     yield
 
 
@@ -405,6 +432,13 @@ class LoginRequest(BaseModel):
 class AnalyzeRequest(BaseModel):
     article: str
 
+class FetchUrlRequest(BaseModel):
+    url: str
+
+class VerifyRequest(BaseModel):
+    claim: str
+    force_refresh: bool = False
+
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -427,13 +461,15 @@ class SuggestionsRequest(BaseModel):
 @app.post("/register")
 async def register(req: RegisterRequest):
     if not _AUTH_OK:
-        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] passlib[bcrypt]")
+        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] bcrypt")
     if len(req.username) < 3 or len(req.username) > 30:
         raise HTTPException(400, "Username must be 3-30 characters")
     if not re.match(r'^[a-zA-Z0-9_]+$', req.username):
         raise HTTPException(400, "Username can only contain letters, numbers, and underscores")
     if len(req.password) < 6:
         raise HTTPException(400, "Password must be at least 6 characters")
+    if len(req.password.encode("utf-8")) > 72:
+        raise HTTPException(400, "Password must be 72 bytes or fewer")
     if "@" not in req.email:
         raise HTTPException(400, "Invalid email address")
 
@@ -458,7 +494,7 @@ async def register(req: RegisterRequest):
 @app.post("/login")
 async def login(req: LoginRequest):
     if not _AUTH_OK:
-        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] passlib[bcrypt]")
+        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] bcrypt")
     async with _users_lock:
         users = _load_users()
     user = users.get(req.username)
@@ -479,22 +515,36 @@ async def me(user: dict = Depends(require_auth)):
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────
 
-async def _verify_claim(client: AsyncGroq, claim_text: str) -> dict:
-    async with _claim_sem:
+def _claim_is_verifiable(claim: dict) -> bool:
+    if "is_verifiable" in claim:
+        return bool(claim.get("is_verifiable"))
+    return str(claim.get("type", "")).strip().lower() not in {"opinion", "unverifiable"}
+
+
+async def _verify_claim_with_timeout(claim_text: str) -> dict:
+    async with _verify_sem:
         try:
-            resp = await client.chat.completions.create(
-                model=MODEL_FAST,
-                messages=[
-                    {"role": "system", "content": "Output only valid JSON. No prose."},
-                    {"role": "user", "content": CLAIM_VERIFY_PROMPT.format(claim=claim_text[:400])}
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.2,
-                max_tokens=150,
-            )
-            return json.loads(resp.choices[0].message.content)
+            return await asyncio.wait_for(block5_verify_claim(claim_text), timeout=30.0)
+        except VerificationError as e:
+            return {
+                "claim_id": "",
+                "claim_text": claim_text,
+                "verdict": "insufficient",
+                "confidence": 0.0,
+                "evidence": [],
+                "reasoning": str(e),
+                "verified_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            }
         except Exception:
-            return {"verdict": "unverifiable", "explanation": "Verification unavailable."}
+            return {
+                "claim_id": "",
+                "claim_text": claim_text,
+                "verdict": "insufficient",
+                "confidence": 0.0,
+                "evidence": [],
+                "reasoning": "Verification timed out or failed.",
+                "verified_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            }
 
 
 @app.post("/analyze")
@@ -538,17 +588,81 @@ async def analyze(req: AnalyzeRequest):
     except Exception as e:
         raise HTTPException(500, f"Analysis structuring failed: {e}")
 
-    # Step 3 — Parallel claim verification (semaphore-capped at 4)
+    # Step 3 — Retrieval-grounded claim verification (semaphore-capped at 5)
     claims = result.get("claims", [])
     if claims:
+        verifiable_claims = [c for c in claims if _claim_is_verifiable(c) and c.get("text")]
         verifications = await asyncio.gather(*[
-            _verify_claim(client, c.get("text", "")) for c in claims
+            _verify_claim_with_timeout(c.get("text", "")) for c in verifiable_claims
         ])
-        for claim, v in zip(result["claims"], verifications):
-            claim["verification"] = v
+        result["verifications"] = verifications
+        by_text = {v.get("claim_text"): v for v in verifications}
+        for claim in result["claims"]:
+            if claim.get("text") in by_text:
+                claim["verification"] = by_text[claim["text"]]
 
     result["reasoning_trace"] = thinking
     return result
+
+
+@app.post("/verify")
+async def verify(req: VerifyRequest):
+    if not req.claim.strip():
+        raise HTTPException(400, "Claim is required")
+    try:
+        return await block5_verify_claim(req.claim, force_refresh=req.force_refresh)
+    except VerificationError as e:
+        raise HTTPException(503, str(e))
+
+
+@app.post("/fetch-url")
+async def fetch_url(req: FetchUrlRequest):
+    url = _normalize_url(req.url)
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+        )
+    }
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=15.0, headers=headers) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(e.response.status_code, f"URL fetch failed with HTTP {e.response.status_code}")
+    except httpx.RequestError as e:
+        raise HTTPException(400, f"URL fetch failed: {e}")
+
+    content_type = resp.headers.get("content-type", "")
+    if "text/html" not in content_type and "application/xhtml" not in content_type:
+        raise HTTPException(400, "URL did not return an HTML article page")
+
+    html = resp.text
+    extracted = trafilatura.extract(
+        html,
+        url=str(resp.url),
+        include_comments=False,
+        include_tables=False,
+        favor_precision=False,
+    ) or ""
+    if len(extracted.strip()) < 200:
+        extracted = _fallback_html_text(html)
+
+    text = re.sub(r"\n{3,}", "\n\n", extracted).strip()
+    if len(text) < 200:
+        raise HTTPException(400, "Could not extract enough article text from this URL")
+
+    metadata = trafilatura.extract_metadata(html, default_url=str(resp.url))
+    title = ""
+    if metadata and metadata.title:
+        title = metadata.title.strip()
+
+    return {
+        "url": str(resp.url),
+        "title": title,
+        "text": text[:12000],
+    }
 
 
 # ── Agentic streaming chat ─────────────────────────────────────────────────────

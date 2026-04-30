@@ -27,7 +27,7 @@ import pathlib
 from openpyxl import load_workbook
 from groq import Groq
 
-MODEL = "llama-3.3-70b-versatile"
+MODEL = "llama-3.1-8b-instant"
 CACHE_PATH = "groq_results.json"
 SLEEP_BETWEEN = 2.0  # polite delay between requests
 
