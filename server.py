@@ -44,6 +44,7 @@ import base64
 import asyncio
 import pathlib
 import secrets
+import statistics as _stats
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -222,6 +223,167 @@ Return JSON: {{"suggestions": ["q1", "q2", "q3", "q4", "q5"]}}
 
 Mix article-specific questions with broader context questions. Make them interesting."""
 
+# ── AI-Generated text detection ────────────────────────────────────────────────
+
+AI_PHRASES = [
+    "it is important to note", "it is worth noting", "it is crucial to",
+    "it is essential to", "it should be noted", "as previously mentioned",
+    "in conclusion", "furthermore", "moreover", "in summary",
+    "with that being said", "on the other hand", "in light of",
+    "it can be argued", "it is clear that", "taking into account",
+    "it goes without saying", "needless to say", "at the end of the day",
+    "the fact of the matter", "it's important to", "it's worth",
+    "delve into", "dive into", "shed light on", "in today's world",
+    "the landscape of", "a testament to", "plays a crucial role",
+    "in the realm of", "multifaceted", "it is worth mentioning",
+    "revolutionize", "game-changer", "transformative", "seamlessly",
+    "leverage", "utilize", "robust", "pivotal", "noteworthy",
+    "in today's", "as we navigate", "it is undeniable", "it is imperative",
+    "rest assured", "look no further", "without further ado",
+    "as an ai", "as a language model", "i cannot provide",
+]
+
+AI_DETECT_PROMPT = """You are an expert forensic linguist specializing in AI-generated text detection.
+
+Analyze this article for signs that it was written by an AI language model rather than a human journalist.
+
+Key AI writing signals to look for:
+- Unnaturally uniform sentence length and structure (low burstiness)
+- Overuse of hedging transitions: "Furthermore", "Moreover", "It is important to note", "It is worth mentioning"
+- Perfectly balanced "on one hand / on the other hand" structures
+- Generic comprehensive coverage with no editorial voice, opinion, or personality
+- Absence of idiom, humor, sarcasm, or stylistic quirks
+- Overly smooth flow with no rough edges, abrupt cuts, or stylistic choices
+- Formulaic paragraph structure (topic sentence → evidence → conclusion)
+- Repetitive sentence templates across paragraphs
+- Lack of named sources cited naturally ("John Smith, a professor at..." vs vague "experts say")
+- Unnatural specificity mixed with vague generalities
+- No typos, contractions used awkwardly, or colloquialisms
+
+Statistical pre-analysis (already computed):
+- Sentence burstiness: {burstiness} (humans typically > 0.5; AI typically < 0.4)
+- Vocabulary richness (type-token ratio): {vocab_richness}
+- Known AI phrase count: {ai_phrase_hits}
+- Average sentence length: {avg_sentence_length} words
+
+Article:
+\"\"\"
+{article}
+\"\"\"
+
+Return ONLY valid JSON:
+{{
+  "ai_confidence": 0,
+  "verdict": "HUMAN | LIKELY HUMAN | UNCERTAIN | LIKELY AI | AI",
+  "reasoning": "2-3 sentences citing specific textual evidence",
+  "ai_signals": ["specific phrases or patterns from the text that suggest AI authorship"],
+  "human_signals": ["specific phrases or patterns from the text that suggest human authorship"]
+}}
+
+ai_confidence: integer 0-100. 0 = definitely human-written, 100 = definitely AI-generated.
+Base your assessment on specific textual evidence, not just the statistics."""
+
+TIMELINE_EXTRACT_PROMPT = """Extract the core topic and diverse search queries from this article for comprehensive narrative timeline research.
+
+Article (first 1000 chars):
+\"\"\"
+{article}
+\"\"\"
+
+Return ONLY valid JSON:
+{{
+  "topic": "3-6 word topic phrase for searching (e.g. 'Iran nuclear talks deadline')",
+  "search_queries": [
+    "query focused on the core event or main claim",
+    "query focused on the key actors or people involved",
+    "query focused on the latest development or outcome",
+    "query focused on background or historical context",
+    "query for fact-check, verification, or debunking angle",
+    "query for opposing perspectives, criticism, or counter-narrative"
+  ],
+  "core_claim": "the single most central factual claim in one sentence"
+}}"""
+
+TIMELINE_ANALYZE_PROMPT = """You are a narrative forensics analyst. Deeply analyze how this news story evolved across different sources and dates.
+
+Topic: {topic}
+Core claim from original article: {core_claim}
+
+Related articles found across the web (sorted oldest to newest where dates are known):
+{articles_text}
+
+Analyze each article and the overall narrative pattern. Look for:
+- Where did the story originate? Which source published earliest?
+- What claims were added, dropped, or distorted as it spread?
+- Which outlets corroborated vs. contradicted vs. independently reported?
+- Is there a coordinated amplification pattern?
+- What important context was omitted?
+
+Return ONLY valid JSON:
+{{
+  "origin_assessment": "2-3 sentences on which source appears to be the origin and why, noting the earliest date or earliest report found",
+  "narrative_verdict": "one of exactly: CORROBORATED | CONTRADICTED | DISPUTED | MIXED | UNVERIFIED",
+  "credibility_score": 0,
+  "article_assessments": [
+    {{
+      "index": 1,
+      "corroboration": "one of exactly: CORROBORATES | CONTRADICTS | INDEPENDENT | PARTIAL | UNRELATED",
+      "key_quote": "the single most relevant sentence from this article (max 120 chars)",
+      "bias_note": "3-5 word description e.g. 'neutral wire report', 'left-leaning op-ed', 'sensationalist headline', 'pro-government framing'"
+    }}
+  ],
+  "narrative_shifts": [
+    {{
+      "what_changed": "specific claim or framing that shifted (10-15 words)",
+      "original_version": "how it was originally stated",
+      "mutated_version": "how it changed in later coverage",
+      "source": "outlet where this change first appeared"
+    }}
+  ],
+  "dropped_context": ["important fact or context omitted as the story spread", "another omitted fact"],
+  "amplification_chain": ["source1", "source2", "source3", "source4", "source5", "source6", "source7", "source8"],
+  "timeline_summary": "3-4 sentence summary: where the story started, how it evolved, who corroborated or contradicted it, and overall credibility assessment"
+}}
+
+IMPORTANT: credibility_score must be an integer 0-100 (0=fully fake/contradicted by all sources, 100=fully corroborated by multiple credible independent sources).
+Provide article_assessments for EVERY article indexed above. Keep narrative_shifts to at most 6. Keep amplification_chain to at most 8 outlets."""
+
+FAKE_DETECT_PROMPT = """You are an expert misinformation analyst. Your job is to determine whether a news article is FAKE or REAL.
+
+You have been given:
+1. The original article text
+2. A manipulation analysis
+3. Full scraped content from up to 10 web pages found by searching the article's key claims
+
+Cross-reference the article's claims against the scraped pages. If multiple credible pages corroborate the events, it is likely real. If no pages corroborate it, or pages actively contradict it, it is likely fake.
+
+Article:
+\"\"\"
+{article}
+\"\"\"
+
+Manipulation analysis:
+- Manipulation index: {manipulation_index}/100
+- Persuasion techniques: {techniques}
+- Dominant emotions: {emotions}
+- Narrative cluster: {narrative_cluster}
+- Claim verdicts: {claim_verifications}
+
+Scraped web pages for verification:
+{search_results}
+
+Return ONLY valid JSON — no prose, no markdown:
+{{
+  "fake_confidence": 0,
+  "reasoning": "2-3 sentences on why this score was assigned, referencing specific scraped page findings",
+  "red_flags": ["specific red flags found"],
+  "trust_signals": ["specific trust signals found"]
+}}
+
+fake_confidence is an integer 0-100. 0 = definitely real, 100 = definitely fake.
+Base your score on whether the scraped pages corroborate or contradict the article's core claims.
+"""
+
 # ── Tool definitions ───────────────────────────────────────────────────────────
 
 TOOL_DEFINITIONS = [
@@ -385,11 +547,12 @@ def manipulation_label(mi: int) -> str:
 _client: Optional[AsyncGroq] = None
 _welfake_df = None
 _claim_sem: Optional[asyncio.Semaphore] = None
+_fake_model = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _client, _claim_sem, _mongo_client, _users_col
+    global _client, _claim_sem, _mongo_client, _users_col, _fake_model
     api_key = os.environ.get("GROQ_API_KEY")
     if api_key:
         _client = AsyncGroq(api_key=api_key)
@@ -399,6 +562,12 @@ async def lifespan(app: FastAPI):
     await _users_col.create_index("username", unique=True)
     await _users_col.create_index("email", unique=True)
     _get_pwd_context()
+    try:
+        import joblib
+        _fake_model = joblib.load("baseline_model.joblib")
+        print("✓ Fake detection model loaded (97% accuracy on WELFake)")
+    except Exception as e:
+        print(f"⚠ Fake detection model not loaded: {e}")
     yield
     _mongo_client.close()
 
@@ -454,6 +623,9 @@ class SuggestionsRequest(BaseModel):
 
 class FetchUrlRequest(BaseModel):
     url: str
+
+class TimelineRequest(BaseModel):
+    article: str
 
 
 # ── Auth endpoints ─────────────────────────────────────────────────────────────
@@ -513,6 +685,406 @@ async def me(user: dict = Depends(require_auth)):
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────
 
+def _scrape_page_sync(url: str) -> Optional[str]:
+    try:
+        downloaded = trafilatura.fetch_url(url)
+        if not downloaded:
+            return None
+        text = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
+        return text[:1500] if text else None
+    except Exception:
+        return None
+
+
+async def _scrape_pages(urls: list[str]) -> list[dict]:
+    async def _one(url):
+        try:
+            text = await asyncio.wait_for(asyncio.to_thread(_scrape_page_sync, url), timeout=7.0)
+            return {"url": url, "text": text} if text else None
+        except Exception:
+            return None
+    results = await asyncio.gather(*[_one(u) for u in urls[:10]])
+    return [r for r in results if r]
+
+
+async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -> dict:
+    claims = structured.get("claims", [])
+    verifiable = [c for c in claims if c.get("type") == "Verifiable"][:3]
+    if not verifiable:
+        verifiable = claims[:3]
+
+    # ── Step 1: ML model score (trained on 72k WELFake articles) ──────────────
+    ml_fc: Optional[int] = None
+    if _fake_model is not None:
+        try:
+            proba = _fake_model.predict_proba([article_text])[0]
+            ml_fc = int(proba[1] * 100)  # proba[1] = P(fake)
+        except Exception:
+            pass
+
+    # ── Step 2: Search DDG for each verifiable claim, collect real URLs ────────
+    sources_checked: list[dict] = []
+    all_urls: list[str] = []
+
+    for claim_obj in verifiable:
+        claim_text = claim_obj.get("text", "")[:150]
+        results = await asyncio.to_thread(_ddg_search, f'"{claim_text}"', 4)
+        for r in results:
+            if r.get("error") or not r.get("url") or not r.get("title"):
+                continue
+            sources_checked.append({
+                "claim": claim_text,
+                "url": r["url"],
+                "title": r["title"],
+                "supports": None,
+            })
+            all_urls.append(r["url"])
+
+    # Broader topic search to pad up to 10 pages
+    if len(all_urls) < 10:
+        topic_query = article_text[:120].replace('"', '')
+        extra = await asyncio.to_thread(_ddg_search, topic_query + " news", 6)
+        for r in extra:
+            if r.get("error") or not r.get("url") or not r.get("title"):
+                continue
+            if r["url"] not in all_urls:
+                sources_checked.append({
+                    "claim": "topic search",
+                    "url": r["url"],
+                    "title": r["title"],
+                    "supports": None,
+                })
+                all_urls.append(r["url"])
+
+    # ── Step 3: Scrape up to 10 pages ─────────────────────────────────────────
+    scraped = await _scrape_pages(all_urls[:10])
+    scraped_block = ""
+    for i, page in enumerate(scraped):
+        scraped_block += f"\n--- Page {i+1} ({page['url']}) ---\n{page['text']}\n"
+    if not scraped_block:
+        scraped_block = "No pages could be scraped."
+
+    # ── Step 4: LLM reasoning over scraped content ─────────────────────────────
+    techniques = [t.get("technique", "") for t in structured.get("persuasion_techniques", [])[:5]]
+    emo = structured.get("emotion_scores", {})
+    top_emotions = sorted(emo.items(), key=lambda x: -x[1])[:3]
+    claim_verdicts = [
+        f'{c.get("text","")[:80]}: {c.get("verification",{}).get("verdict","?")}'
+        for c in claims[:5]
+    ]
+
+    prompt = FAKE_DETECT_PROMPT.format(
+        article=article_text[:4000],
+        manipulation_index=structured.get("manipulation_index", 0),
+        techniques=", ".join(techniques) or "none",
+        emotions=", ".join(f"{k}={v}" for k, v in top_emotions),
+        narrative_cluster=structured.get("narrative_cluster", "none"),
+        claim_verifications="; ".join(claim_verdicts) or "none",
+        search_results=scraped_block[:8000],
+    )
+
+    llm_fc = 50
+    llm_reasoning = "LLM analysis unavailable."
+    red_flags: list[str] = []
+    trust_signals: list[str] = []
+    try:
+        resp = await client.chat.completions.create(
+            model=MODEL_STRUCT,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=600,
+        )
+        llm_out = json.loads(resp.choices[0].message.content)
+        llm_fc = max(0, min(100, int(llm_out.get("fake_confidence", 50))))
+        llm_reasoning = llm_out.get("reasoning", "")
+        red_flags = llm_out.get("red_flags", [])
+        trust_signals = llm_out.get("trust_signals", [])
+    except Exception:
+        pass
+
+    # ── Step 5: Combine ML (60%) + LLM (40%) ──────────────────────────────────
+    if ml_fc is not None:
+        combined_fc = int(round(0.6 * ml_fc + 0.4 * llm_fc))
+    else:
+        combined_fc = llm_fc
+    combined_fc = max(0, min(100, combined_fc))
+    trust_rating = 100 - combined_fc
+
+    if combined_fc <= 20:   verdict = "REAL"
+    elif combined_fc <= 40: verdict = "LIKELY REAL"
+    elif combined_fc <= 60: verdict = "UNCERTAIN"
+    elif combined_fc <= 80: verdict = "LIKELY FAKE"
+    else:                   verdict = "FAKE"
+
+    return {
+        "fake_confidence": combined_fc,
+        "trust_rating": trust_rating,
+        "verdict": verdict,
+        "reasoning": llm_reasoning,
+        "red_flags": red_flags,
+        "trust_signals": trust_signals,
+        "sources_checked": sources_checked[:10],
+        "ml_score": ml_fc,
+        "pages_scraped": len(scraped),
+    }
+
+
+def _compute_ai_stats(text: str) -> dict:
+    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if len(s.strip()) > 10]
+    words = re.findall(r'\b[a-zA-Z]+\b', text.lower())
+    if not sentences or not words:
+        return {"ai_stat_score": 50, "burstiness": 0.5, "vocab_richness": 0.5,
+                "ai_phrase_hits": 0, "avg_sentence_length": 20}
+
+    sent_lengths = [len(s.split()) for s in sentences]
+    mean_len = _stats.mean(sent_lengths)
+    std_len = _stats.stdev(sent_lengths) if len(sent_lengths) > 1 else 0
+    burstiness = round(std_len / mean_len if mean_len > 0 else 0, 3)
+
+    unique_words = len(set(words))
+    ttr = round(unique_words / len(words), 3)
+
+    text_lower = text.lower()
+    phrase_hits = sum(1 for p in AI_PHRASES if p in text_lower)
+    phrase_density = phrase_hits / max(len(words) / 100, 1)
+
+    avg_sent = round(mean_len, 1)
+
+    # Low burstiness → AI-like
+    burst_score = max(0, min(100, int((0.55 - burstiness) * 180))) if burstiness < 0.55 else 0
+    # High phrase density → AI-like
+    phrase_score = min(100, int(phrase_density * 35))
+    # Sentence length in AI sweet-spot (17-24 words) → AI-like
+    sent_score = max(0, 45 - int(abs(avg_sent - 20) * 3))
+    # Low TTR → AI-like
+    ttr_score = max(0, int((0.58 - ttr) * 120)) if ttr < 0.58 else 0
+
+    ai_stat_score = max(0, min(100,
+        int(burst_score * 0.35 + phrase_score * 0.35 + sent_score * 0.15 + ttr_score * 0.15)
+    ))
+    return {
+        "ai_stat_score": ai_stat_score,
+        "burstiness": burstiness,
+        "vocab_richness": ttr,
+        "ai_phrase_hits": phrase_hits,
+        "avg_sentence_length": avg_sent,
+    }
+
+
+async def _ai_detect(client: AsyncGroq, article_text: str) -> dict:
+    stats = _compute_ai_stats(article_text)
+    prompt = AI_DETECT_PROMPT.format(
+        article=article_text[:5000],
+        burstiness=stats["burstiness"],
+        vocab_richness=stats["vocab_richness"],
+        ai_phrase_hits=stats["ai_phrase_hits"],
+        avg_sentence_length=stats["avg_sentence_length"],
+    )
+    llm_ai_conf = 50
+    reasoning = "LLM analysis unavailable."
+    ai_signals: list[str] = []
+    human_signals: list[str] = []
+    try:
+        resp = await client.chat.completions.create(
+            model=MODEL_STRUCT,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=500,
+        )
+        out = json.loads(resp.choices[0].message.content)
+        llm_ai_conf = max(0, min(100, int(out.get("ai_confidence", 50))))
+        reasoning = out.get("reasoning", "")
+        ai_signals = out.get("ai_signals", [])
+        human_signals = out.get("human_signals", [])
+    except Exception:
+        pass
+
+    # 50% statistical, 50% LLM
+    combined = max(0, min(100, int(round(0.5 * stats["ai_stat_score"] + 0.5 * llm_ai_conf))))
+
+    if combined <= 20:   verdict = "HUMAN"
+    elif combined <= 40: verdict = "LIKELY HUMAN"
+    elif combined <= 60: verdict = "UNCERTAIN"
+    elif combined <= 80: verdict = "LIKELY AI"
+    else:                verdict = "AI GENERATED"
+
+    return {
+        "ai_confidence": combined,
+        "verdict": verdict,
+        "reasoning": reasoning,
+        "ai_signals": ai_signals,
+        "human_signals": human_signals,
+        "stats": stats,
+    }
+
+
+def _scrape_with_meta_sync(url: str) -> Optional[dict]:
+    try:
+        downloaded = trafilatura.fetch_url(url)
+        if not downloaded:
+            return None
+        result = trafilatura.extract(
+            downloaded, output_format="json", with_metadata=True,
+            include_comments=False, include_tables=False, favor_precision=True,
+        )
+        if not result:
+            return None
+        data = json.loads(result)
+        text = (data.get("text") or "").strip()
+        if len(text) < 80:
+            return None
+        return {
+            "url": url,
+            "title": (data.get("title") or "").strip(),
+            "date": (data.get("date") or "").strip(),
+            "hostname": (data.get("hostname") or "").strip(),
+            "text": text[:2000],
+        }
+    except Exception:
+        return None
+
+
+async def _scrape_pages_with_meta(urls: list[str]) -> list[dict]:
+    async def _one(url):
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(_scrape_with_meta_sync, url), timeout=8.0
+            )
+        except Exception:
+            return None
+    results = await asyncio.gather(*[_one(u) for u in urls[:20]])
+    return [r for r in results if r]
+
+
+async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
+    # Step 1: extract topic + 6 diverse search queries
+    try:
+        ext_resp = await client.chat.completions.create(
+            model=MODEL_FAST,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": TIMELINE_EXTRACT_PROMPT.format(article=article_text[:1000])},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=300,
+        )
+        ext = json.loads(ext_resp.choices[0].message.content)
+        topic = ext.get("topic", "")
+        queries = ext.get("search_queries", [topic])[:6]
+        core_claim = ext.get("core_claim", "")
+    except Exception:
+        topic = article_text[:80]
+        queries = [topic]
+        core_claim = topic
+
+    # Step 2: run all 6 queries, 6 results each = up to 36 candidates
+    all_urls: list[str] = []
+    seen: set[str] = set()
+    for q in queries:
+        results = await asyncio.to_thread(_ddg_search, q, 6)
+        for r in results:
+            url = r.get("url", "")
+            if url and url not in seen and not r.get("error"):
+                seen.add(url)
+                all_urls.append(url)
+
+    # Step 3: scrape up to 20 pages with full metadata
+    pages = await _scrape_pages_with_meta(all_urls[:20])
+
+    # Sort by date where available
+    def _date_key(p):
+        d = p.get("date", "")
+        return d if d else "9999"
+    pages.sort(key=_date_key)
+
+    if not pages:
+        return {
+            "topic": topic,
+            "core_claim": core_claim,
+            "entries": [],
+            "narrative_shifts": [],
+            "dropped_context": [],
+            "amplification_chain": [],
+            "origin_assessment": "No related articles could be found.",
+            "timeline_summary": "Insufficient data to build a narrative timeline.",
+            "narrative_verdict": "UNVERIFIED",
+            "credibility_score": 50,
+        }
+
+    # Step 4: build text block for LLM (1200 chars per article for depth)
+    articles_text = ""
+    entries = []
+    for i, p in enumerate(pages):
+        label = f"[{i+1}] {p.get('hostname','?')} | {p.get('date','date unknown')} | {p.get('title','')}"
+        articles_text += f"\n{label}\n{p['text'][:1200]}\n"
+        entries.append({
+            "index": i + 1,
+            "url": p["url"],
+            "title": p.get("title", ""),
+            "date": p.get("date", ""),
+            "hostname": p.get("hostname", ""),
+        })
+
+    # Step 5: deep LLM narrative forensics analysis
+    try:
+        ana_resp = await client.chat.completions.create(
+            model=MODEL_STRUCT,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": TIMELINE_ANALYZE_PROMPT.format(
+                    topic=topic,
+                    core_claim=core_claim,
+                    articles_text=articles_text[:9000],
+                )},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3,
+            max_tokens=1800,
+        )
+        ana = json.loads(ana_resp.choices[0].message.content)
+    except Exception:
+        ana = {
+            "origin_assessment": "Analysis unavailable.",
+            "narrative_shifts": [],
+            "dropped_context": [],
+            "amplification_chain": [],
+            "timeline_summary": "Timeline data collected but narrative analysis failed.",
+            "narrative_verdict": "UNVERIFIED",
+            "credibility_score": 50,
+            "article_assessments": [],
+        }
+
+    # Step 6: merge per-article assessments into entries
+    assessments = {a.get("index"): a for a in ana.get("article_assessments", [])}
+    for e in entries:
+        asmt = assessments.get(e["index"], {})
+        e["corroboration"] = asmt.get("corroboration", "INDEPENDENT")
+        e["key_quote"] = asmt.get("key_quote", "")
+        e["bias_note"] = asmt.get("bias_note", "")
+
+    return {
+        "topic": topic,
+        "core_claim": core_claim,
+        "entries": entries,
+        "narrative_shifts": ana.get("narrative_shifts", []),
+        "dropped_context": ana.get("dropped_context", []),
+        "amplification_chain": ana.get("amplification_chain", []),
+        "origin_assessment": ana.get("origin_assessment", ""),
+        "timeline_summary": ana.get("timeline_summary", ""),
+        "narrative_verdict": ana.get("narrative_verdict", "UNVERIFIED"),
+        "credibility_score": int(ana.get("credibility_score", 50)),
+    }
+
+
 async def _verify_claim(client: AsyncGroq, claim_text: str) -> dict:
     async with _claim_sem:
         try:
@@ -571,13 +1143,22 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
 
     claims = result.get("claims", [])
     if claims:
-        verifications = await asyncio.gather(*[
-            _verify_claim(client, c.get("text", "")) for c in claims
-        ])
+        verifications, fake_result, ai_result = await asyncio.gather(
+            asyncio.gather(*[_verify_claim(client, c.get("text", "")) for c in claims]),
+            _fake_detect(client, article_text, result),
+            _ai_detect(client, article_text),
+        )
         for claim, v in zip(result["claims"], verifications):
             claim["verification"] = v
+    else:
+        fake_result, ai_result = await asyncio.gather(
+            _fake_detect(client, article_text, result),
+            _ai_detect(client, article_text),
+        )
 
     result["reasoning_trace"] = thinking
+    result["fake_detection"] = fake_result
+    result["ai_detection"] = ai_result
     return result
 
 
@@ -847,6 +1428,17 @@ async def get_suggestions(req: SuggestionsRequest, user: dict = Depends(require_
             "What historical events does this echo?",
             "What should I fact-check first?"
         ]}
+
+
+# ── Narrative Timeline ────────────────────────────────────────────────────────
+
+@app.post("/timeline")
+async def narrative_timeline(req: TimelineRequest, user: dict = Depends(require_auth)):
+    if len(req.article) < 100:
+        raise HTTPException(400, "Article too short (need at least 100 chars)")
+    client = get_client()
+    result = await _build_timeline(client, req.article[:10000])
+    return result
 
 
 # ── Misc ───────────────────────────────────────────────────────────────────────
