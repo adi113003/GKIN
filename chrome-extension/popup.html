@@ -5,202 +5,273 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GKIN Truth Navigator</title>
 <style>
+/* ── Base ── */
 :root {
-  --bg: #0f0e0c; --bg-2: #1a1816; --bg-3: #262320;
-  --ink: #f4efe6; --ink-2: #b8b2a4; --ink-3: #736d5e;
-  --accent: #e8c547; --danger: #e85c4a; --ok: #7cb342; --warn: #e8914a;
-  --conspiracy: #a855f7;
-  --border: rgba(244,239,230,0.08); --border-2: rgba(244,239,230,0.15);
+  --bg:        #07080f;
+  --bg-2:      #0d0f1a;
+  --bg-3:      #141620;
+  --ink:       #f0f0f0;
+  --ink-2:     #c8c8c8;
+  --ink-3:     #888899;
+  --border:    rgba(255,255,255,0.10);
+  --border-2:  rgba(255,255,255,0.20);
+  --gold:      #c8963c;
+  --red:       #cc3333;
+  --green:     #2a8a18;
+  --blue:      #3a6acc;
+  --purple:    #9050cc;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { width: 380px; }
+html { width: 400px; }
 body {
   background: var(--bg); color: var(--ink);
-  font-family: -apple-system, "Inter", sans-serif;
-  font-size: 13px; line-height: 1.5;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px; line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
 /* ── Header ── */
 .header {
-  padding: 14px 16px 12px;
+  padding: 13px 16px 11px;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-2);
 }
 .brand {
-  font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink);
+  font-size: 16px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink);
 }
-.brand em { color: var(--accent); font-style: italic; font-weight: 400; }
-.server-btn {
-  font-size: 10px; color: var(--ink-3); background: transparent; border: none;
-  cursor: pointer; padding: 3px 6px; border-radius: 4px; transition: color 0.15s;
-  font-family: monospace;
+.brand em { color: var(--gold); font-style: normal; font-weight: 400; font-size: 12px; letter-spacing: 0.14em; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--ink-3); font-size: 15px; cursor: pointer;
+  padding: 4px 8px; border-radius: 4px; line-height: 1; transition: all 0.15s;
 }
-.server-btn:hover { color: var(--ink-2); background: var(--bg-3); }
+.icon-btn:hover { color: var(--ink); border-color: var(--border-2); background: var(--bg-3); }
 
-/* ── Sections ── */
-.section { padding: 14px 16px; }
-
-/* ── Auth section ── */
-.auth-label {
-  font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--ink-3); font-family: monospace; margin-bottom: 8px;
+/* ── Server settings ── */
+.settings-box {
+  display: none; padding: 12px 16px 14px;
+  border-bottom: 1px solid var(--border); background: var(--bg-2);
 }
-.auth-field { margin-bottom: 8px; }
-.auth-field input {
+.settings-box.show { display: block; }
+.field-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-3); margin-bottom: 6px;
+}
+.settings-input {
   width: 100%; background: var(--bg-3); border: 1px solid var(--border);
   border-radius: 5px; color: var(--ink); padding: 8px 10px;
-  font-size: 12px; transition: border-color 0.15s;
+  font-size: 13px; font-family: monospace;
+}
+.settings-input:focus { outline: none; border-color: var(--border-2); }
+.settings-row { display: flex; gap: 6px; margin-top: 8px; }
+.btn-ghost {
+  flex: 1; padding: 7px; font-size: 12px; font-weight: 600;
+  background: transparent; color: var(--ink-2);
+  border: 1px solid var(--border-2); border-radius: 5px;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-ghost:hover { background: var(--bg-3); color: var(--ink); }
+
+/* ── Auth ── */
+.section { padding: 16px; }
+.auth-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ink-3); margin-bottom: 12px; font-weight: 600;
+}
+.auth-field { margin-bottom: 10px; }
+.auth-field input {
+  width: 100%; background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--ink); padding: 10px 12px;
+  font-size: 14px; transition: border-color 0.15s;
 }
 .auth-field input:focus { outline: none; border-color: var(--border-2); }
 .auth-field input::placeholder { color: var(--ink-3); }
-.btn {
-  width: 100%; padding: 9px; font-size: 12px; font-weight: 600;
-  background: var(--accent); color: var(--bg); border: none;
-  border-radius: 5px; cursor: pointer; transition: background 0.15s;
+.btn-primary {
+  width: 100%; padding: 11px; font-size: 14px; font-weight: 700;
+  background: var(--ink); color: var(--bg); border: none;
+  border-radius: 6px; cursor: pointer; letter-spacing: 0.04em;
+  transition: opacity 0.15s;
 }
-.btn:hover:not(:disabled) { background: #f5e6a3; }
-.btn:disabled { background: var(--bg-3); color: var(--ink-3); cursor: not-allowed; }
-.btn.ghost {
-  background: transparent; color: var(--ink-2); border: 1px solid var(--border-2);
-}
-.btn.ghost:hover { background: var(--bg-3); }
+.btn-primary:hover:not(:disabled) { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
 .auth-switch {
-  text-align: center; margin-top: 8px; font-size: 11px; color: var(--ink-3);
+  text-align: center; margin-top: 10px; font-size: 12px; color: var(--ink-3);
 }
-.auth-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
+.auth-switch a { color: var(--gold); cursor: pointer; text-decoration: none; }
 .auth-switch a:hover { text-decoration: underline; }
 .auth-error {
-  background: rgba(232,92,74,0.1); color: var(--danger);
-  padding: 7px 10px; border-radius: 4px; font-size: 11px;
-  margin-top: 8px; display: none;
+  background: rgba(204,51,51,0.12); color: #ff8080;
+  padding: 8px 11px; border-radius: 5px; font-size: 12px;
+  margin-top: 10px; display: none; border: 1px solid rgba(204,51,51,0.25);
 }
 .auth-error.show { display: block; }
 
-/* ── Logged in section ── */
+/* ── Logged-in header row ── */
 .user-row {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
 }
-.user-info { font-size: 11px; color: var(--ink-3); }
-.user-info strong { color: var(--accent); font-weight: 500; }
-.logout-link {
-  font-size: 10px; color: var(--ink-3); cursor: pointer;
-  font-family: monospace; text-transform: uppercase; letter-spacing: 0.06em;
-  background: none; border: none; padding: 0;
+.user-info { font-size: 12px; color: var(--ink-3); }
+.user-info strong { color: var(--gold); font-weight: 600; }
+.logout-btn {
+  font-size: 11px; color: var(--ink-3); cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  background: none; border: none; padding: 0; transition: color 0.15s;
 }
-.logout-link:hover { color: var(--danger); }
+.logout-btn:hover { color: var(--red); }
 
-/* ── Analyze section ── */
-.page-title {
-  font-size: 11px; color: var(--ink-2); margin-bottom: 10px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  padding: 8px 10px; background: var(--bg-3); border-radius: 5px;
-  border: 1px solid var(--border);
+/* ── Page info ── */
+.page-card {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 12px; margin-bottom: 10px;
 }
-.page-title span { font-size: 9px; font-family: monospace; color: var(--ink-3); text-transform: uppercase; display: block; margin-bottom: 3px; }
-.chars-note { font-size: 10px; font-family: monospace; color: var(--ink-3); margin-bottom: 10px; }
+.page-card-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-3); margin-bottom: 4px;
+}
+.page-title-text {
+  font-size: 13px; color: var(--ink-2); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.chars-note { font-size: 11px; color: var(--ink-3); margin-bottom: 12px; font-family: monospace; }
 
-/* ── Gauge ── */
-.result-box {
-  background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
-  padding: 14px; margin-top: 10px; display: none;
-  animation: fadeIn 0.3s ease;
+/* ── Analyze button ── */
+.btn-analyze {
+  width: 100%; padding: 12px; font-size: 14px; font-weight: 700;
+  background: var(--ink); color: var(--bg); border: none;
+  border-radius: 6px; cursor: pointer; letter-spacing: 0.06em;
+  text-transform: uppercase; transition: opacity 0.15s;
 }
-.result-box.show { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-.result-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
-.mini-gauge { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.btn-analyze:hover:not(:disabled) { opacity: 0.88; }
+.btn-analyze:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Loading ── */
+.status {
+  font-size: 12px; font-family: monospace; color: var(--ink-3);
+  padding: 8px 0; text-align: center; display: none;
+}
+.status.show { display: block; }
+.status::after { content: ""; animation: dots 1.2s steps(4,end) infinite; }
+@keyframes dots { 0%{content:""} 25%{content:"."} 50%{content:".."} 75%,100%{content:"..."} }
+
+/* ── Result card ── */
+.result-card {
+  display: none; margin-top: 14px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  animation: fadeUp 0.25s ease;
+}
+.result-card.show { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Metric row (gauge + label) ── */
+.metric-section {
+  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
+}
+.metric-section:last-child { border-bottom: none; }
+.metric-header {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ink-3); margin-bottom: 10px; font-weight: 700;
+}
+.metric-row { display: flex; align-items: center; gap: 14px; }
+.mini-gauge { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
 .mini-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .gauge-bg { fill: none; stroke: var(--bg-3); stroke-width: 7; }
-.gauge-fg { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease, stroke 0.3s; }
-.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.gauge-num { font-size: 18px; font-weight: 700; line-height: 1; }
-.gauge-sub { font-size: 8px; font-family: monospace; color: var(--ink-3); }
-.verdict-label { flex: 1; }
-.verdict-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.verdict-tag {
+.gauge-fg {
+  fill: none; stroke-width: 7; stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.25,0.46,0.45,0.94), stroke 0.4s;
+}
+.gauge-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.gauge-num { font-size: 18px; font-weight: 800; line-height: 1; }
+.gauge-denom { font-size: 9px; color: var(--ink-3); font-family: monospace; }
+.metric-info { flex: 1; min-width: 0; }
+.metric-verdict {
+  font-size: 15px; font-weight: 700; margin-bottom: 5px; line-height: 1.2;
+}
+.metric-pill {
   display: inline-block; font-size: 9px; font-family: monospace;
-  text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 3px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 3px 9px; border-radius: 3px; font-weight: 700;
 }
 
 /* ── Techniques ── */
-.techniques-list { display: flex; flex-direction: column; gap: 5px; }
+.techniques-section { padding: 12px 16px; border-top: 1px solid var(--border); }
+.section-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ink-3); font-weight: 700; margin-bottom: 8px;
+}
+.tech-list { display: flex; flex-direction: column; gap: 5px; }
 .tech-item {
-  background: var(--bg-3); border-radius: 4px; padding: 6px 10px;
+  background: var(--bg-3); border-radius: 5px; padding: 7px 11px;
   display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+  border: 1px solid var(--border);
 }
 .tech-name {
-  font-family: monospace; font-size: 9px; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--accent); flex-shrink: 0;
+  font-family: monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--gold); flex-shrink: 0; font-weight: 700;
 }
-.tech-span { font-size: 10px; color: var(--ink-2); font-style: italic; text-align: right; max-width: 180px; }
+.tech-span { font-size: 11px; color: var(--ink-2); font-style: italic; text-align: right; max-width: 180px; line-height: 1.4; }
 
-/* ── Conspiracy in extension ── */
+/* ── Narrative cluster ── */
+.cluster-row {
+  font-family: monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--ink-3); padding: 8px 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Open full button ── */
+.actions { padding: 12px 16px; border-top: 1px solid var(--border); }
+.btn-open {
+  width: 100%; padding: 10px; font-size: 13px; font-weight: 600;
+  background: transparent; color: var(--ink-2); letter-spacing: 0.06em;
+  border: 1px solid var(--border-2); border-radius: 6px;
+  cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+}
+.btn-open:hover { background: var(--bg-3); color: var(--ink); border-color: var(--ink-3); }
+
+/* ── Conspiracy alert ── */
 .conspiracy-note {
-  font-size: 9px; font-family: monospace; color: rgba(168,85,247,0.7);
-  background: rgba(168,85,247,0.07); border: 1px solid rgba(168,85,247,0.2);
-  padding: 5px 8px; border-radius: 4px; margin-top: 6px; display: none;
+  font-size: 11px; color: rgba(168,85,247,0.85);
+  background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.22);
+  padding: 7px 11px; border-radius: 5px; margin: 0 16px 12px; display: none;
+  line-height: 1.5;
 }
 .conspiracy-note.show { display: block; }
 
-/* ── Actions ── */
-.actions { display: flex; gap: 6px; margin-top: 10px; }
-.actions .btn { flex: 1; padding: 8px; font-size: 11px; }
-.open-btn { background: transparent; color: var(--accent); border: 1px solid rgba(232,197,71,0.3); }
-.open-btn:hover { background: rgba(232,197,71,0.08); }
-
-/* ── Server settings ── */
-.settings-box { display: none; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg-2); }
-.settings-box.show { display: block; }
-.settings-box label { font-size: 9px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); display: block; margin-bottom: 6px; }
-.settings-box input {
-  width: 100%; background: var(--bg-3); border: 1px solid var(--border); border-radius: 4px;
-  color: var(--ink); padding: 7px 10px; font-size: 11px; font-family: monospace;
-}
-.settings-box input:focus { outline: none; border-color: var(--border-2); }
-.settings-row { display: flex; gap: 6px; margin-top: 8px; }
-.settings-row .btn { flex: 1; padding: 7px; font-size: 11px; }
-
-/* ── Loading / status ── */
-.status {
-  font-size: 10px; font-family: monospace; color: var(--ink-3);
-  padding: 6px 0; text-align: center; display: none;
-}
-.status.show { display: block; }
-.status::after { content: ""; animation: dots 1s steps(4,end) infinite; }
-@keyframes dots { 0%{content:""} 25%{content:"."} 50%{content:".."} 75%,100%{content:"..."} }
-
-/* ── Cluster badge ── */
-.cluster {
-  font-family: monospace; font-size: 9px; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 6px;
-}
-
 /* ── Divider ── */
-.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 </style>
 </head>
 <body>
 
+<!-- Header -->
 <div class="header">
-  <div class="brand">gkin <em>/ truth navigator</em></div>
-  <button class="server-btn" id="settings-toggle">⚙ server</button>
-</div>
-
-<!-- Server settings panel -->
-<div class="settings-box" id="settings-box">
-  <label>Server URL</label>
-  <input type="text" id="server-url" placeholder="http://localhost:8000" />
-  <div class="settings-row">
-    <button class="btn ghost" id="save-server">Save</button>
-    <button class="btn ghost" id="cancel-settings">Cancel</button>
+  <div class="brand">GKIN <em>/ TRUTH NAVIGATOR</em></div>
+  <div class="header-right">
+    <button class="icon-btn" id="theme-toggle" title="Toggle light/dark">🌙</button>
+    <button class="icon-btn" id="settings-toggle" title="Server settings">⚙</button>
   </div>
 </div>
 
-<hr class="divider" />
+<!-- Server settings -->
+<div class="settings-box" id="settings-box">
+  <div class="field-label">Server URL</div>
+  <input class="settings-input" type="text" id="server-url" placeholder="http://localhost:8000" />
+  <div class="settings-row">
+    <button class="btn-ghost" id="save-server">Save</button>
+    <button class="btn-ghost" id="cancel-settings">Cancel</button>
+  </div>
+</div>
 
-<!-- Auth section — shown when not logged in -->
+<hr />
+
+<!-- Auth section -->
 <div class="section" id="auth-section">
   <div class="auth-label" id="auth-form-label">Sign in</div>
 
@@ -211,7 +282,7 @@ body {
     <div class="auth-field">
       <input type="password" id="ext-password" placeholder="Password" autocomplete="current-password" />
     </div>
-    <button class="btn" id="ext-login-btn">Sign in</button>
+    <button class="btn-primary" id="ext-login-btn">Sign In</button>
     <div class="auth-switch">No account? <a id="show-register">Create one</a></div>
     <div class="auth-error" id="ext-login-error"></div>
   </div>
@@ -226,58 +297,112 @@ body {
     <div class="auth-field">
       <input type="password" id="ext-reg-password" placeholder="Password (min 6 chars)" autocomplete="new-password" />
     </div>
-    <button class="btn" id="ext-register-btn">Create account</button>
+    <button class="btn-primary" id="ext-register-btn">Create Account</button>
     <div class="auth-switch">Already have one? <a id="show-login">Sign in</a></div>
     <div class="auth-error" id="ext-reg-error"></div>
   </div>
 </div>
 
-<!-- Analyze section — shown when logged in -->
+<!-- Analyze section -->
 <div class="section" id="analyze-section" style="display:none;">
   <div class="user-row">
     <div class="user-info">Signed in as <strong id="ext-username-display"></strong></div>
-    <button class="logout-link" id="ext-logout">Logout</button>
+    <button class="logout-btn" id="ext-logout">Logout</button>
   </div>
 
-  <div class="page-title" id="page-title-box">
-    <span>Current page</span>
-    <span id="page-title-text">Loading...</span>
+  <div class="page-card">
+    <div class="page-card-label">Current page</div>
+    <div class="page-title-text" id="page-title-text">Loading...</div>
   </div>
   <div class="chars-note" id="chars-note"></div>
 
-  <button class="btn" id="analyze-btn">Analyze this article</button>
+  <button class="btn-analyze" id="analyze-btn">Analyze This Article</button>
   <div class="status" id="status">Analyzing</div>
 
-  <div class="result-box" id="result-box">
-    <div class="result-row">
-      <div class="mini-gauge">
-        <svg viewBox="0 0 64 64">
-          <circle class="gauge-bg" cx="32" cy="32" r="26"/>
-          <circle class="gauge-fg" id="ext-gauge-fg" cx="32" cy="32" r="26"
-            stroke-dasharray="163" stroke-dashoffset="163"/>
-        </svg>
-        <div class="gauge-center">
-          <div class="gauge-num" id="ext-gauge-num">0</div>
-          <div class="gauge-sub">/100</div>
+  <div class="result-card" id="result-card">
+
+    <!-- Manipulation Index -->
+    <div class="metric-section">
+      <div class="metric-header">Manipulation Index</div>
+      <div class="metric-row">
+        <div class="mini-gauge">
+          <svg viewBox="0 0 64 64">
+            <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+            <circle class="gauge-fg" id="g-manip" cx="32" cy="32" r="26" stroke-dasharray="163" stroke-dashoffset="163"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-num" id="manip-num">0</div>
+            <div class="gauge-denom">/100</div>
+          </div>
+        </div>
+        <div class="metric-info">
+          <div class="metric-verdict" id="manip-verdict">—</div>
+          <span class="metric-pill" id="manip-pill"></span>
         </div>
       </div>
-      <div class="verdict-label">
-        <div class="verdict-title" id="ext-verdict-title">Manipulation index</div>
-        <span class="verdict-tag" id="ext-verdict-tag"></span>
+    </div>
+
+    <!-- Authenticity Rating -->
+    <div class="metric-section">
+      <div class="metric-header">Authenticity Rating</div>
+      <div class="metric-row">
+        <div class="mini-gauge">
+          <svg viewBox="0 0 64 64">
+            <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+            <circle class="gauge-fg" id="g-trust" cx="32" cy="32" r="26" stroke-dasharray="163" stroke-dashoffset="163"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-num" id="trust-num">—</div>
+            <div class="gauge-denom">/100</div>
+          </div>
+        </div>
+        <div class="metric-info">
+          <div class="metric-verdict" id="trust-verdict">—</div>
+          <span class="metric-pill" id="trust-pill"></span>
+        </div>
       </div>
     </div>
 
-    <div class="cluster" id="ext-cluster"></div>
+    <!-- AI Authorship -->
+    <div class="metric-section">
+      <div class="metric-header">AI Authorship</div>
+      <div class="metric-row">
+        <div class="mini-gauge">
+          <svg viewBox="0 0 64 64">
+            <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+            <circle class="gauge-fg" id="g-ai" cx="32" cy="32" r="26" stroke-dasharray="163" stroke-dashoffset="163"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-num" id="ai-num">—</div>
+            <div class="gauge-denom">/100</div>
+          </div>
+        </div>
+        <div class="metric-info">
+          <div class="metric-verdict" id="ai-verdict">—</div>
+          <span class="metric-pill" id="ai-pill"></span>
+        </div>
+      </div>
+    </div>
 
-    <div class="techniques-list" id="ext-techniques"></div>
+    <!-- Narrative cluster -->
+    <div class="cluster-row" id="ext-cluster"></div>
 
+    <!-- Techniques -->
+    <div class="techniques-section">
+      <div class="section-label">Persuasion Techniques</div>
+      <div class="tech-list" id="ext-techniques"></div>
+    </div>
+
+    <!-- Conspiracy alert -->
     <div class="conspiracy-note" id="ext-conspiracy-note">
-      ⚠ High manipulation detected. Try Conspiracy Mode in the full app.
+      ⚠ High manipulation detected — try Conspiracy Mode in the full app.
     </div>
 
+    <!-- Open full -->
     <div class="actions">
-      <button class="btn open-btn" id="open-full-btn">Open full analysis</button>
+      <button class="btn-open" id="open-full-btn">Open Full Analysis →</button>
     </div>
+
   </div>
 </div>
 
