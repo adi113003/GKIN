@@ -560,7 +560,30 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 .verdict-misleading         { background: rgba(120,70,10,0.2); color: #d09040; border: 1px solid rgba(180,100,20,0.3); }
 .verdict-false              { background: rgba(140,30,30,0.2); color: #f07070; border: 1px solid rgba(200,50,50,0.3); }
 .verdict-unverifiable       { background: rgba(40,44,70,0.3); color: var(--ink-3); border: 1px solid var(--border); }
+.verdict-supported          { background: rgba(42,92,20,0.2); color: var(--green-2); border: 1px solid rgba(80,140,30,0.3); }
+.verdict-contradicted       { background: rgba(140,30,30,0.2); color: #f07070; border: 1px solid rgba(200,50,50,0.3); }
+.verdict-insufficient       { background: rgba(40,44,70,0.3); color: var(--ink-3); border: 1px solid var(--border); }
 .claim-verify-note { font-size: 11px; color: var(--ink-3); margin-top: 4px; font-style: italic; }
+.claim-verify-wrap { position: relative; display: inline-flex; }
+.claim-popover-trigger { cursor: help; }
+.claim-popover {
+  display: none; position: absolute; z-index: 30; top: calc(100% + 8px); left: 0;
+  width: min(360px, calc(100vw - 40px)); background: var(--bg-2);
+  border: 1px solid var(--border-2); border-radius: 6px; padding: 12px;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.55); text-transform: none; letter-spacing: 0;
+  color: var(--ink-2); font-family: "Inter", sans-serif;
+}
+.claim-verify-wrap:hover .claim-popover,
+.claim-verify-wrap:focus-within .claim-popover { display: block; }
+.claim-popover-title {
+  font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink); margin-bottom: 7px;
+}
+.claim-popover-reason { font-size: 12px; line-height: 1.5; margin-bottom: 9px; }
+.claim-popover-links { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+.claim-popover-links a { color: var(--steel-2); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; text-decoration: none; }
+.claim-popover-links a:hover { text-decoration: underline; }
+.claim-popover-time { font-family: "JetBrains Mono", monospace; font-size: 9px; color: var(--ink-3); }
 
 /* ── Compare results ── */
 .compare-results { display: none; margin-bottom: 32px; }
@@ -1441,10 +1464,11 @@ $("fetch-url-btn").addEventListener("click", async () => {
   $("loading").classList.add("show");
   $("fetch-url-btn").disabled = true;
   try {
-    const r = await fetch("/fetch-url", {
+    const r = await authFetch("/fetch-url", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({url})
     });
+    if (r.status === 401) { clearAuth(); return; }
     if (!r.ok) throw new Error(await r.text());
     const {text, title} = await r.json();
 
@@ -1461,10 +1485,11 @@ $("fetch-url-btn").addEventListener("click", async () => {
     $("char-count").textContent = `${text.length.toLocaleString()} glyphs`;
 
     $("loading").textContent = "The Order deliberates";
-    const r2 = await fetch("/analyze", {
+    const r2 = await authFetch("/analyze", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({article: text})
     });
+    if (r2.status === 401) { clearAuth(); return; }
     if (!r2.ok) throw new Error(await r2.text());
     currentAnalysis = await r2.json();
     showAnalysisResults(currentAnalysis);
@@ -1656,13 +1681,40 @@ function renderAnalysis(a) {
   $("claim-count").textContent=claims.length;
   if(claims.length){
     $("claims").innerHTML=claims.slice(0,8).map(c=>{
-      const v=c.verification||{};const verdict=v.verdict||"";
-      return`<div class="claim-item"><div class="claim-meta"><span class="claim-type">${escapeHtml(c.type)}</span>${verdict?`<span class="claim-verdict verdict-${verdict}">${verdict.replace(/_/g," ")}</span>`:""}</div><div class="claim-text">${escapeHtml(c.text)}</div>${v.explanation?`<div class="claim-verify-note">${escapeHtml(v.explanation)}</div>`:""}</div>`;
+      const v=c.verification||{};
+      return`<div class="claim-item"><div class="claim-meta"><span class="claim-type">${escapeHtml(c.type)}</span>${renderVerificationBadge(v)}</div><div class="claim-text">${escapeHtml(c.text)}</div></div>`;
     }).join("")+(claims.length>8?`<div style="padding-top:8px;color:var(--ink-3);font-size:12px;">+ ${claims.length-8} more</div>`:"");
   } else { $("claims").innerHTML='<div style="color:var(--ink-3);font-style:italic;font-size:14px;">No claims extracted.</div>'; }
 }
 
 function var_gold(){ return "#c8963c"; }
+
+function verificationMeta(verdict) {
+  if (verdict === "supported") return {icon:"✓", label:"supported", cls:"supported"};
+  if (verdict === "contradicted") return {icon:"✕", label:"contradicted", cls:"contradicted"};
+  return {icon:"?", label:"insufficient", cls:"insufficient"};
+}
+
+function renderVerificationBadge(v) {
+  if (!v || !v.verdict) return "";
+  const meta = verificationMeta(v.verdict);
+  const confidence = Math.round((Number(v.confidence) || 0) * 100);
+  const evidence = Array.isArray(v.evidence) ? v.evidence : [];
+  const links = evidence.length
+    ? evidence.map(e => `<a href="${escapeHtml(e.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(e.title || e.url)}</a>`).join("")
+    : `<span style="font-size:11px;color:var(--ink-3);">No evidence URLs returned.</span>`;
+  const verifiedAt = v.verified_at ? new Date(v.verified_at).toLocaleString() : "unknown";
+  return `
+    <span class="claim-verify-wrap">
+      <span class="claim-verdict claim-popover-trigger verdict-${meta.cls}" tabindex="0">${meta.icon} ${meta.label}</span>
+      <span class="claim-popover">
+        <div class="claim-popover-title">${meta.label} · ${confidence}% confidence</div>
+        <div class="claim-popover-reason">${escapeHtml(v.reasoning || v.explanation || "No reasoning returned.")}</div>
+        <div class="claim-popover-links">${links}</div>
+        <div class="claim-popover-time">Verified at ${escapeHtml(verifiedAt)}</div>
+      </span>
+    </span>`;
+}
 
 // ── Reactions ─────────────────────────────────────────────────────────────────
 const REACTIONS = ["up","down","eye","conspiracy","fire","check","skull"];
@@ -1957,7 +2009,11 @@ function exportPDF() {
 
   const claimsHtml = (a.claims || []).map(c => {
     const v = c.verification || {};
-    return `<div class="item">[${escapeHtml(c.type)}${v.verdict ? ` · <strong>${v.verdict.replace(/_/g," ")}</strong>` : ""}] ${escapeHtml(c.text)}${v.explanation ? `<br><span class="note">${escapeHtml(v.explanation)}</span>` : ""}</div>`;
+    const evidence = Array.isArray(v.evidence) && v.evidence.length
+      ? `<br><span class="note">Evidence: ${v.evidence.map(e => escapeHtml(e.url)).join(", ")}</span>`
+      : "";
+    const note = v.reasoning || v.explanation || "";
+    return `<div class="item">[${escapeHtml(c.type)}${v.verdict ? ` · <strong>${v.verdict.replace(/_/g," ")}</strong>` : ""}] ${escapeHtml(c.text)}${note ? `<br><span class="note">${escapeHtml(note)}</span>` : ""}${evidence}</div>`;
   }).join("") || "<div class='item muted'>No claims extracted.</div>";
 
   const miColor = mi >= 60 ? "#c0392b" : mi >= 40 ? "#d4a017" : mi >= 20 ? "#888" : "#27ae60";

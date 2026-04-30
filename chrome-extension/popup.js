@@ -290,8 +290,36 @@ function renderResult(a) {
         </div>`).join("")
     : "";
 
+  renderClaimSummary(a);
+
   $("ext-conspiracy-note").classList.toggle("show", mi >= 60);
   $("result-box").classList.add("show");
+}
+
+function renderClaimSummary(a) {
+  const verifications = Array.isArray(a.verifications)
+    ? a.verifications
+    : (a.claims || []).map(c => c.verification).filter(Boolean);
+  const counts = { supported: 0, contradicted: 0, insufficient: 0 };
+  verifications.forEach(v => {
+    const verdict = v?.verdict || "insufficient";
+    if (verdict === "supported") counts.supported += 1;
+    else if (verdict === "contradicted") counts.contradicted += 1;
+    else counts.insufficient += 1;
+  });
+
+  const box = $("ext-claim-summary");
+  if (!verifications.length) {
+    box.classList.remove("show");
+    $("ext-claim-counts").textContent = "";
+    return;
+  }
+
+  $("ext-claim-counts").innerHTML = `
+    <span class="claim-supported">${counts.supported} supported</span> ·
+    <span class="claim-contradicted">${counts.contradicted} contradicted</span> ·
+    <span class="claim-insufficient">${counts.insufficient} insufficient</span>`;
+  box.classList.add("show");
 }
 
 // ── Open full analysis in app ─────────────────────────────────────────────────
