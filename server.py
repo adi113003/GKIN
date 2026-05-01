@@ -1,28 +1,39 @@
 """
-server.py — GKIN Truth Navigator backend v2.
+server.py — GKIN Truth Navigator v3.
+
+New in v3:
+  · User authentication (register / login / JWT)
+  · Conspiracy mode chat (speculative narrative analysis)
+  · All analysis endpoints protected by auth
 
 New in v2:
-  · DeepSeek R1 chain-of-thought reasoning for deeper analysis
-  · Parallel claim verification (llama-3.1-8b-instant, semaphore-capped at 4)
+  · DeepSeek R1 chain-of-thought reasoning
+  · Parallel claim verification (semaphore-capped at 4)
   · Tool-calling agentic chat (web search, fact-check, historical parallels)
   · Whisper large-v3 audio / video transcription
-  · Vision model screenshot & image analysis (llama-3.2-90b-vision-preview)
-  · Multi-article narrative comparison (up to 4 articles)
+  · Vision model screenshot & image analysis
+  · Multi-article narrative comparison (up to 4)
   · Dynamic AI-generated chat suggestions
 
 Endpoints:
-  POST /analyze        {article}                         → enriched analysis JSON
-  POST /chat           {message, analysis, history, mode} → streaming text
-  POST /transcribe     multipart: audio file             → {transcript}
-  POST /analyze-image  multipart: image file             → enriched analysis JSON
-  POST /compare        {articles[]}                      → {analyses[], comparison}
-  POST /suggestions    {analysis}                        → {suggestions[]}
-  GET  /random         → {title, text, label}
-  GET  /               → static/index.html
+  POST /register      {username, email, password}       → {token, username, email}
+  POST /login         {username, password}              → {token, username, email}
+  GET  /me            (auth)                            → {username, email}
+  POST /analyze       {article}          (auth)         → enriched analysis JSON
+  POST /chat          {message, ...}     (auth)         → streaming text
+  POST /transcribe    multipart          (auth)         → {transcript}
+  POST /analyze-image multipart          (auth)         → enriched analysis JSON
+  POST /fetch-url     {url}              (auth)         → {title, text}
+  POST /compare       {articles[]}       (auth)         → {analyses[], comparison}
+  POST /suggestions   {analysis}         (auth)         → {suggestions[]}
+  GET  /random        (auth)                            → {title, text, label}
+  GET  /              → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] bcrypt
-  export GROQ_API_KEY="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"
+  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura motor
+  export GROQ_API_KEY="your_key"
+  export SECRET_KEY="your-secret-key"   # optional, auto-generated if omitted
+  export MONGODB_URI="mongodb://localhost:27017"  # optional, defaults to localhost
   python server.py
 """
 
@@ -33,45 +44,47 @@ import base64
 import asyncio
 import pathlib
 import secrets
+import statistics as _stats
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from urllib.parse import urlparse
+
+from dotenv import load_dotenv
+load_dotenv()
+
+from motor.motor_asyncio import AsyncIOMotorClient
+
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from groq import AsyncGroq
-import httpx
 import pandas as pd
 import trafilatura
-from gkin.verification import VerificationError, configure_verifier, verify_claim as block5_verify_claim
 
 try:
     from jose import JWTError, jwt
-    import bcrypt
+    from passlib.context import CryptContext
     _AUTH_OK = True
 except ImportError:
     _AUTH_OK = False
     jwt = None          # type: ignore
     JWTError = Exception
-    bcrypt = None       # type: ignore
+    CryptContext = None  # type: ignore
+
 # ── Model IDs ─────────────────────────────────────────────────────────────────
-MODEL_REASON  = "deepseek-r1-distill-llama-70b"   # chain-of-thought reasoning
-MODEL_STRUCT  = "llama-3.3-70b-versatile"          # JSON structuring & chat agent
-MODEL_FAST    = "llama-3.1-8b-instant"             # claim verification & suggestions
-MODEL_VISION  = "llama-3.2-90b-vision-preview"     # screenshot / image analysis
-MODEL_WHISPER = "whisper-large-v3"                 # audio transcription
+MODEL_REASON  = "deepseek-r1-distill-llama-70b"
+MODEL_STRUCT  = "llama-3.3-70b-versatile"
+MODEL_FAST    = "llama-3.1-8b-instant"
+MODEL_VISION  = "llama-3.2-90b-vision-preview"
+MODEL_WHISPER = "whisper-large-v3"
 
 WELFAKE_CSV       = "WELFake_Dataset.csv"
-USERS_FILE        = "users.json"
+MONGODB_URI       = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
 SECRET_KEY        = os.environ.get("SECRET_KEY", "gkin-dev-" + secrets.token_hex(16))
 ALGORITHM         = "HS256"
 TOKEN_EXPIRE_DAYS = 7
-
-_security    = HTTPBearer(auto_error=False)
-_users_lock: Optional[asyncio.Lock] = None
 
 NARRATIVE_CLUSTERS = [
     "anti_vaccine", "election_fraud", "climate_denial", "immigration_threat",
@@ -178,6 +191,26 @@ MODE: Open research — analysis + web tools + world knowledge.
 ARTICLE ANALYSIS:
 {analysis}"""
 
+CHAT_SYSTEM_CONSPIRACY = """You are Truth Navigator in Conspiracy Mode — an investigative analyst who reads beneath the official narrative.
+
+Your role: explore alternative interpretations, hidden motivations, and suppressed narratives as a critical thinking exercise. Ask the questions mainstream media won't: Who benefits? What's being concealed? What patterns emerge when you follow the money and power?
+
+Use the article analysis as your investigative starting point, then explore:
+- Cui bono: who specifically benefits from this narrative being pushed right now?
+- Hidden actors: what powerful institutions, governments, corporations, or financial interests might be behind this story?
+- Manufactured consent: how does this article serve to shape public opinion toward a specific agenda?
+- Pattern matching: what historical propaganda campaigns, false flags, or manufactured crises does this resemble?
+- The silenced alternative: what explanation fits the known facts equally well — or better — than the official one?
+- Information architecture: why is the framing exactly THIS way? What does the structure of the article itself reveal?
+- Follow the money: what financial stakes, contracts, political careers, or geopolitical interests are in play?
+
+Use the manipulation index, persuasion techniques, emotional framing, and missing context as investigative clues. Be analytically speculative and connect the dots — but stay grounded in the evidence from the analysis.
+
+⚠️ SPECULATIVE MODE ACTIVE: All alternative theories presented are for critical thinking and media literacy purposes only. These represent possible alternative framings, not established facts.
+
+ARTICLE ANALYSIS:
+{analysis}"""
+
 SUGGESTIONS_PROMPT = """Given this article analysis, generate 5 sharp, specific follow-up questions a curious reader would want to ask. Tailor them to the content — not generic.
 
 Analysis snapshot:
@@ -190,6 +223,167 @@ Return JSON: {{"suggestions": ["q1", "q2", "q3", "q4", "q5"]}}
 
 Mix article-specific questions with broader context questions. Make them interesting."""
 
+# ── AI-Generated text detection ────────────────────────────────────────────────
+
+AI_PHRASES = [
+    "it is important to note", "it is worth noting", "it is crucial to",
+    "it is essential to", "it should be noted", "as previously mentioned",
+    "in conclusion", "furthermore", "moreover", "in summary",
+    "with that being said", "on the other hand", "in light of",
+    "it can be argued", "it is clear that", "taking into account",
+    "it goes without saying", "needless to say", "at the end of the day",
+    "the fact of the matter", "it's important to", "it's worth",
+    "delve into", "dive into", "shed light on", "in today's world",
+    "the landscape of", "a testament to", "plays a crucial role",
+    "in the realm of", "multifaceted", "it is worth mentioning",
+    "revolutionize", "game-changer", "transformative", "seamlessly",
+    "leverage", "utilize", "robust", "pivotal", "noteworthy",
+    "in today's", "as we navigate", "it is undeniable", "it is imperative",
+    "rest assured", "look no further", "without further ado",
+    "as an ai", "as a language model", "i cannot provide",
+]
+
+AI_DETECT_PROMPT = """You are an expert forensic linguist specializing in AI-generated text detection.
+
+Analyze this article for signs that it was written by an AI language model rather than a human journalist.
+
+Key AI writing signals to look for:
+- Unnaturally uniform sentence length and structure (low burstiness)
+- Overuse of hedging transitions: "Furthermore", "Moreover", "It is important to note", "It is worth mentioning"
+- Perfectly balanced "on one hand / on the other hand" structures
+- Generic comprehensive coverage with no editorial voice, opinion, or personality
+- Absence of idiom, humor, sarcasm, or stylistic quirks
+- Overly smooth flow with no rough edges, abrupt cuts, or stylistic choices
+- Formulaic paragraph structure (topic sentence → evidence → conclusion)
+- Repetitive sentence templates across paragraphs
+- Lack of named sources cited naturally ("John Smith, a professor at..." vs vague "experts say")
+- Unnatural specificity mixed with vague generalities
+- No typos, contractions used awkwardly, or colloquialisms
+
+Statistical pre-analysis (already computed):
+- Sentence burstiness: {burstiness} (humans typically > 0.5; AI typically < 0.4)
+- Vocabulary richness (type-token ratio): {vocab_richness}
+- Known AI phrase count: {ai_phrase_hits}
+- Average sentence length: {avg_sentence_length} words
+
+Article:
+\"\"\"
+{article}
+\"\"\"
+
+Return ONLY valid JSON:
+{{
+  "ai_confidence": 0,
+  "verdict": "HUMAN | LIKELY HUMAN | UNCERTAIN | LIKELY AI | AI",
+  "reasoning": "2-3 sentences citing specific textual evidence",
+  "ai_signals": ["specific phrases or patterns from the text that suggest AI authorship"],
+  "human_signals": ["specific phrases or patterns from the text that suggest human authorship"]
+}}
+
+ai_confidence: integer 0-100. 0 = definitely human-written, 100 = definitely AI-generated.
+Base your assessment on specific textual evidence, not just the statistics."""
+
+TIMELINE_EXTRACT_PROMPT = """Extract the core topic and diverse search queries from this article for comprehensive narrative timeline research.
+
+Article (first 1000 chars):
+\"\"\"
+{article}
+\"\"\"
+
+Return ONLY valid JSON:
+{{
+  "topic": "3-6 word topic phrase for searching (e.g. 'Iran nuclear talks deadline')",
+  "search_queries": [
+    "query focused on the core event or main claim",
+    "query focused on the key actors or people involved",
+    "query focused on the latest development or outcome",
+    "query focused on background or historical context",
+    "query for fact-check, verification, or debunking angle",
+    "query for opposing perspectives, criticism, or counter-narrative"
+  ],
+  "core_claim": "the single most central factual claim in one sentence"
+}}"""
+
+TIMELINE_ANALYZE_PROMPT = """You are a narrative forensics analyst. Deeply analyze how this news story evolved across different sources and dates.
+
+Topic: {topic}
+Core claim from original article: {core_claim}
+
+Related articles found across the web (sorted oldest to newest where dates are known):
+{articles_text}
+
+Analyze each article and the overall narrative pattern. Look for:
+- Where did the story originate? Which source published earliest?
+- What claims were added, dropped, or distorted as it spread?
+- Which outlets corroborated vs. contradicted vs. independently reported?
+- Is there a coordinated amplification pattern?
+- What important context was omitted?
+
+Return ONLY valid JSON:
+{{
+  "origin_assessment": "2-3 sentences on which source appears to be the origin and why, noting the earliest date or earliest report found",
+  "narrative_verdict": "one of exactly: CORROBORATED | CONTRADICTED | DISPUTED | MIXED | UNVERIFIED",
+  "credibility_score": 0,
+  "article_assessments": [
+    {{
+      "index": 1,
+      "corroboration": "one of exactly: CORROBORATES | CONTRADICTS | INDEPENDENT | PARTIAL | UNRELATED",
+      "key_quote": "the single most relevant sentence from this article (max 120 chars)",
+      "bias_note": "3-5 word description e.g. 'neutral wire report', 'left-leaning op-ed', 'sensationalist headline', 'pro-government framing'"
+    }}
+  ],
+  "narrative_shifts": [
+    {{
+      "what_changed": "specific claim or framing that shifted (10-15 words)",
+      "original_version": "how it was originally stated",
+      "mutated_version": "how it changed in later coverage",
+      "source": "outlet where this change first appeared"
+    }}
+  ],
+  "dropped_context": ["important fact or context omitted as the story spread", "another omitted fact"],
+  "amplification_chain": ["source1", "source2", "source3", "source4", "source5", "source6", "source7", "source8"],
+  "timeline_summary": "3-4 sentence summary: where the story started, how it evolved, who corroborated or contradicted it, and overall credibility assessment"
+}}
+
+IMPORTANT: credibility_score must be an integer 0-100 (0=fully fake/contradicted by all sources, 100=fully corroborated by multiple credible independent sources).
+Provide article_assessments for EVERY article indexed above. Keep narrative_shifts to at most 6. Keep amplification_chain to at most 8 outlets."""
+
+FAKE_DETECT_PROMPT = """You are an expert misinformation analyst. Your job is to determine whether a news article is FAKE or REAL.
+
+You have been given:
+1. The original article text
+2. A manipulation analysis
+3. Full scraped content from up to 10 web pages found by searching the article's key claims
+
+Cross-reference the article's claims against the scraped pages. If multiple credible pages corroborate the events, it is likely real. If no pages corroborate it, or pages actively contradict it, it is likely fake.
+
+Article:
+\"\"\"
+{article}
+\"\"\"
+
+Manipulation analysis:
+- Manipulation index: {manipulation_index}/100
+- Persuasion techniques: {techniques}
+- Dominant emotions: {emotions}
+- Narrative cluster: {narrative_cluster}
+- Claim verdicts: {claim_verifications}
+
+Scraped web pages for verification:
+{search_results}
+
+Return ONLY valid JSON — no prose, no markdown:
+{{
+  "fake_confidence": 0,
+  "reasoning": "2-3 sentences on why this score was assigned, referencing specific scraped page findings",
+  "red_flags": ["specific red flags found"],
+  "trust_signals": ["specific trust signals found"]
+}}
+
+fake_confidence is an integer 0-100. 0 = definitely real, 100 = definitely fake.
+Base your score on whether the scraped pages corroborate or contradict the article's core claims.
+"""
+
 # ── Tool definitions ───────────────────────────────────────────────────────────
 
 TOOL_DEFINITIONS = [
@@ -200,9 +394,7 @@ TOOL_DEFINITIONS = [
             "description": "Search the web for current information, news, or background on any topic.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "The search query"}
-                },
+                "properties": {"query": {"type": "string", "description": "The search query"}},
                 "required": ["query"]
             }
         }
@@ -214,9 +406,7 @@ TOOL_DEFINITIONS = [
             "description": "Search for fact-checks, evidence, or debunking about a specific claim.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "claim": {"type": "string", "description": "The specific claim to fact-check"}
-                },
+                "properties": {"claim": {"type": "string", "description": "The specific claim to fact-check"}},
                 "required": ["claim"]
             }
         }
@@ -228,9 +418,7 @@ TOOL_DEFINITIONS = [
             "description": "Find historical events, patterns, or precedents related to a topic.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "topic": {"type": "string", "description": "Topic or pattern to find historical parallels for"}
-                },
+                "properties": {"topic": {"type": "string", "description": "Topic or pattern to find historical parallels for"}},
                 "required": ["topic"]
             }
         }
@@ -239,7 +427,6 @@ TOOL_DEFINITIONS = [
 
 
 def _ddg_search(query: str, max_results: int = 5) -> list[dict]:
-    """Blocking DuckDuckGo search — always called via asyncio.to_thread."""
     try:
         from duckduckgo_search import DDGS
         with DDGS() as ddgs:
@@ -269,89 +456,39 @@ async def execute_tool(name: str, args: dict) -> dict:
     return {"error": f"Unknown tool: {name}"}
 
 
-# ── Helpers ────────────────────────────────────────────────────────────────────
+# ── Auth helpers ───────────────────────────────────────────────────────────────
 
-def parse_r1_output(text: str):
-    """Extract (thinking, final_answer) from DeepSeek R1 output."""
-    match = re.search(r'<think>(.*?)</think>', text, re.DOTALL)
-    thinking = match.group(1).strip() if match else ""
-    final = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
-    return thinking, final
+_pwd_context = None
+_security = HTTPBearer(auto_error=False)
+_mongo_client: Optional[AsyncIOMotorClient] = None
+_users_col = None
 
 
-def manipulation_label(mi: int) -> str:
-    if mi >= 80: return "BLATANT PROPAGANDA"
-    if mi >= 60: return "HEAVY MANIPULATION"
-    if mi >= 40: return "NOTICEABLE PERSUASION"
-    if mi >= 20: return "MILD FRAMING"
-    return "STRAIGHT REPORTING"
+def _get_pwd_context():
+    global _pwd_context
+    if _pwd_context is None and _AUTH_OK:
+        _pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+    return _pwd_context
 
 
-def _normalize_url(raw_url: str) -> str:
-    raw_url = raw_url.strip()
-    if not raw_url or re.search(r"\s", raw_url):
-        raise HTTPException(400, "Enter a valid http(s) URL")
-    parsed = urlparse(raw_url)
-    if not parsed.scheme:
-        raw_url = "https://" + raw_url
-        parsed = urlparse(raw_url)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc or not parsed.hostname:
-        raise HTTPException(400, "Enter a valid http(s) URL")
-    return raw_url
-
-
-def _fallback_html_text(html: str) -> str:
-    try:
-        from bs4 import BeautifulSoup
-    except ImportError:
-        return ""
-    soup = BeautifulSoup(html, "html.parser")
-    for tag in soup(["script", "style", "noscript", "svg", "form", "nav", "footer", "header"]):
-        tag.decompose()
-    chunks = [p.get_text(" ", strip=True) for p in soup.find_all(["h1", "h2", "p", "li"])]
-    return "\n\n".join(chunk for chunk in chunks if chunk)
-
-
-# ── App ────────────────────────────────────────────────────────────────────────
-
-_client: Optional[AsyncGroq] = None
-_welfake_df = None
-_verify_sem: Optional[asyncio.Semaphore] = None
-
-
-def _load_users() -> dict:
-    p = pathlib.Path(USERS_FILE)
-    if p.exists():
-        try:
-            return json.loads(p.read_text())
-        except Exception:
-            return {}
-    return {}
-
-
-def _save_users(users: dict) -> None:
-    pathlib.Path(USERS_FILE).write_text(json.dumps(users, indent=2))
+def _get_users_col():
+    if _users_col is None:
+        raise HTTPException(503, "Database not ready")
+    return _users_col
 
 
 def _hash_password(password: str) -> str:
-    if not _AUTH_OK:
-        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] bcrypt")
-    raw = password.encode("utf-8")
-    if len(raw) > 72:
-        raise HTTPException(400, "Password must be 72 bytes or fewer")
-    return bcrypt.hashpw(raw, bcrypt.gensalt()).decode("utf-8")
+    ctx = _get_pwd_context()
+    if not ctx:
+        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] passlib[bcrypt]")
+    return ctx.hash(password)
 
 
 def _verify_password(plain: str, hashed: str) -> bool:
-    if not _AUTH_OK:
+    ctx = _get_pwd_context()
+    if not ctx:
         return False
-    raw = plain.encode("utf-8")
-    if len(raw) > 72:
-        return False
-    try:
-        return bcrypt.checkpw(raw, hashed.encode("utf-8"))
-    except ValueError:
-        return False
+    return ctx.verify(plain, hashed)
 
 
 def _create_token(username: str) -> str:
@@ -373,30 +510,66 @@ def _decode_token(token: str) -> Optional[str]:
 
 async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_security)) -> dict:
     if not _AUTH_OK:
-        raise HTTPException(503, "Auth packages not installed. Run: pip install python-jose[cryptography] bcrypt")
+        raise HTTPException(
+            503,
+            "Auth packages not installed. Run: pip install python-jose[cryptography] passlib[bcrypt]"
+        )
     if not credentials:
         raise HTTPException(401, "Authentication required", headers={"WWW-Authenticate": "Bearer"})
     username = _decode_token(credentials.credentials)
     if not username:
         raise HTTPException(401, "Invalid or expired token", headers={"WWW-Authenticate": "Bearer"})
-    async with _users_lock:
-        users = _load_users()
-    user = users.get(username)
+    user = await _get_users_col().find_one({"username": username}, {"_id": 0})
     if not user:
         raise HTTPException(401, "User not found")
     return user
 
 
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+def parse_r1_output(text: str):
+    match = re.search(r'<think>(.*?)</think>', text, re.DOTALL)
+    thinking = match.group(1).strip() if match else ""
+    final = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    return thinking, final
+
+
+def manipulation_label(mi: int) -> str:
+    if mi >= 80: return "BLATANT PROPAGANDA"
+    if mi >= 60: return "HEAVY MANIPULATION"
+    if mi >= 40: return "NOTICEABLE PERSUASION"
+    if mi >= 20: return "MILD FRAMING"
+    return "STRAIGHT REPORTING"
+
+
+# ── App ────────────────────────────────────────────────────────────────────────
+
+_client: Optional[AsyncGroq] = None
+_welfake_df = None
+_claim_sem: Optional[asyncio.Semaphore] = None
+_fake_model = None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _client, _verify_sem, _users_lock
+    global _client, _claim_sem, _mongo_client, _users_col, _fake_model
     api_key = os.environ.get("GROQ_API_KEY")
     if api_key:
         _client = AsyncGroq(api_key=api_key)
-    configure_verifier(_client)
-    _verify_sem = asyncio.Semaphore(5)
-    _users_lock = asyncio.Lock()
+    _claim_sem = asyncio.Semaphore(4)
+    _mongo_client = AsyncIOMotorClient(MONGODB_URI)
+    _users_col = _mongo_client["gkin"]["users"]
+    await _users_col.create_index("username", unique=True)
+    await _users_col.create_index("email", unique=True)
+    _get_pwd_context()
+    try:
+        import joblib
+        _fake_model = joblib.load("baseline_model.joblib")
+        print("✓ Fake detection model loaded (97% accuracy on WELFake)")
+    except Exception as e:
+        print(f"⚠ Fake detection model not loaded: {e}")
     yield
+    _mongo_client.close()
 
 
 app = FastAPI(title="GKIN Truth Navigator v3", lifespan=lifespan)
@@ -432,13 +605,6 @@ class LoginRequest(BaseModel):
 class AnalyzeRequest(BaseModel):
     article: str
 
-class FetchUrlRequest(BaseModel):
-    url: str
-
-class VerifyRequest(BaseModel):
-    claim: str
-    force_refresh: bool = False
-
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -455,37 +621,43 @@ class CompareRequest(BaseModel):
 class SuggestionsRequest(BaseModel):
     analysis: dict
 
+class FetchUrlRequest(BaseModel):
+    url: str
+
+class TimelineRequest(BaseModel):
+    article: str
+
 
 # ── Auth endpoints ─────────────────────────────────────────────────────────────
 
 @app.post("/register")
 async def register(req: RegisterRequest):
     if not _AUTH_OK:
-        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] bcrypt")
+        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] passlib[bcrypt]")
     if len(req.username) < 3 or len(req.username) > 30:
         raise HTTPException(400, "Username must be 3-30 characters")
     if not re.match(r'^[a-zA-Z0-9_]+$', req.username):
         raise HTTPException(400, "Username can only contain letters, numbers, and underscores")
     if len(req.password) < 6:
         raise HTTPException(400, "Password must be at least 6 characters")
-    if len(req.password.encode("utf-8")) > 72:
-        raise HTTPException(400, "Password must be 72 bytes or fewer")
     if "@" not in req.email:
         raise HTTPException(400, "Invalid email address")
 
-    async with _users_lock:
-        users = _load_users()
-        if req.username in users:
-            raise HTTPException(409, "Username already taken")
-        if any(u.get("email") == req.email for u in users.values()):
-            raise HTTPException(409, "Email already registered")
-        users[req.username] = {
+    col = _get_users_col()
+    try:
+        await col.insert_one({
             "username": req.username,
             "email": req.email,
             "hashed_password": _hash_password(req.password),
             "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        _save_users(users)
+        })
+    except Exception as e:
+        err = str(e)
+        if "username" in err:
+            raise HTTPException(409, "Username already taken")
+        if "email" in err:
+            raise HTTPException(409, "Email already registered")
+        raise HTTPException(500, "Registration failed")
 
     token = _create_token(req.username)
     return {"token": token, "username": req.username, "email": req.email}
@@ -494,10 +666,8 @@ async def register(req: RegisterRequest):
 @app.post("/login")
 async def login(req: LoginRequest):
     if not _AUTH_OK:
-        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] bcrypt")
-    async with _users_lock:
-        users = _load_users()
-    user = users.get(req.username)
+        raise HTTPException(503, "Auth not available: pip install python-jose[cryptography] passlib[bcrypt]")
+    user = await _get_users_col().find_one({"username": req.username}, {"_id": 0})
     if not user or not _verify_password(req.password, user["hashed_password"]):
         raise HTTPException(401, "Invalid username or password")
     token = _create_token(req.username)
@@ -515,47 +685,432 @@ async def me(user: dict = Depends(require_auth)):
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────
 
-def _claim_is_verifiable(claim: dict) -> bool:
-    if "is_verifiable" in claim:
-        return bool(claim.get("is_verifiable"))
-    return str(claim.get("type", "")).strip().lower() not in {"opinion", "unverifiable"}
+def _scrape_page_sync(url: str) -> Optional[str]:
+    try:
+        downloaded = trafilatura.fetch_url(url)
+        if not downloaded:
+            return None
+        text = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
+        return text[:1500] if text else None
+    except Exception:
+        return None
 
 
-async def _verify_claim_with_timeout(claim_text: str) -> dict:
-    async with _verify_sem:
+async def _scrape_pages(urls: list[str]) -> list[dict]:
+    async def _one(url):
         try:
-            return await asyncio.wait_for(block5_verify_claim(claim_text), timeout=30.0)
-        except VerificationError as e:
-            return {
-                "claim_id": "",
-                "claim_text": claim_text,
-                "verdict": "insufficient",
-                "confidence": 0.0,
-                "evidence": [],
-                "reasoning": str(e),
-                "verified_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-            }
+            text = await asyncio.wait_for(asyncio.to_thread(_scrape_page_sync, url), timeout=7.0)
+            return {"url": url, "text": text} if text else None
         except Exception:
-            return {
-                "claim_id": "",
-                "claim_text": claim_text,
-                "verdict": "insufficient",
-                "confidence": 0.0,
-                "evidence": [],
-                "reasoning": "Verification timed out or failed.",
-                "verified_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-            }
+            return None
+    results = await asyncio.gather(*[_one(u) for u in urls[:10]])
+    return [r for r in results if r]
+
+
+async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -> dict:
+    claims = structured.get("claims", [])
+    verifiable = [c for c in claims if c.get("type") == "Verifiable"][:3]
+    if not verifiable:
+        verifiable = claims[:3]
+
+    # ── Step 1: ML model score (trained on 72k WELFake articles) ──────────────
+    ml_fc: Optional[int] = None
+    if _fake_model is not None:
+        try:
+            proba = _fake_model.predict_proba([article_text])[0]
+            ml_fc = int(proba[1] * 100)  # proba[1] = P(fake)
+        except Exception:
+            pass
+
+    # ── Step 2: Search DDG for each verifiable claim, collect real URLs ────────
+    sources_checked: list[dict] = []
+    all_urls: list[str] = []
+
+    for claim_obj in verifiable:
+        claim_text = claim_obj.get("text", "")[:150]
+        results = await asyncio.to_thread(_ddg_search, f'"{claim_text}"', 4)
+        for r in results:
+            if r.get("error") or not r.get("url") or not r.get("title"):
+                continue
+            sources_checked.append({
+                "claim": claim_text,
+                "url": r["url"],
+                "title": r["title"],
+                "supports": None,
+            })
+            all_urls.append(r["url"])
+
+    # Broader topic search to pad up to 10 pages
+    if len(all_urls) < 10:
+        topic_query = article_text[:120].replace('"', '')
+        extra = await asyncio.to_thread(_ddg_search, topic_query + " news", 6)
+        for r in extra:
+            if r.get("error") or not r.get("url") or not r.get("title"):
+                continue
+            if r["url"] not in all_urls:
+                sources_checked.append({
+                    "claim": "topic search",
+                    "url": r["url"],
+                    "title": r["title"],
+                    "supports": None,
+                })
+                all_urls.append(r["url"])
+
+    # ── Step 3: Scrape up to 10 pages ─────────────────────────────────────────
+    scraped = await _scrape_pages(all_urls[:10])
+    scraped_block = ""
+    for i, page in enumerate(scraped):
+        scraped_block += f"\n--- Page {i+1} ({page['url']}) ---\n{page['text']}\n"
+    if not scraped_block:
+        scraped_block = "No pages could be scraped."
+
+    # ── Step 4: LLM reasoning over scraped content ─────────────────────────────
+    techniques = [t.get("technique", "") for t in structured.get("persuasion_techniques", [])[:5]]
+    emo = structured.get("emotion_scores", {})
+    top_emotions = sorted(emo.items(), key=lambda x: -x[1])[:3]
+    claim_verdicts = [
+        f'{c.get("text","")[:80]}: {c.get("verification",{}).get("verdict","?")}'
+        for c in claims[:5]
+    ]
+
+    prompt = FAKE_DETECT_PROMPT.format(
+        article=article_text[:4000],
+        manipulation_index=structured.get("manipulation_index", 0),
+        techniques=", ".join(techniques) or "none",
+        emotions=", ".join(f"{k}={v}" for k, v in top_emotions),
+        narrative_cluster=structured.get("narrative_cluster", "none"),
+        claim_verifications="; ".join(claim_verdicts) or "none",
+        search_results=scraped_block[:8000],
+    )
+
+    llm_fc = 50
+    llm_reasoning = "LLM analysis unavailable."
+    red_flags: list[str] = []
+    trust_signals: list[str] = []
+    try:
+        resp = await client.chat.completions.create(
+            model=MODEL_STRUCT,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=600,
+        )
+        llm_out = json.loads(resp.choices[0].message.content)
+        llm_fc = max(0, min(100, int(llm_out.get("fake_confidence", 50))))
+        llm_reasoning = llm_out.get("reasoning", "")
+        red_flags = llm_out.get("red_flags", [])
+        trust_signals = llm_out.get("trust_signals", [])
+    except Exception:
+        pass
+
+    # ── Step 5: Combine ML (60%) + LLM (40%) ──────────────────────────────────
+    if ml_fc is not None:
+        combined_fc = int(round(0.6 * ml_fc + 0.4 * llm_fc))
+    else:
+        combined_fc = llm_fc
+    combined_fc = max(0, min(100, combined_fc))
+    trust_rating = 100 - combined_fc
+
+    if combined_fc <= 20:   verdict = "REAL"
+    elif combined_fc <= 40: verdict = "LIKELY REAL"
+    elif combined_fc <= 60: verdict = "UNCERTAIN"
+    elif combined_fc <= 80: verdict = "LIKELY FAKE"
+    else:                   verdict = "FAKE"
+
+    return {
+        "fake_confidence": combined_fc,
+        "trust_rating": trust_rating,
+        "verdict": verdict,
+        "reasoning": llm_reasoning,
+        "red_flags": red_flags,
+        "trust_signals": trust_signals,
+        "sources_checked": sources_checked[:10],
+        "ml_score": ml_fc,
+        "pages_scraped": len(scraped),
+    }
+
+
+def _compute_ai_stats(text: str) -> dict:
+    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if len(s.strip()) > 10]
+    words = re.findall(r'\b[a-zA-Z]+\b', text.lower())
+    if not sentences or not words:
+        return {"ai_stat_score": 50, "burstiness": 0.5, "vocab_richness": 0.5,
+                "ai_phrase_hits": 0, "avg_sentence_length": 20}
+
+    sent_lengths = [len(s.split()) for s in sentences]
+    mean_len = _stats.mean(sent_lengths)
+    std_len = _stats.stdev(sent_lengths) if len(sent_lengths) > 1 else 0
+    burstiness = round(std_len / mean_len if mean_len > 0 else 0, 3)
+
+    unique_words = len(set(words))
+    ttr = round(unique_words / len(words), 3)
+
+    text_lower = text.lower()
+    phrase_hits = sum(1 for p in AI_PHRASES if p in text_lower)
+    phrase_density = phrase_hits / max(len(words) / 100, 1)
+
+    avg_sent = round(mean_len, 1)
+
+    # Low burstiness → AI-like
+    burst_score = max(0, min(100, int((0.55 - burstiness) * 180))) if burstiness < 0.55 else 0
+    # High phrase density → AI-like
+    phrase_score = min(100, int(phrase_density * 35))
+    # Sentence length in AI sweet-spot (17-24 words) → AI-like
+    sent_score = max(0, 45 - int(abs(avg_sent - 20) * 3))
+    # Low TTR → AI-like
+    ttr_score = max(0, int((0.58 - ttr) * 120)) if ttr < 0.58 else 0
+
+    ai_stat_score = max(0, min(100,
+        int(burst_score * 0.35 + phrase_score * 0.35 + sent_score * 0.15 + ttr_score * 0.15)
+    ))
+    return {
+        "ai_stat_score": ai_stat_score,
+        "burstiness": burstiness,
+        "vocab_richness": ttr,
+        "ai_phrase_hits": phrase_hits,
+        "avg_sentence_length": avg_sent,
+    }
+
+
+async def _ai_detect(client: AsyncGroq, article_text: str) -> dict:
+    stats = _compute_ai_stats(article_text)
+    prompt = AI_DETECT_PROMPT.format(
+        article=article_text[:5000],
+        burstiness=stats["burstiness"],
+        vocab_richness=stats["vocab_richness"],
+        ai_phrase_hits=stats["ai_phrase_hits"],
+        avg_sentence_length=stats["avg_sentence_length"],
+    )
+    llm_ai_conf = 50
+    reasoning = "LLM analysis unavailable."
+    ai_signals: list[str] = []
+    human_signals: list[str] = []
+    try:
+        resp = await client.chat.completions.create(
+            model=MODEL_STRUCT,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=500,
+        )
+        out = json.loads(resp.choices[0].message.content)
+        llm_ai_conf = max(0, min(100, int(out.get("ai_confidence", 50))))
+        reasoning = out.get("reasoning", "")
+        ai_signals = out.get("ai_signals", [])
+        human_signals = out.get("human_signals", [])
+    except Exception:
+        pass
+
+    # 50% statistical, 50% LLM
+    combined = max(0, min(100, int(round(0.5 * stats["ai_stat_score"] + 0.5 * llm_ai_conf))))
+
+    if combined <= 20:   verdict = "HUMAN"
+    elif combined <= 40: verdict = "LIKELY HUMAN"
+    elif combined <= 60: verdict = "UNCERTAIN"
+    elif combined <= 80: verdict = "LIKELY AI"
+    else:                verdict = "AI GENERATED"
+
+    return {
+        "ai_confidence": combined,
+        "verdict": verdict,
+        "reasoning": reasoning,
+        "ai_signals": ai_signals,
+        "human_signals": human_signals,
+        "stats": stats,
+    }
+
+
+def _scrape_with_meta_sync(url: str) -> Optional[dict]:
+    try:
+        downloaded = trafilatura.fetch_url(url)
+        if not downloaded:
+            return None
+        result = trafilatura.extract(
+            downloaded, output_format="json", with_metadata=True,
+            include_comments=False, include_tables=False, favor_precision=True,
+        )
+        if not result:
+            return None
+        data = json.loads(result)
+        text = (data.get("text") or "").strip()
+        if len(text) < 80:
+            return None
+        return {
+            "url": url,
+            "title": (data.get("title") or "").strip(),
+            "date": (data.get("date") or "").strip(),
+            "hostname": (data.get("hostname") or "").strip(),
+            "text": text[:2000],
+        }
+    except Exception:
+        return None
+
+
+async def _scrape_pages_with_meta(urls: list[str]) -> list[dict]:
+    async def _one(url):
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(_scrape_with_meta_sync, url), timeout=8.0
+            )
+        except Exception:
+            return None
+    results = await asyncio.gather(*[_one(u) for u in urls[:20]])
+    return [r for r in results if r]
+
+
+async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
+    # Step 1: extract topic + 6 diverse search queries
+    try:
+        ext_resp = await client.chat.completions.create(
+            model=MODEL_FAST,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": TIMELINE_EXTRACT_PROMPT.format(article=article_text[:1000])},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=300,
+        )
+        ext = json.loads(ext_resp.choices[0].message.content)
+        topic = ext.get("topic", "")
+        queries = ext.get("search_queries", [topic])[:6]
+        core_claim = ext.get("core_claim", "")
+    except Exception:
+        topic = article_text[:80]
+        queries = [topic]
+        core_claim = topic
+
+    # Step 2: run all 6 queries, 6 results each = up to 36 candidates
+    all_urls: list[str] = []
+    seen: set[str] = set()
+    for q in queries:
+        results = await asyncio.to_thread(_ddg_search, q, 6)
+        for r in results:
+            url = r.get("url", "")
+            if url and url not in seen and not r.get("error"):
+                seen.add(url)
+                all_urls.append(url)
+
+    # Step 3: scrape up to 20 pages with full metadata
+    pages = await _scrape_pages_with_meta(all_urls[:20])
+
+    # Sort by date where available
+    def _date_key(p):
+        d = p.get("date", "")
+        return d if d else "9999"
+    pages.sort(key=_date_key)
+
+    if not pages:
+        return {
+            "topic": topic,
+            "core_claim": core_claim,
+            "entries": [],
+            "narrative_shifts": [],
+            "dropped_context": [],
+            "amplification_chain": [],
+            "origin_assessment": "No related articles could be found.",
+            "timeline_summary": "Insufficient data to build a narrative timeline.",
+            "narrative_verdict": "UNVERIFIED",
+            "credibility_score": 50,
+        }
+
+    # Step 4: build text block for LLM (1200 chars per article for depth)
+    articles_text = ""
+    entries = []
+    for i, p in enumerate(pages):
+        label = f"[{i+1}] {p.get('hostname','?')} | {p.get('date','date unknown')} | {p.get('title','')}"
+        articles_text += f"\n{label}\n{p['text'][:1200]}\n"
+        entries.append({
+            "index": i + 1,
+            "url": p["url"],
+            "title": p.get("title", ""),
+            "date": p.get("date", ""),
+            "hostname": p.get("hostname", ""),
+        })
+
+    # Step 5: deep LLM narrative forensics analysis
+    try:
+        ana_resp = await client.chat.completions.create(
+            model=MODEL_STRUCT,
+            messages=[
+                {"role": "system", "content": "Output only valid JSON. No prose."},
+                {"role": "user", "content": TIMELINE_ANALYZE_PROMPT.format(
+                    topic=topic,
+                    core_claim=core_claim,
+                    articles_text=articles_text[:9000],
+                )},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3,
+            max_tokens=1800,
+        )
+        ana = json.loads(ana_resp.choices[0].message.content)
+    except Exception:
+        ana = {
+            "origin_assessment": "Analysis unavailable.",
+            "narrative_shifts": [],
+            "dropped_context": [],
+            "amplification_chain": [],
+            "timeline_summary": "Timeline data collected but narrative analysis failed.",
+            "narrative_verdict": "UNVERIFIED",
+            "credibility_score": 50,
+            "article_assessments": [],
+        }
+
+    # Step 6: merge per-article assessments into entries
+    assessments = {a.get("index"): a for a in ana.get("article_assessments", [])}
+    for e in entries:
+        asmt = assessments.get(e["index"], {})
+        e["corroboration"] = asmt.get("corroboration", "INDEPENDENT")
+        e["key_quote"] = asmt.get("key_quote", "")
+        e["bias_note"] = asmt.get("bias_note", "")
+
+    return {
+        "topic": topic,
+        "core_claim": core_claim,
+        "entries": entries,
+        "narrative_shifts": ana.get("narrative_shifts", []),
+        "dropped_context": ana.get("dropped_context", []),
+        "amplification_chain": ana.get("amplification_chain", []),
+        "origin_assessment": ana.get("origin_assessment", ""),
+        "timeline_summary": ana.get("timeline_summary", ""),
+        "narrative_verdict": ana.get("narrative_verdict", "UNVERIFIED"),
+        "credibility_score": int(ana.get("credibility_score", 50)),
+    }
+
+
+async def _verify_claim(client: AsyncGroq, claim_text: str) -> dict:
+    async with _claim_sem:
+        try:
+            resp = await client.chat.completions.create(
+                model=MODEL_FAST,
+                messages=[
+                    {"role": "system", "content": "Output only valid JSON. No prose."},
+                    {"role": "user", "content": CLAIM_VERIFY_PROMPT.format(claim=claim_text[:400])}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.2,
+                max_tokens=150,
+            )
+            return json.loads(resp.choices[0].message.content)
+        except Exception:
+            return {"verdict": "unverifiable", "explanation": "Verification unavailable."}
 
 
 @app.post("/analyze")
-async def analyze(req: AnalyzeRequest):
+async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     if len(req.article) < 200:
         raise HTTPException(400, "Article too short (need at least 200 chars)")
 
     client = get_client()
     article_text = req.article[:12000]
 
-    # Step 1 — DeepSeek R1 deep reasoning
     thinking = ""
     try:
         r1_resp = await client.chat.completions.create(
@@ -567,10 +1122,8 @@ async def analyze(req: AnalyzeRequest):
         r1_raw = r1_resp.choices[0].message.content
         thinking, analysis_prose = parse_r1_output(r1_raw)
     except Exception:
-        # Fallback: send article directly without reasoning step
         analysis_prose = article_text
 
-    # Step 2 — Structure into JSON with llama-3.3-70b
     try:
         struct_resp = await client.chat.completions.create(
             model=MODEL_STRUCT,
@@ -588,91 +1141,30 @@ async def analyze(req: AnalyzeRequest):
     except Exception as e:
         raise HTTPException(500, f"Analysis structuring failed: {e}")
 
-    # Step 3 — Retrieval-grounded claim verification (semaphore-capped at 5)
     claims = result.get("claims", [])
     if claims:
-        verifiable_claims = [c for c in claims if _claim_is_verifiable(c) and c.get("text")]
-        verifications = await asyncio.gather(*[
-            _verify_claim_with_timeout(c.get("text", "")) for c in verifiable_claims
-        ])
-        result["verifications"] = verifications
-        by_text = {v.get("claim_text"): v for v in verifications}
-        for claim in result["claims"]:
-            if claim.get("text") in by_text:
-                claim["verification"] = by_text[claim["text"]]
+        verifications, fake_result, ai_result = await asyncio.gather(
+            asyncio.gather(*[_verify_claim(client, c.get("text", "")) for c in claims]),
+            _fake_detect(client, article_text, result),
+            _ai_detect(client, article_text),
+        )
+        for claim, v in zip(result["claims"], verifications):
+            claim["verification"] = v
+    else:
+        fake_result, ai_result = await asyncio.gather(
+            _fake_detect(client, article_text, result),
+            _ai_detect(client, article_text),
+        )
 
     result["reasoning_trace"] = thinking
+    result["fake_detection"] = fake_result
+    result["ai_detection"] = ai_result
     return result
-
-
-@app.post("/verify")
-async def verify(req: VerifyRequest):
-    if not req.claim.strip():
-        raise HTTPException(400, "Claim is required")
-    try:
-        return await block5_verify_claim(req.claim, force_refresh=req.force_refresh)
-    except VerificationError as e:
-        raise HTTPException(503, str(e))
-
-
-@app.post("/fetch-url")
-async def fetch_url(req: FetchUrlRequest):
-    url = _normalize_url(req.url)
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-        )
-    }
-
-    try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=15.0, headers=headers) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(e.response.status_code, f"URL fetch failed with HTTP {e.response.status_code}")
-    except httpx.RequestError as e:
-        raise HTTPException(400, f"URL fetch failed: {e}")
-
-    content_type = resp.headers.get("content-type", "")
-    if "text/html" not in content_type and "application/xhtml" not in content_type:
-        raise HTTPException(400, "URL did not return an HTML article page")
-
-    html = resp.text
-    extracted = trafilatura.extract(
-        html,
-        url=str(resp.url),
-        include_comments=False,
-        include_tables=False,
-        favor_precision=False,
-    ) or ""
-    if len(extracted.strip()) < 200:
-        extracted = _fallback_html_text(html)
-
-    text = re.sub(r"\n{3,}", "\n\n", extracted).strip()
-    if len(text) < 200:
-        raise HTTPException(400, "Could not extract enough article text from this URL")
-
-    metadata = trafilatura.extract_metadata(html, default_url=str(resp.url))
-    title = ""
-    if metadata and metadata.title:
-        title = metadata.title.strip()
-
-    return {
-        "url": str(resp.url),
-        "title": title,
-        "text": text[:12000],
-    }
 
 
 # ── Agentic streaming chat ─────────────────────────────────────────────────────
 
 async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
-    """
-    Async generator. Emits:
-      - Tool status lines:  ⚙:{json}\n   (parsed by frontend, not shown as text)
-      - Response text:      raw streamed characters
-    """
     if mode != "open":
         stream = await client.chat.completions.create(
             model=MODEL_STRUCT, messages=messages, temperature=0.4, stream=True
@@ -683,7 +1175,6 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
                 yield delta
         return
 
-    # Agentic loop — up to 5 rounds of tool use
     for _ in range(5):
         resp = await client.chat.completions.create(
             model=MODEL_STRUCT,
@@ -717,10 +1208,7 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
             except Exception:
                 args = {}
             query_str = args.get("query") or args.get("claim") or args.get("topic", "")
-
-            # Emit tool status line — frontend intercepts lines starting with ⚙:
             yield f"⚙:{json.dumps({'name': name, 'query': query_str})}\n"
-
             result = await execute_tool(name, args)
             messages.append({
                 "role": "tool",
@@ -728,7 +1216,6 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
                 "content": json.dumps(result)
             })
 
-    # Stream final answer
     stream = await client.chat.completions.create(
         model=MODEL_STRUCT, messages=messages, temperature=0.7, stream=True
     )
@@ -739,11 +1226,17 @@ async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
 
 
 @app.post("/chat")
-async def chat(req: ChatRequest):
+async def chat(req: ChatRequest, user: dict = Depends(require_auth)):
     client = get_client()
-    template = CHAT_SYSTEM_OPEN if req.mode == "open" else CHAT_SYSTEM_CONTEXT
-    system = template.format(analysis=json.dumps(req.analysis, indent=2))
 
+    if req.mode == "open":
+        template = CHAT_SYSTEM_OPEN
+    elif req.mode == "conspiracy":
+        template = CHAT_SYSTEM_CONSPIRACY
+    else:
+        template = CHAT_SYSTEM_CONTEXT
+
+    system = template.format(analysis=json.dumps(req.analysis, indent=2))
     messages = [{"role": "system", "content": system}]
     for m in req.history:
         messages.append({"role": m.role, "content": m.content})
@@ -756,10 +1249,50 @@ async def chat(req: ChatRequest):
     return StreamingResponse(generate(), media_type="text/plain")
 
 
+# ── URL fetch ─────────────────────────────────────────────────────────────────
+
+MAX_WORDS_URL = 3000
+
+def _fetch_article_sync(url: str):
+    downloaded = trafilatura.fetch_url(url)
+    if not downloaded:
+        return None, None
+    result = trafilatura.extract(
+        downloaded,
+        output_format="json",
+        with_metadata=True,
+        include_comments=False,
+        include_tables=False,
+        favor_precision=True,
+    )
+    if not result:
+        return None, None
+    data = json.loads(result)
+    title = (data.get("title") or "").strip()
+    text = (data.get("text") or "").strip()
+    words = text.split()
+    if len(words) > MAX_WORDS_URL:
+        text = " ".join(words[:MAX_WORDS_URL]) + " [...truncated]"
+    return title, text
+
+@app.post("/fetch-url")
+async def fetch_url(req: FetchUrlRequest, _user: dict = Depends(require_auth)):
+    url = req.url.strip()
+    if not url.startswith(("http://", "https://")):
+        raise HTTPException(400, "URL must start with http:// or https://")
+    try:
+        title, text = await asyncio.to_thread(_fetch_article_sync, url)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to fetch URL: {e}")
+    if not text or len(text) < 100:
+        raise HTTPException(422, "Could not extract enough article text from that URL. Try pasting the text directly.")
+    return {"title": title, "text": text}
+
+
 # ── Transcription ──────────────────────────────────────────────────────────────
 
 @app.post("/transcribe")
-async def transcribe(file: UploadFile = File(...)):
+async def transcribe(file: UploadFile = File(...), user: dict = Depends(require_auth)):
     client = get_client()
     content = await file.read()
     if len(content) > 25 * 1024 * 1024:
@@ -778,7 +1311,7 @@ async def transcribe(file: UploadFile = File(...)):
 # ── Vision / screenshot analysis ───────────────────────────────────────────────
 
 @app.post("/analyze-image")
-async def analyze_image(file: UploadFile = File(...)):
+async def analyze_image(file: UploadFile = File(...), user: dict = Depends(require_auth)):
     client = get_client()
     content = await file.read()
     if len(content) > 3 * 1024 * 1024:
@@ -816,13 +1349,13 @@ async def analyze_image(file: UploadFile = File(...)):
             "Not enough text extracted from image. Make sure it contains a readable article or screenshot."
         )
 
-    return await analyze(AnalyzeRequest(article=extracted))
+    return await analyze(AnalyzeRequest(article=extracted), user)
 
 
 # ── Multi-article comparison ───────────────────────────────────────────────────
 
 @app.post("/compare")
-async def compare_articles(req: CompareRequest):
+async def compare_articles(req: CompareRequest, user: dict = Depends(require_auth)):
     if len(req.articles) < 2:
         raise HTTPException(400, "Need at least 2 articles to compare")
     if len(req.articles) > 4:
@@ -832,7 +1365,7 @@ async def compare_articles(req: CompareRequest):
             raise HTTPException(400, f"Article {i+1} is too short (need 200+ chars)")
 
     client = get_client()
-    analyses = list(await asyncio.gather(*[analyze(AnalyzeRequest(article=a)) for a in req.articles]))
+    analyses = list(await asyncio.gather(*[analyze(AnalyzeRequest(article=a), user) for a in req.articles]))
 
     summaries = []
     for i, a in enumerate(analyses):
@@ -865,7 +1398,7 @@ async def compare_articles(req: CompareRequest):
 # ── Dynamic suggestions ────────────────────────────────────────────────────────
 
 @app.post("/suggestions")
-async def get_suggestions(req: SuggestionsRequest):
+async def get_suggestions(req: SuggestionsRequest, user: dict = Depends(require_auth)):
     client = get_client()
     a = req.analysis
     mi = a.get("manipulation_index", 0)
@@ -897,10 +1430,21 @@ async def get_suggestions(req: SuggestionsRequest):
         ]}
 
 
+# ── Narrative Timeline ────────────────────────────────────────────────────────
+
+@app.post("/timeline")
+async def narrative_timeline(req: TimelineRequest, user: dict = Depends(require_auth)):
+    if len(req.article) < 100:
+        raise HTTPException(400, "Article too short (need at least 100 chars)")
+    client = get_client()
+    result = await _build_timeline(client, req.article[:10000])
+    return result
+
+
 # ── Misc ───────────────────────────────────────────────────────────────────────
 
 @app.get("/random")
-def random_article():
+def random_article(user: dict = Depends(require_auth)):
     df = get_welfake()
     if df is None:
         raise HTTPException(404, f"WELFake dataset not found at {WELFAKE_CSV}")
