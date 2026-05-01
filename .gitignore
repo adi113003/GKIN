@@ -1,7 +1,6 @@
 .DS_Store
 .env
 
-WELFake_Dataset.csv
 __pycache__/
 *.py[cod]
 users.json
