@@ -293,7 +293,7 @@ nav {
   border-bottom: 1px solid var(--border);
 }
 .header-eye { margin-bottom: 14px; }
-.header-eye svg { width: 58px; height: 58px; color: var(--gold); filter: drop-shadow(0 0 16px rgba(200,150,60,0.4)); }
+.header-eye svg { width: 58px; height: 58px; color: var(--ink); }
 .site-brand {
   font-family: "Cinzel Decorative", serif;
   font-size: clamp(22px, 3.5vw, 34px); font-weight: 700;
@@ -1119,7 +1119,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 .lib-del { background: transparent; color: var(--ink-3); border: none; padding: 4px 8px; font-size: 14px; cursor: pointer; border-radius: 4px; flex-shrink: 0; line-height: 1; }
 .lib-del:hover { color: var(--danger); background: transparent; }
 </style>
-<style id="uber-theme" disabled>
+<style id="uber-theme">
 /* ─── Uber theme override ─── */
 
 html, body {
@@ -1668,7 +1668,7 @@ button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !
       <button class="nav-link" data-tab="compare" onclick="switchNavTab(this,'compare')">Compare</button>
     </div>
     <div class="nav-user">
-      <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle dark/light mode" onclick="toggleTheme()">💡</button>
+      <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle dark/light mode" onclick="toggleTheme()">🌙</button>
       <span>Signed in as:</span>
       <span class="nav-username" id="header-username"></span>
       <button class="nav-logout" id="logout-btn">Sign Out</button>
@@ -1679,7 +1679,7 @@ button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !
 <!-- ── Site header ── -->
 <div class="site-header">
   <div class="header-eye">
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:56px;height:56px;color:#000000;">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="19" cy="19" r="13" stroke="currentColor" stroke-width="3"/>
       <line x1="28.5" y1="28.5" x2="43" y2="43" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
     </svg>
@@ -2547,13 +2547,13 @@ function toggleTheme() {
   const saved = localStorage.getItem("gkin_theme");
   const uberStyle = document.getElementById("uber-theme");
   const btn = document.getElementById("theme-toggle-btn");
-  if (saved === "light") {
-    uberStyle.disabled = false;
-    if (btn) btn.textContent = "🌙";
-  } else {
-    // Default and explicit "dark" both use dark mode
+  if (saved === "dark") {
     uberStyle.disabled = true;
     if (btn) btn.textContent = "💡";
+  } else {
+    // Default and explicit "light" both use light mode
+    uberStyle.disabled = false;
+    if (btn) btn.textContent = "🌙";
   }
 })();
 
