@@ -13,11 +13,11 @@
   --ink:      #f0f0f0;
   --ink-2:    #c0c0c0;
   --ink-3:    #888888;
-  --gold:     #c8963c;
-  --gold-2:   #daa84e;
-  --gold-dim: rgba(200,150,60,0.08);
-  --steel:    #c8963c;
-  --steel-2:  #888888;
+  --gold:     #ffffff;
+  --gold-2:   #e8e8e8;
+  --gold-dim: rgba(255,255,255,0.08);
+  --steel:    #ffffff;
+  --steel-2:  #aaaaaa;
   --red:      #cc2222;
   --red-2:    #ff4444;
   --green:    #2a8a18;
@@ -26,12 +26,12 @@
   --violet:   #8844cc;
   --border:   rgba(255,255,255,0.12);
   --border-2: rgba(255,255,255,0.22);
-  --border-gold: rgba(200,150,60,0.22);
-  --glow:     rgba(200,150,60,0.04);
+  --border-gold: rgba(255,255,255,0.2);
+  --glow:     rgba(255,255,255,0.04);
   --shadow:   rgba(0,0,0,0.4) 0px 4px 16px 0px;
   --danger:   #cc2222;
   --ok:       #2a8a18;
-  --accent:   #c8963c;
+  --accent:   #ffffff;
   --chip:     #2e2e2e;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -395,7 +395,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
   border-radius: 8px; cursor: pointer; transition: opacity 0.15s, transform 0.1s;
   box-shadow: 0 0 18px rgba(200,150,60,0.18);
 }
-.scan-btn:hover:not(:disabled) { opacity: 0.88; box-shadow: 0 0 28px rgba(200,150,60,0.3); }
+.scan-btn:hover:not(:disabled) { opacity: 0.88; box-shadow: 0 0 20px rgba(255,255,255,0.15); }
 .scan-btn:active:not(:disabled) { transform: scale(0.97); }
 .scan-btn:disabled { background: var(--bg-4); color: var(--ink-3); cursor: not-allowed; box-shadow: none; }
 .scan-eye { width: 16px; height: 16px; }
