@@ -1539,6 +1539,19 @@ body.modal-open { overflow: hidden; }
   padding: 8px 10px;
 }
 .landing-links a:hover { color: #000000; }
+.landing-link-btn {
+  color: #30363a;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 10px;
+  background: none !important;
+  border: none !important;
+  cursor: pointer;
+  min-height: unset !important;
+  border-radius: 0 !important;
+  line-height: inherit;
+}
+.landing-link-btn:hover { color: #000000; opacity: 1 !important; }
 .landing-btn,
 .landing-page button,
 .landing-nav button {
@@ -1932,7 +1945,19 @@ body.authed .guest-only { display: none !important; }
   z-index: 3;
   background: #ffffff;
   border-top: 1px solid var(--lp-line);
+  display: none;
 }
+body.app-active .app-shell { display: block; }
+body.app-active .landing-nav,
+body.app-active .landing-page { display: none; }
+.app-nav-brand {
+  font-size: 15px; font-weight: 700; color: #000; text-decoration: none;
+  padding: 6px 10px; border-radius: 8px; margin-right: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: none; cursor: pointer; font-family: system-ui,-apple-system,sans-serif;
+  white-space: nowrap;
+}
+.app-nav-brand:hover { background: #f5f5f5; }
 .app-shell::before {
   content: "Analyzer Workspace";
   display: block;
@@ -2242,12 +2267,12 @@ body.visitor .nav-user::before {
     <a href="#product">Product</a>
     <a href="#workflow">Workflow</a>
     <a href="#extension">Extension</a>
-    <a href="#analyzer">Analyzer</a>
+    <button class="landing-link-btn" type="button" data-go-app>Analyzer</button>
   </div>
   <div class="landing-actions">
     <button class="landing-btn secondary guest-only" type="button" data-auth-open="login">Sign in</button>
     <button class="landing-btn primary guest-only" type="button" data-auth-open="register">Start free</button>
-    <button class="landing-btn primary auth-only" type="button" data-scroll-target="#analyzer">Open workspace</button>
+    <button class="landing-btn primary auth-only" type="button" data-go-app>Open workspace</button>
   </div>
 </header>
 
@@ -2260,7 +2285,7 @@ body.visitor .nav-user::before {
         <h1 class="hero-title" id="landing-title">GKIN</h1>
         <p class="hero-subhead">Truth Navigator turns articles, screenshots, audio, and competing narratives into a clear read on manipulation, missing context, claim strength, and source credibility.</p>
         <div class="hero-actions">
-          <button class="landing-btn primary" type="button" data-scroll-target="#analyzer">Try the analyzer</button>
+          <button class="landing-btn primary" type="button" data-go-app>Try the analyzer</button>
           <button class="landing-btn secondary guest-only" type="button" data-auth-open="register">Create account</button>
         </div>
         <div class="hero-proof" aria-label="Product capabilities">
@@ -2443,6 +2468,7 @@ body.visitor .nav-user::before {
 <!-- ── Navigation ── -->
 <nav>
   <div class="nav-inner">
+    <button class="app-nav-brand" type="button" id="home-btn" title="Back to home">← GKIN</button>
     <div class="nav-links">
       <button class="nav-link active" data-tab="text" onclick="switchNavTab(this,'text')">Analyze</button>
       <button class="nav-link" data-tab="audio" onclick="switchNavTab(this,'audio')">Audio</button>
@@ -2797,6 +2823,14 @@ function closeAuth() {
   $("auth-overlay").classList.add("hidden");
   document.body.classList.remove("modal-open");
 }
+function showApp() {
+  document.body.classList.add("app-active");
+  window.scrollTo(0, 0);
+}
+function showLanding() {
+  document.body.classList.remove("app-active");
+  window.scrollTo(0, 0);
+}
 function requireLogin(mode = "register") {
   if (authToken) return true;
   openAuth(mode);
@@ -2824,6 +2858,7 @@ function setAuth(token, username) {
   localStorage.setItem("gkin_user", username);
   markAuthed(username);
   closeAuth();
+  showApp();
 }
 function clearAuth() {
   authToken = ""; authUser = "";
@@ -2853,6 +2888,12 @@ document.querySelectorAll("[data-auth-open]").forEach(btn => {
 document.querySelectorAll("[data-scroll-target]").forEach(btn => {
   btn.addEventListener("click", () => document.querySelector(btn.dataset.scrollTarget)?.scrollIntoView({behavior:"smooth", block:"start"}));
 });
+document.querySelectorAll("[data-go-app]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (!requireLogin("login")) return;
+    showApp();
+  });
+});
 $("login-btn").addEventListener("click", async () => {
   const username = $("login-username").value.trim(), password = $("login-password").value;
   if (!username || !password) { showAuthErr("login-error","Fill in all fields."); return; }
@@ -2881,11 +2922,13 @@ function showAuthErr(id,msg){ const el=$(id); el.textContent=msg; el.classList.a
 
 $("logout-btn").addEventListener("click", () => {
   clearAuth();
+  showLanding();
   $("results").classList.remove("show");
   $("compare-results").classList.remove("show");
   $("chat-card").classList.remove("show");
   currentAnalysis = null; chatHistory = [];
 });
+$("home-btn").addEventListener("click", showLanding);
 
 (async () => {
   if (!authToken) { markVisitor(); return; }
@@ -2953,7 +2996,7 @@ $("clear-btn").addEventListener("click", () => {
 });
 $("random-btn").addEventListener("click", async () => {
   hideError();
-  if (!requireLogin("register")) return;
+  if (!requireLogin("login")) return;
   try {
     const r = await authFetch("/random");
     if (isAuthFailure(r)){handleAuthFailure();return;}
@@ -2967,7 +3010,7 @@ $("random-btn").addEventListener("click", async () => {
 $("analyze-btn").addEventListener("click", async () => {
   const text = articleEl.value.trim();
   if (text.length<200){ showError("Article must be at least 200 characters long."); return; }
-  if (!requireLogin("register")) return;
+  if (!requireLogin("login")) return;
   hideError();
   $("loading").textContent = "Analyzing";
   $("loading").classList.add("show"); $("analyze-btn").disabled=true;
@@ -2993,7 +3036,7 @@ $("url-toggle-text-btn").addEventListener("click", () => {
 $("fetch-url-btn").addEventListener("click", async () => {
   const url = $("url-input").value.trim();
   if (!url) { showError("Please enter a URL."); return; }
-  if (!requireLogin("register")) return;
+  if (!requireLogin("login")) return;
   hideError();
   $("url-fetched-card").style.display = "none";
   $("loading").textContent = "Fetching article";
@@ -3058,7 +3101,7 @@ setupDropZone("audio-drop","audio-input",file=>{
 });
 $("transcribe-btn").addEventListener("click", async () => {
   if(!audioFile)return; hideError();
-  if (!requireLogin("register")) return;
+  if (!requireLogin("login")) return;
   $("loading").textContent="Transcribing audio";
   $("loading").classList.add("show"); $("transcribe-btn").disabled=true;
   try {
@@ -3086,7 +3129,7 @@ setupDropZone("image-drop","image-input",file=>{
 });
 $("analyze-image-btn").addEventListener("click", async () => {
   if(!imageFile)return; hideError();
-  if (!requireLogin("register")) return;
+  if (!requireLogin("login")) return;
   $("loading").textContent="Analyzing image";
   $("loading").classList.add("show"); $("analyze-image-btn").disabled=true;
   try {
@@ -3127,7 +3170,7 @@ $("compare-btn").addEventListener("click", async () => {
   const c=$("compare-articles"), count=parseInt(c.dataset.count), articles=[];
   for(let i=0;i<count;i++){const ta=$("cmp-"+i);if(ta&&ta.value.trim().length>=200)articles.push(ta.value.trim());}
   if(articles.length<2){showError("Need at least 2 articles with 200+ characters each.");return;}
-  if (!requireLogin("register")) return;
+  if (!requireLogin("login")) return;
   hideError();
   $("loading").textContent=`Comparing ${articles.length} articles`;
   $("loading").classList.add("show"); $("compare-btn").disabled=true;
