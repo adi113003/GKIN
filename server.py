@@ -57,6 +57,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from groq import AsyncGroq
@@ -574,6 +575,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="GKIN Truth Navigator v3", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
 
 
 def get_client() -> AsyncGroq:
