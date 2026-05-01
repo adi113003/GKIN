@@ -1,4 +1,5 @@
 .DS_Store
+.env
 
 WELFake_Dataset.csv
 __pycache__/
