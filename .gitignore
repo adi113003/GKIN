@@ -2,3 +2,7 @@
 .env
 
 WELFake_Dataset.csv
+__pycache__/
+*.py[cod]
+users.json
+.gkin_cache/

@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GKIN · Truth Navigator</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23111'/%3E%3Ccircle cx='26' cy='26' r='14' fill='none' stroke='%23fff' stroke-width='4'/%3E%3Cline x1='37' y1='37' x2='52' y2='52' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E"/>
 <style>
 :root {
   --bg:       #111111;
@@ -1465,8 +1466,654 @@ button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !
 .ntl-dropped-item { background: rgba(0,0,120,0.04) !important; border-color: rgba(0,0,120,0.12) !important; color: #333333 !important; }
 .ntl-dropped-item::before { color: #4444aa !important; }
 </style>
+<style id="landing-theme">
+:root {
+  --lp-ink: #101214;
+  --lp-muted: #5b6368;
+  --lp-soft: #eef1ed;
+  --lp-paper: #f7f4ec;
+  --lp-line: rgba(16,18,20,0.13);
+  --lp-night: #05080b;
+  --lp-teal: #0e766d;
+  --lp-red: #cc372d;
+  --lp-green: #2f7d32;
+}
+
+html { scroll-behavior: smooth; }
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+body {
+  background: var(--lp-paper) !important;
+  color: var(--lp-ink) !important;
+  letter-spacing: 0 !important;
+}
+body.modal-open { overflow: hidden; }
+
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 32px;
+  background: rgba(247,244,236,0.88);
+  border-bottom: 1px solid var(--lp-line);
+  backdrop-filter: blur(18px);
+}
+.landing-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--lp-ink);
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: 0 !important;
+}
+.landing-mark {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #101214;
+  font-size: 15px;
+}
+.landing-links,
+.landing-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.landing-links a {
+  color: #30363a;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 10px;
+}
+.landing-links a:hover { color: #000000; }
+.landing-link-btn {
+  color: #30363a;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 10px;
+  background: none !important;
+  border: none !important;
+  cursor: pointer;
+  min-height: unset !important;
+  border-radius: 0 !important;
+  line-height: inherit;
+}
+.landing-link-btn:hover { color: #000000; opacity: 1 !important; }
+.landing-btn,
+.landing-page button,
+.landing-nav button {
+  min-height: 42px;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  padding: 0 16px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap;
+  box-shadow: none !important;
+}
+.landing-btn.primary,
+.landing-page .primary,
+.landing-nav .primary {
+  color: #ffffff !important;
+  background: #101214 !important;
+}
+.landing-btn.secondary,
+.landing-page .secondary,
+.landing-nav .secondary {
+  color: var(--lp-ink) !important;
+  background: rgba(255,255,255,0.62) !important;
+  border-color: var(--lp-line) !important;
+}
+.landing-btn:hover,
+.landing-page button:hover,
+.landing-nav button:hover {
+  opacity: 0.86 !important;
+}
+.auth-only { display: none !important; }
+body.authed .auth-only { display: inline-flex !important; }
+body.authed .guest-only { display: none !important; }
+
+.landing-page {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+.landing-hero {
+  position: relative;
+  min-height: 80svh;
+  overflow: hidden;
+  color: #ffffff;
+  background: var(--lp-night);
+}
+.landing-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(5,8,11,0.98) 0%, rgba(5,8,11,0.86) 34%, rgba(5,8,11,0.32) 70%, rgba(5,8,11,0.08) 100%),
+    linear-gradient(180deg, rgba(5,8,11,0.08), rgba(5,8,11,0.9));
+}
+.landing-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  animation: heroDrift 18s ease-in-out infinite alternate;
+}
+@keyframes heroDrift {
+  from { transform: scale(1); }
+  to { transform: scale(1.045); }
+}
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  min-height: 80svh;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 88px 28px 54px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(300px, 0.62fr);
+  gap: 44px;
+  align-items: end;
+}
+.hero-copy {
+  padding-bottom: 42px;
+  min-width: 0;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.78);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 18px;
+}
+.eyebrow::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lp-green);
+  box-shadow: 0 0 0 5px rgba(47,125,50,0.18);
+}
+.hero-title {
+  font-size: 76px;
+  line-height: 0.92;
+  font-weight: 900;
+  letter-spacing: 0 !important;
+  margin-bottom: 20px;
+}
+.hero-subhead {
+  max-width: 640px;
+  color: rgba(255,255,255,0.82);
+  font-size: 21px;
+  line-height: 1.45;
+  margin-bottom: 28px;
+  overflow-wrap: break-word;
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+.hero-actions .landing-btn {
+  min-height: 48px;
+  padding: 0 20px !important;
+}
+.hero-actions .primary {
+  background: #ffffff !important;
+  color: #101214 !important;
+}
+.hero-actions .secondary {
+  background: rgba(255,255,255,0.1) !important;
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+.hero-proof {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 680px;
+}
+.proof-stat {
+  border-top: 1px solid rgba(255,255,255,0.18);
+  padding-top: 12px;
+}
+.proof-stat strong {
+  display: block;
+  font-size: 22px;
+  color: #ffffff;
+  line-height: 1;
+}
+.proof-stat span {
+  display: block;
+  color: rgba(255,255,255,0.62);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 7px;
+}
+.hero-brief {
+  align-self: end;
+  width: 100%;
+  max-width: 420px;
+  justify-self: end;
+  background: rgba(8,14,18,0.76);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.32);
+  backdrop-filter: blur(18px);
+}
+.brief-top,
+.brief-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.brief-kicker {
+  color: rgba(255,255,255,0.58);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.brief-score {
+  color: #ffffff;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+}
+.brief-score span {
+  color: rgba(255,255,255,0.45);
+  font-size: 15px;
+  font-weight: 700;
+}
+.brief-line {
+  height: 1px;
+  background: rgba(255,255,255,0.14);
+  margin: 16px 0;
+}
+.brief-row {
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+}
+.brief-row:last-child { border-bottom: 0; }
+.brief-row span {
+  color: rgba(255,255,255,0.74);
+  font-size: 13px;
+}
+.brief-row b {
+  min-width: 76px;
+  color: #ffffff;
+  text-align: right;
+  font-size: 13px;
+}
+.brief-bar {
+  position: relative;
+  flex: 1;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+}
+.brief-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--w);
+  border-radius: inherit;
+  background: var(--c);
+  animation: fillBrief 1.7s cubic-bezier(0.2,0.8,0.2,1) both;
+}
+@keyframes fillBrief {
+  from { width: 0; }
+  to { width: var(--w); }
+}
+
+.landing-band {
+  padding: 84px 28px;
+  background: var(--lp-paper);
+}
+.landing-band.alt { background: #ffffff; }
+.band-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.section-heading {
+  max-width: 720px;
+  margin-bottom: 30px;
+  min-width: 0;
+}
+.section-heading p {
+  color: var(--lp-muted);
+  font-size: 18px;
+  line-height: 1.55;
+  margin-top: 12px;
+}
+.section-heading h2 {
+  font-size: 42px;
+  line-height: 1.05;
+  letter-spacing: 0 !important;
+  overflow-wrap: break-word;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.feature-card,
+.step-card {
+  min-height: 210px;
+  background: #ffffff;
+  border: 1px solid var(--lp-line);
+  border-radius: 8px;
+  padding: 22px;
+}
+.feature-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffffff;
+  background: var(--lp-ink);
+  font-weight: 900;
+  margin-bottom: 18px;
+}
+.feature-card:nth-child(2) .feature-icon { background: var(--lp-teal); }
+.feature-card:nth-child(3) .feature-icon { background: var(--lp-red); }
+.feature-card:nth-child(4) .feature-icon { background: var(--lp-green); }
+.feature-card h3,
+.step-card h3 {
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0 !important;
+  margin-bottom: 10px;
+}
+.feature-card p,
+.step-card p {
+  color: var(--lp-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.step-number {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--lp-soft);
+  color: var(--lp-ink);
+  font-weight: 900;
+  margin-bottom: 34px;
+}
+.extension-band {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 30px;
+  align-items: center;
+  padding: 46px;
+  border-radius: 8px;
+  background: #101214;
+  color: #ffffff;
+}
+.extension-band h2 {
+  font-size: 40px;
+  line-height: 1.08;
+  letter-spacing: 0 !important;
+  margin-bottom: 14px;
+}
+.extension-band p {
+  color: rgba(255,255,255,0.68);
+  font-size: 17px;
+  line-height: 1.55;
+}
+.extension-mock {
+  justify-self: end;
+  width: min(100%, 430px);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: #ffffff;
+  color: #101214;
+  overflow: hidden;
+}
+.mock-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(16,18,20,0.1);
+  font-weight: 800;
+}
+.mock-body { padding: 16px; }
+.mock-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.mock-score strong {
+  color: var(--lp-red);
+  font-size: 44px;
+  line-height: 1;
+}
+.mock-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.mock-chip {
+  border-radius: 8px;
+  background: var(--lp-soft);
+  color: #30363a;
+  padding: 7px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.app-shell {
+  position: relative;
+  z-index: 3;
+  background: #ffffff;
+  border-top: 1px solid var(--lp-line);
+  display: none;
+}
+body.app-active .app-shell { display: block; }
+body.app-active .landing-nav,
+body.app-active .landing-page { display: none; }
+.app-nav-brand {
+  font-size: 15px; font-weight: 700; color: #000; text-decoration: none;
+  padding: 6px 10px; border-radius: 8px; margin-right: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: none; cursor: pointer; font-family: system-ui,-apple-system,sans-serif;
+  white-space: nowrap;
+}
+.app-nav-brand:hover { background: #f5f5f5; }
+.app-shell::before {
+  content: "Analyzer Workspace";
+  display: block;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 44px 28px 0;
+  color: var(--lp-muted);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.site-brand,
+.auth-brand {
+  letter-spacing: 0 !important;
+}
+body.visitor .nav-user > span:first-of-type,
+body.visitor #header-username,
+body.visitor #logout-btn {
+  display: none !important;
+}
+body.visitor .nav-user::before {
+  content: "Preview mode";
+  color: #4b4b4b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#auth-overlay {
+  background: rgba(5,8,11,0.62) !important;
+  backdrop-filter: blur(18px) !important;
+}
+#auth-overlay.hidden { display: none !important; }
+.auth-box {
+  position: relative;
+  border-radius: 8px !important;
+}
+.auth-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px !important;
+  display: inline-grid !important;
+  place-items: center;
+  padding: 0 !important;
+  background: #efefef !important;
+  color: #101214 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 940px) {
+  .landing-links { display: none; }
+  .landing-nav { padding: 0 18px; }
+  .hero-inner {
+    grid-template-columns: 1fr;
+    align-items: end;
+    padding-top: 72px;
+  }
+  .hero-title { font-size: 58px; }
+  .hero-subhead { font-size: 19px; }
+  .hero-brief {
+    justify-self: stretch;
+    max-width: none;
+  }
+  .feature-grid,
+  .workflow-grid,
+  .extension-band {
+    grid-template-columns: 1fr;
+  }
+  .extension-band { padding: 30px; }
+  .extension-mock { justify-self: stretch; }
+}
+
+@media (max-width: 620px) {
+  .landing-nav {
+    height: auto;
+    min-height: 68px;
+    align-items: flex-start;
+    padding: 14px;
+  }
+  .landing-actions { display: none; }
+  .landing-btn,
+  .landing-nav button {
+    min-height: 38px;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+  }
+  .landing-hero,
+  .hero-inner { min-height: 80svh; }
+  .hero-inner { padding: 64px 18px 34px; }
+  .hero-copy { padding-bottom: 18px; }
+  .hero-title { font-size: 46px; }
+  .hero-subhead { font-size: 17px; }
+  .hero-subhead,
+  .section-heading,
+  .section-heading h2,
+  .section-heading p {
+    max-width: 100%;
+  }
+  .hero-proof { grid-template-columns: 1fr; }
+  .hero-brief { display: none; }
+  .landing-band { padding: 56px 18px; }
+  .section-heading h2,
+  .extension-band h2 {
+    font-size: 31px;
+  }
+  .feature-card,
+  .step-card {
+    min-height: auto;
+  }
+  .app-shell::before {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .app-shell nav {
+    overflow-x: hidden;
+  }
+  .app-shell .nav-inner {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 14px;
+    overflow-x: hidden;
+  }
+  .app-shell .nav-links {
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px !important;
+    scrollbar-width: none;
+  }
+  .app-shell .nav-links::-webkit-scrollbar,
+  #main-tab-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .app-shell .nav-link {
+    flex: 0 0 auto;
+  }
+  .app-shell .nav-user {
+    flex: 0 0 auto;
+  }
+  #main-tab-bar {
+    overflow-x: auto;
+    border-radius: 8px !important;
+  }
+  #main-tab-bar .tab {
+    flex: 0 0 auto;
+    min-width: max-content;
+  }
+}
+</style>
 </head>
-<body>
+<body class="visitor">
 
 <!-- Combined cosmic star chart + library sigil background -->
 <div class="bg-sigil">
@@ -1611,9 +2258,168 @@ button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !
   </svg>
 </div>
 
+<header class="landing-nav" id="top">
+  <a class="landing-brand" href="#top" aria-label="GKIN home">
+    <span class="landing-mark">G</span>
+    <span>GKIN</span>
+  </a>
+  <div class="landing-links" aria-label="Product sections">
+    <a href="#product">Product</a>
+    <a href="#workflow">Workflow</a>
+    <a href="#extension">Extension</a>
+    <button class="landing-link-btn" type="button" data-go-app>Analyzer</button>
+  </div>
+  <div class="landing-actions">
+    <button class="landing-btn secondary guest-only" type="button" data-auth-open="login">Sign in</button>
+    <button class="landing-btn primary guest-only" type="button" data-auth-open="register">Start free</button>
+    <button class="landing-btn primary auth-only" type="button" data-go-app>Open workspace</button>
+  </div>
+</header>
+
+<main class="landing-page">
+  <section class="landing-hero" aria-labelledby="landing-title">
+    <img class="landing-hero-img" src="assets/gkin-hero.png" alt="AI media forensics workspace with article analysis overlays">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <div class="eyebrow">Media forensics for messy news cycles</div>
+        <h1 class="hero-title" id="landing-title">GKIN</h1>
+        <p class="hero-subhead">Truth Navigator turns articles, screenshots, audio, and competing narratives into a clear read on manipulation, missing context, claim strength, and source credibility.</p>
+        <div class="hero-actions">
+          <button class="landing-btn primary" type="button" data-go-app>Try the analyzer</button>
+          <button class="landing-btn secondary guest-only" type="button" data-auth-open="register">Create account</button>
+        </div>
+        <div class="hero-proof" aria-label="Product capabilities">
+          <div class="proof-stat">
+            <strong>4 modes</strong>
+            <span>Text, URL, audio/video, and image analysis.</span>
+          </div>
+          <div class="proof-stat">
+            <strong>0-100</strong>
+            <span>Manipulation and authenticity scoring.</span>
+          </div>
+          <div class="proof-stat">
+            <strong>Live chat</strong>
+            <span>Ask follow-up questions after each scan.</span>
+          </div>
+        </div>
+      </div>
+      <aside class="hero-brief" aria-label="Example analysis preview">
+        <div class="brief-top">
+          <div>
+            <div class="brief-kicker">Latest scan</div>
+            <div class="brief-score">72<span>/100</span></div>
+          </div>
+          <div class="brief-kicker">High persuasion</div>
+        </div>
+        <div class="brief-line"></div>
+        <div class="brief-row">
+          <span>Loaded language</span>
+          <div class="brief-bar"><i style="--w:82%;--c:#cc372d"></i></div>
+          <b>strong</b>
+        </div>
+        <div class="brief-row">
+          <span>Missing context</span>
+          <div class="brief-bar"><i style="--w:64%;--c:#d39b2a"></i></div>
+          <b>notable</b>
+        </div>
+        <div class="brief-row">
+          <span>Source support</span>
+          <div class="brief-bar"><i style="--w:38%;--c:#0e766d"></i></div>
+          <b>thin</b>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="landing-band" id="product">
+    <div class="band-inner">
+      <div class="section-heading">
+        <h2>Built for people who want the story behind the story.</h2>
+        <p>GKIN does more than label content true or false. It surfaces the tactics, omissions, emotional framing, and narrative pattern shaping how a reader reacts.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon">C</div>
+          <h3>Claim extraction</h3>
+          <p>Pulls out verifiable claims and separates them from opinion, speculation, and unverifiable framing.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">P</div>
+          <h3>Persuasion map</h3>
+          <p>Flags fear appeals, loaded language, urgency, authority framing, and other techniques with exact article spans.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">M</div>
+          <h3>Missing context</h3>
+          <p>Shows what a reader needs to know before trusting the conclusion, not just whether the headline sounds plausible.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">A</div>
+          <h3>Assistant follow-up</h3>
+          <p>Turns every scan into a conversation so users can question the evidence, compare narratives, and export reports.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-band alt" id="workflow">
+    <div class="band-inner">
+      <div class="section-heading">
+        <h2>From article to evidence trail in minutes.</h2>
+        <p>The workflow is designed for fast reading, repeated use, and sharper judgment across messy information environments.</p>
+      </div>
+      <div class="workflow-grid">
+        <article class="step-card">
+          <span class="step-number">1</span>
+          <h3>Bring the source</h3>
+          <p>Paste article text, fetch a URL, upload media, or compare multiple pieces covering the same event.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-number">2</span>
+          <h3>Read the signals</h3>
+          <p>Review manipulation score, emotional framing, authenticity signals, source checks, and narrative category.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-number">3</span>
+          <h3>Interrogate the result</h3>
+          <p>Ask grounded follow-ups, run web research, save analyses, or export a report when the evidence matters.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-band" id="extension">
+    <div class="band-inner extension-band">
+      <div>
+        <h2>Designed for the browser, not just a dashboard.</h2>
+        <p>The included Chrome extension brings GKIN into the page a user is already reading, while the full workspace handles deeper analysis, comparisons, and reporting.</p>
+      </div>
+      <div class="extension-mock" aria-label="Chrome extension preview">
+        <div class="mock-head">
+          <span>GKIN popup</span>
+          <span>Truth Navigator</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-score">
+            <strong>64</strong>
+            <span>manipulation index</span>
+          </div>
+          <p style="color:#4b4b4b;font-size:14px;line-height:1.5;margin:0;">Heavy emotional framing detected with several claims that need independent verification.</p>
+          <div class="mock-chip-row">
+            <span class="mock-chip">fear appeal</span>
+            <span class="mock-chip">missing context</span>
+            <span class="mock-chip">claim check</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
 <!-- ── Auth overlay ── -->
-<div id="auth-overlay">
+<div id="auth-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="GKIN account access">
   <div class="auth-box">
+    <button class="auth-close" id="auth-close" type="button" aria-label="Close">×</button>
     <div class="auth-eye">
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:40px;height:40px;color:#000000;">
         <circle cx="19" cy="19" r="13" stroke="currentColor" stroke-width="3"/>
@@ -1627,40 +2433,42 @@ button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !
       <button class="auth-tab active" id="auth-tab-login">Sign In</button>
       <button class="auth-tab" id="auth-tab-register">Create Account</button>
     </div>
-    <div class="auth-pane active" id="auth-pane-login">
+    <form class="auth-pane active" id="auth-pane-login" onsubmit="return false;">
       <div class="auth-field">
-        <label>Username</label>
+        <label for="login-username">Username</label>
         <input type="text" id="login-username" placeholder="your username" autocomplete="username"/>
       </div>
       <div class="auth-field">
-        <label>Password</label>
+        <label for="login-password">Password</label>
         <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
       </div>
-      <button class="auth-submit" id="login-btn">Sign In</button>
+      <button class="auth-submit" id="login-btn" type="button">Sign In</button>
       <div class="auth-error" id="login-error"></div>
-    </div>
-    <div class="auth-pane" id="auth-pane-register">
+    </form>
+    <form class="auth-pane" id="auth-pane-register" onsubmit="return false;">
       <div class="auth-field">
-        <label>Username</label>
+        <label for="reg-username">Username</label>
         <input type="text" id="reg-username" placeholder="choose a username" autocomplete="username"/>
       </div>
       <div class="auth-field">
-        <label>Email</label>
+        <label for="reg-email">Email</label>
         <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email"/>
       </div>
       <div class="auth-field">
-        <label>Password <span style="color:var(--ink-3);font-size:11px;">(min 6 characters)</span></label>
+        <label for="reg-password">Password <span style="color:var(--ink-3);font-size:11px;">(min 6 characters)</span></label>
         <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password"/>
       </div>
-      <button class="auth-submit" id="register-btn">Create Account</button>
+      <button class="auth-submit" id="register-btn" type="button">Create Account</button>
       <div class="auth-error" id="reg-error"></div>
-    </div>
+    </form>
   </div>
 </div>
 
+<section id="analyzer" class="app-shell">
 <!-- ── Navigation ── -->
 <nav>
   <div class="nav-inner">
+    <button class="app-nav-brand" type="button" id="home-btn" title="Back to home">← GKIN</button>
     <div class="nav-links">
       <button class="nav-link active" data-tab="text" onclick="switchNavTab(this,'text')">Analyze</button>
       <button class="nav-link" data-tab="audio" onclick="switchNavTab(this,'audio')">Audio</button>
@@ -1974,6 +2782,7 @@ button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !
 </div>
 
 </div><!-- /wrap -->
+</section>
 
 
 <script>
@@ -1996,29 +2805,94 @@ function authFetch(url, opts = {}) {
   opts.headers = Object.assign({}, opts.headers || {}, authToken ? {"Authorization": "Bearer " + authToken} : {});
   return fetch(url, opts);
 }
+function activateAuthPane(mode = "login") {
+  const isRegister = mode === "register";
+  $("auth-tab-login").classList.toggle("active", !isRegister);
+  $("auth-tab-register").classList.toggle("active", isRegister);
+  $("auth-pane-login").classList.toggle("active", !isRegister);
+  $("auth-pane-register").classList.toggle("active", isRegister);
+}
+function openAuth(mode = "login") {
+  activateAuthPane(mode);
+  $("auth-overlay").classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  const field = mode === "register" ? $("reg-username") : $("login-username");
+  setTimeout(() => field?.focus(), 60);
+}
+function closeAuth() {
+  $("auth-overlay").classList.add("hidden");
+  document.body.classList.remove("modal-open");
+}
+function showApp() {
+  document.body.classList.add("app-active");
+  window.scrollTo(0, 0);
+}
+function showLanding() {
+  document.body.classList.remove("app-active");
+  window.scrollTo(0, 0);
+}
+function requireLogin(mode = "register") {
+  if (authToken) return true;
+  openAuth(mode);
+  return false;
+}
+function isAuthFailure(response) {
+  return response.status === 401 || response.status === 403;
+}
+function handleAuthFailure() {
+  clearAuth();
+  openAuth("login");
+}
+function markVisitor() {
+  document.body.classList.add("visitor");
+  document.body.classList.remove("authed");
+}
+function markAuthed(username) {
+  document.body.classList.add("authed");
+  document.body.classList.remove("visitor");
+  $("header-username").textContent = username;
+}
 function setAuth(token, username) {
   authToken = token; authUser = username;
   localStorage.setItem("gkin_token", token);
   localStorage.setItem("gkin_user", username);
-  $("header-username").textContent = username;
-  $("auth-overlay").classList.add("hidden");
+  markAuthed(username);
+  closeAuth();
+  showApp();
 }
 function clearAuth() {
   authToken = ""; authUser = "";
   localStorage.removeItem("gkin_token");
   localStorage.removeItem("gkin_user");
-  $("auth-overlay").classList.remove("hidden");
   $("header-username").textContent = "";
+  markVisitor();
 }
 
 // ── Auth overlay ──────────────────────────────────────────────────────────────
 $("auth-tab-login").addEventListener("click", () => {
-  $("auth-tab-login").classList.add("active"); $("auth-tab-register").classList.remove("active");
-  $("auth-pane-login").classList.add("active"); $("auth-pane-register").classList.remove("active");
+  activateAuthPane("login");
 });
 $("auth-tab-register").addEventListener("click", () => {
-  $("auth-tab-register").classList.add("active"); $("auth-tab-login").classList.remove("active");
-  $("auth-pane-register").classList.add("active"); $("auth-pane-login").classList.remove("active");
+  activateAuthPane("register");
+});
+$("auth-close").addEventListener("click", closeAuth);
+$("auth-overlay").addEventListener("click", e => {
+  if (e.target === $("auth-overlay")) closeAuth();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("auth-overlay").classList.contains("hidden")) closeAuth();
+});
+document.querySelectorAll("[data-auth-open]").forEach(btn => {
+  btn.addEventListener("click", () => openAuth(btn.dataset.authOpen || "login"));
+});
+document.querySelectorAll("[data-scroll-target]").forEach(btn => {
+  btn.addEventListener("click", () => document.querySelector(btn.dataset.scrollTarget)?.scrollIntoView({behavior:"smooth", block:"start"}));
+});
+document.querySelectorAll("[data-go-app]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (!requireLogin("login")) return;
+    showApp();
+  });
 });
 $("login-btn").addEventListener("click", async () => {
   const username = $("login-username").value.trim(), password = $("login-password").value;
@@ -2048,20 +2922,22 @@ function showAuthErr(id,msg){ const el=$(id); el.textContent=msg; el.classList.a
 
 $("logout-btn").addEventListener("click", () => {
   clearAuth();
+  showLanding();
   $("results").classList.remove("show");
   $("compare-results").classList.remove("show");
   $("chat-card").classList.remove("show");
   currentAnalysis = null; chatHistory = [];
 });
+$("home-btn").addEventListener("click", showLanding);
 
 (async () => {
-  if (!authToken) { $("auth-overlay").classList.remove("hidden"); return; }
+  if (!authToken) { markVisitor(); return; }
   try {
     const r = await fetch("/me", {headers:{"Authorization":"Bearer "+authToken}});
     if (!r.ok) throw new Error();
     const d = await r.json();
-    $("header-username").textContent = d.username;
-    $("auth-overlay").classList.add("hidden");
+    markAuthed(d.username);
+    closeAuth();
   } catch { clearAuth(); }
 })();
 
@@ -2120,9 +2996,10 @@ $("clear-btn").addEventListener("click", () => {
 });
 $("random-btn").addEventListener("click", async () => {
   hideError();
+  if (!requireLogin("login")) return;
   try {
     const r = await authFetch("/random");
-    if (r.status===401){clearAuth();return;}
+    if (isAuthFailure(r)){handleAuthFailure();return;}
     if (!r.ok) throw new Error("Could not load a random article.");
     const d = await r.json();
     articleEl.value = d.text;
@@ -2133,12 +3010,13 @@ $("random-btn").addEventListener("click", async () => {
 $("analyze-btn").addEventListener("click", async () => {
   const text = articleEl.value.trim();
   if (text.length<200){ showError("Article must be at least 200 characters long."); return; }
+  if (!requireLogin("login")) return;
   hideError();
   $("loading").textContent = "Analyzing";
   $("loading").classList.add("show"); $("analyze-btn").disabled=true;
   try {
     const r = await authFetch("/analyze", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({article:text}) });
-    if (r.status===401){clearAuth();return;}
+    if (isAuthFailure(r)){handleAuthFailure();return;}
     if (!r.ok) throw new Error(await r.text());
     currentAnalysis = await r.json();
     showAnalysisResults(currentAnalysis);
@@ -2158,16 +3036,18 @@ $("url-toggle-text-btn").addEventListener("click", () => {
 $("fetch-url-btn").addEventListener("click", async () => {
   const url = $("url-input").value.trim();
   if (!url) { showError("Please enter a URL."); return; }
+  if (!requireLogin("login")) return;
   hideError();
   $("url-fetched-card").style.display = "none";
   $("loading").textContent = "Fetching article";
   $("loading").classList.add("show");
   $("fetch-url-btn").disabled = true;
   try {
-    const r = await fetch("/fetch-url", {
+    const r = await authFetch("/fetch-url", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({url})
     });
+    if (isAuthFailure(r)){handleAuthFailure();return;}
     if (!r.ok) throw new Error(await r.text());
     const {text, title} = await r.json();
 
@@ -2184,10 +3064,11 @@ $("fetch-url-btn").addEventListener("click", async () => {
     $("char-count").textContent = `${text.length.toLocaleString()} characters`;
 
     $("loading").textContent = "Analyzing";
-    const r2 = await fetch("/analyze", {
+    const r2 = await authFetch("/analyze", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({article: text})
     });
+    if (isAuthFailure(r2)){handleAuthFailure();return;}
     if (!r2.ok) throw new Error(await r2.text());
     currentAnalysis = await r2.json();
     showAnalysisResults(currentAnalysis);
@@ -2220,18 +3101,19 @@ setupDropZone("audio-drop","audio-input",file=>{
 });
 $("transcribe-btn").addEventListener("click", async () => {
   if(!audioFile)return; hideError();
+  if (!requireLogin("login")) return;
   $("loading").textContent="Transcribing audio";
   $("loading").classList.add("show"); $("transcribe-btn").disabled=true;
   try {
     const fd=new FormData(); fd.append("file",audioFile);
     const r=await authFetch("/transcribe",{method:"POST",body:fd});
-    if(r.status===401){clearAuth();return;} if(!r.ok)throw new Error(await r.text());
+    if(isAuthFailure(r)){handleAuthFailure();return;} if(!r.ok)throw new Error(await r.text());
     const {transcript}=await r.json();
     articleEl.value=transcript; $("char-count").textContent=`${transcript.length.toLocaleString()} characters`;
     document.querySelector(".tab[data-tab='text']").click();
     $("loading").textContent="Analyzing";
     const r2=await authFetch("/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({article:transcript})});
-    if(r2.status===401){clearAuth();return;} if(!r2.ok)throw new Error(await r2.text());
+    if(isAuthFailure(r2)){handleAuthFailure();return;} if(!r2.ok)throw new Error(await r2.text());
     currentAnalysis=await r2.json(); showAnalysisResults(currentAnalysis);
   } catch(e){ showError("Transcription failed: "+e.message); }
   finally { $("loading").classList.remove("show"); $("transcribe-btn").disabled=false; }
@@ -2247,12 +3129,13 @@ setupDropZone("image-drop","image-input",file=>{
 });
 $("analyze-image-btn").addEventListener("click", async () => {
   if(!imageFile)return; hideError();
+  if (!requireLogin("login")) return;
   $("loading").textContent="Analyzing image";
   $("loading").classList.add("show"); $("analyze-image-btn").disabled=true;
   try {
     const fd=new FormData(); fd.append("file",imageFile);
     const r=await authFetch("/analyze-image",{method:"POST",body:fd});
-    if(r.status===401){clearAuth();return;} if(!r.ok)throw new Error(await r.text());
+    if(isAuthFailure(r)){handleAuthFailure();return;} if(!r.ok)throw new Error(await r.text());
     currentAnalysis=await r.json(); showAnalysisResults(currentAnalysis);
   } catch(e){ showError("Vision scan failed: "+e.message); }
   finally { $("loading").classList.remove("show"); $("analyze-image-btn").disabled=false; }
@@ -2287,12 +3170,13 @@ $("compare-btn").addEventListener("click", async () => {
   const c=$("compare-articles"), count=parseInt(c.dataset.count), articles=[];
   for(let i=0;i<count;i++){const ta=$("cmp-"+i);if(ta&&ta.value.trim().length>=200)articles.push(ta.value.trim());}
   if(articles.length<2){showError("Need at least 2 articles with 200+ characters each.");return;}
+  if (!requireLogin("login")) return;
   hideError();
   $("loading").textContent=`Comparing ${articles.length} articles`;
   $("loading").classList.add("show"); $("compare-btn").disabled=true;
   try {
     const r=await authFetch("/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({articles})});
-    if(r.status===401){clearAuth();return;} if(!r.ok)throw new Error(await r.text());
+    if(isAuthFailure(r)){handleAuthFailure();return;} if(!r.ok)throw new Error(await r.text());
     const data=await r.json(); renderCompareResults(data);
     $("compare-results").classList.add("show"); currentAnalysis=data.analyses[0];
     $("chat-card").classList.add("show"); fetchSuggestions(currentAnalysis); resetChatLog();
@@ -2610,6 +3494,7 @@ async function runTimeline() {
   const btn = $("timeline-btn");
   const body = $("timeline-body");
   if (!currentAnalysis || !articleEl) return;
+  if (!requireLogin("login")) return;
   const articleText = articleEl.value || articleEl.textContent || "";
   if (!articleText.trim()) return;
 
@@ -2626,6 +3511,7 @@ async function runTimeline() {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({article: articleText.slice(0, 10000)}),
     });
+    if (isAuthFailure(r)){handleAuthFailure();return;}
     if (!r.ok) throw new Error(await r.text());
     const data = await r.json();
     renderTimeline(data);
@@ -2749,6 +3635,7 @@ function renderCompareResults(data) {
 
 // ── Suggestions ───────────────────────────────────────────────────────────────
 async function fetchSuggestions(analysis) {
+  if (!authToken) { renderSuggestions(["Which technique is most concerning?","What context is missing?","Who benefits from this narrative?","What should I verify first?"]); return; }
   $("suggestions").innerHTML='<span class="suggestions-loading">Loading suggested questions...</span>';
   try {
     const r=await authFetch("/suggestions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({analysis})});
@@ -2807,6 +3694,7 @@ const TOOL_LABELS={search_web:"Searching",fact_check_claim:"Fact-checking",find_
 async function sendChat() {
   const msg=$("chat-input").value.trim();
   if(!msg||!currentAnalysis)return;
+  if (!requireLogin("login")) return;
   $("chat-input").value="";
   const isConspiracy=chatMode==="conspiracy";
 
@@ -2827,7 +3715,7 @@ async function sendChat() {
 
   try {
     const r=await authFetch("/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg,analysis:currentAnalysis,history:chatHistory.slice(0,-1),mode:chatMode})});
-    if(r.status===401){clearAuth();return;} if(!r.ok)throw new Error("Failed to get a response.");
+    if(isAuthFailure(r)){handleAuthFailure();return;} if(!r.ok)throw new Error("Failed to get a response.");
     const reader=r.body.getReader(); const decoder=new TextDecoder();
     let lineBuffer="", textContent="";
     while(true){
