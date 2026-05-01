@@ -6,10 +6,10 @@
 <title>GKIN · Truth Navigator</title>
 <style>
 :root {
-  --bg:       #07080f;
-  --bg-2:     #0d0f1a;
-  --bg-3:     #141620;
-  --bg-4:     #1c1e28;
+  --bg:       #111111;
+  --bg-2:     #1a1a1a;
+  --bg-3:     #242424;
+  --bg-4:     #2e2e2e;
   --ink:      #f0f0f0;
   --ink-2:    #c0c0c0;
   --ink-3:    #888888;
@@ -32,7 +32,7 @@
   --danger:   #cc2222;
   --ok:       #2a8a18;
   --accent:   #c8963c;
-  --chip:     #1c1e28;
+  --chip:     #2e2e2e;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -46,48 +46,31 @@ html, body {
   overflow-x: hidden;
 }
 
-/* ── Layer 1: Cosmic void (deep indigo/violet nebula) ── */
-body::before {
-  content: "";
-  position: fixed; inset: 0; z-index: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(58,40,128,0.45) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(112,64,192,0.3) 0%, transparent 55%),
-    radial-gradient(ellipse 100% 80% at 50% 50%, rgba(20,10,40,0.6) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 10% 80%, rgba(30,15,60,0.5) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 40% at 90% 10%, rgba(50,25,90,0.4) 0%, transparent 50%),
-    linear-gradient(180deg, #04030a 0%, #07050f 40%, #060410 100%);
-  pointer-events: none;
-}
-
-/* ── Layer 2: Library depth — candlelight at vanishing point ── */
-body::after {
-  content: "";
-  position: fixed; inset: 0; z-index: 0;
-  background:
-    radial-gradient(ellipse 18% 30% at 50% 52%, rgba(220,140,40,0.13) 0%, rgba(180,100,20,0.06) 40%, transparent 70%),
-    radial-gradient(ellipse 6% 8%  at 50% 51%, rgba(255,200,80,0.18)  0%, transparent 100%),
-    linear-gradient(180deg, rgba(4,3,10,0.6) 0%, transparent 30%, transparent 70%, rgba(4,3,10,0.8) 100%),
-    linear-gradient(90deg,  rgba(4,3,10,0.7) 0%, transparent 20%, transparent 80%, rgba(4,3,10,0.7) 100%);
-  pointer-events: none;
-}
-
-/* ── Layer 3: Star chart + sigil SVG overlay ── */
-.bg-sigil {
-  position: fixed; inset: 0; z-index: 0;
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: none;
-}
+/* ── Cosmic overlays (hidden by default, active only in conspiracy mode) ── */
+body::before, body::after { display: none; }
+.bg-sigil { display: none; }
 .bg-sigil svg { width: min(1100px, 100vw); height: min(1100px, 100vh); }
 
-/* ── Conspiracy mode bg shift ── */
+/* ── Conspiracy mode: re-enable cosmic bg ── */
 body.conspiracy-active::before {
+  display: block;
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
     radial-gradient(ellipse 80% 60% at 20% 30%, rgba(80,20,120,0.6) 0%, transparent 60%),
     radial-gradient(ellipse 60% 50% at 80% 70%, rgba(140,40,200,0.4) 0%, transparent 55%),
     radial-gradient(ellipse 100% 80% at 50% 50%, rgba(30,5,50,0.7) 0%, transparent 70%),
     linear-gradient(180deg, #06030c 0%, #0a0418 100%);
 }
+body.conspiracy-active::after {
+  display: block;
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 18% 30% at 50% 52%, rgba(0,200,80,0.08) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(6,3,12,0.6) 0%, transparent 30%, transparent 70%, rgba(6,3,12,0.8) 100%);
+}
+body.conspiracy-active .bg-sigil { display: flex; }
 
 /* ── Conspiracy mode eerie overlay ── */
 body.conspiracy-active {
@@ -184,7 +167,7 @@ body.conspiracy-active #verdict-label-text {
 /* ── Auth overlay ── */
 #auth-overlay {
   position: fixed; inset: 0; z-index: 1000;
-  background: rgba(5,6,14,0.96);
+  background: rgba(0,0,0,0.88);
   display: flex; align-items: center; justify-content: center;
   backdrop-filter: blur(8px);
 }
@@ -267,7 +250,7 @@ body.conspiracy-active #verdict-label-text {
 nav {
   position: relative; z-index: 10;
   border-bottom: 1px solid var(--border);
-  background: rgba(7,8,15,0.92);
+  background: var(--bg-2);
   backdrop-filter: blur(12px);
 }
 .nav-inner {
@@ -346,7 +329,7 @@ nav {
 
 /* ── Card ── */
 .tome {
-  background: rgba(13,15,26,0.85);
+  background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
@@ -391,7 +374,7 @@ textarea::placeholder { color: var(--ink-3); }
 
 button {
   font-size: 13px; font-weight: 500;
-  background: var(--gold); color: #07080f; border: none;
+  background: var(--gold); color: #000000; border: none;
   padding: 10px 20px; border-radius: 8px; cursor: pointer;
   transition: opacity 0.15s, transform 0.1s;
 }
@@ -407,7 +390,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 /* ── Scan button ── */
 .scan-btn {
   display: inline-flex; align-items: center; gap: 7px;
-  background: var(--gold); color: #07080f; border: none;
+  background: var(--gold); color: #000000; border: none;
   padding: 11px 22px; font-size: 13px; font-weight: 600;
   border-radius: 8px; cursor: pointer; transition: opacity 0.15s, transform 0.1s;
   box-shadow: 0 0 18px rgba(200,150,60,0.18);
@@ -684,7 +667,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 /* ── Narrative Forensics Timeline (full redesign) ── */
 .ntl-section {
   margin-top: 28px; border: 1px solid var(--border-gold);
-  border-radius: 6px; overflow: hidden; background: rgba(13,15,26,0.8);
+  border-radius: 6px; overflow: hidden; background: var(--bg-2);
 }
 .ntl-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -861,7 +844,7 @@ button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--borde
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
 .panel {
-  background: rgba(13,15,26,0.7); border: 1px solid var(--border);
+  background: var(--bg-2); border: 1px solid var(--border);
   border-radius: 10px; padding: 18px; backdrop-filter: blur(6px);
 }
 .panel h3 {
@@ -1146,10 +1129,7 @@ html, body {
   font-size: 15px !important;
   line-height: 1.65 !important;
 }
-body::before, body::after { display: none !important; }
-.bg-sigil { display: none !important; }
-body.conspiracy-active { background: #f0f8f0 !important; }
-body.conspiracy-active::before { display: none !important; }
+body.conspiracy-active { background: #0a0612 !important; }
 /* Readability: override tiny Cinzel labels to readable sizes in light mode */
 .verdict-subtitle { font-size: 13px !important; color: #666666 !important; }
 .verdict-headline { font-size: 24px !important; color: #111111 !important; }
@@ -1172,15 +1152,6 @@ body.conspiracy-active::before { display: none !important; }
 .verdict-description { font-size: 14px !important; color: #333333 !important; }
 .source-claim  { font-size: 12px !important; color: #666666 !important; }
 .source-link   { font-size: 13px !important; color: #111111 !important; }
-.timeline-summary { font-size: 14px !important; color: #333333 !important; }
-.timeline-origin  { font-size: 13px !important; color: #555555 !important; }
-.tl-date   { font-size: 11px !important; color: #888888 !important; }
-.tl-source { font-size: 13px !important; color: #222222 !important; }
-.tl-title-link { font-size: 13px !important; color: #111111 !important; }
-.shift-what { font-size: 13px !important; color: #111111 !important; }
-.shift-from { font-size: 12px !important; color: #2a6a10 !important; }
-.shift-to   { font-size: 12px !important; color: #8a3010 !important; }
-.shift-src  { font-size: 11px !important; color: #888888 !important; }
 .reasoning-body { font-size: 13px !important; color: #333333 !important; }
 
 /* Auth overlay */
@@ -1461,6 +1432,38 @@ button.ghost:hover:not(:disabled) { background: #e2e2e2 !important; opacity: 1 !
 .char-count { font-family: system-ui,-apple-system,sans-serif !important; color: #afafaf !important; }
 #narrative { font-family: system-ui,-apple-system,sans-serif !important; color: #4b4b4b !important; }
 .image-preview img { border-radius: 8px !important; border-color: rgba(0,0,0,0.1) !important; }
+
+/* ── Narrative Forensics light mode overrides ── */
+.ntl-section { background: #ffffff !important; border-color: rgba(0,0,0,0.15) !important; }
+.ntl-header { background: #f8f8f8 !important; border-bottom-color: rgba(0,0,0,0.1) !important; }
+.ntl-label { color: #000000 !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.ntl-topic-text { color: #888888 !important; }
+.ntl-btn { background: #000000 !important; color: #ffffff !important; }
+.ntl-verdict-card { border-bottom-color: rgba(0,0,0,0.08) !important; }
+.ntl-credibility-block { background: #f4f4f4 !important; border-color: rgba(0,0,0,0.1) !important; }
+.ntl-cred-denom { color: #888888 !important; }
+.ntl-cred-label { color: #888888 !important; }
+.ntl-summary { color: #333333 !important; }
+.ntl-origin { color: #555555 !important; background: rgba(0,0,0,0.02) !important; border-left-color: rgba(0,0,0,0.2) !important; }
+.ntl-section-heading { color: #888888 !important; border-bottom-color: rgba(0,0,0,0.08) !important; font-family: system-ui,-apple-system,sans-serif !important; }
+.ntl-section-count { color: #aaaaaa !important; }
+.ntl-timeline::before { background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.08) 80%, transparent) !important; }
+.ntl-entry { border-bottom-color: rgba(0,0,0,0.07) !important; }
+.ntl-entry-dot { border-color: #ffffff !important; }
+.ntl-date-badge { background: #f0f0f0 !important; border-color: rgba(0,0,0,0.1) !important; color: #666666 !important; }
+.ntl-source-name { color: #000000 !important; }
+.ntl-title-link { color: #0066cc !important; }
+.ntl-key-quote { color: #444444 !important; border-left-color: rgba(0,0,0,0.15) !important; background: rgba(0,0,0,0.02) !important; }
+.ntl-bias-pill { background: #f0f0f0 !important; color: #888888 !important; border-color: rgba(0,0,0,0.1) !important; }
+.ntl-shift-card { background: rgba(192,96,32,0.04) !important; }
+.ntl-shift-what { color: #000000 !important; }
+.ntl-shift-text { color: #333333 !important; }
+.ntl-shift-src { color: #888888 !important; }
+.ntl-chain-wrap .ntl-chain { background: #f8f8f8 !important; border-color: rgba(0,0,0,0.08) !important; }
+.ntl-chain-node { background: #efefef !important; border-color: rgba(0,0,0,0.12) !important; color: #333333 !important; }
+.ntl-chain-arrow { color: #000000 !important; opacity: 0.5 !important; }
+.ntl-dropped-item { background: rgba(0,0,120,0.04) !important; border-color: rgba(0,0,120,0.12) !important; color: #333333 !important; }
+.ntl-dropped-item::before { color: #4444aa !important; }
 </style>
 </head>
 <body>
