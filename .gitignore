@@ -1,8 +1,24 @@
-.DS_Store
-.env
+# Model weights and checkpoints
+model.safetensors
+optimizer.pt
+rng_state.pth
+scaler.pt
+scheduler.pt
+training_args.bin
+*.pt
+*.pth
+*.bin
 
-WELFake_Dataset.csv
+# Large data files
+*.zip
+*.tar.gz
+
+# Python
 __pycache__/
-*.py[cod]
-users.json
-.gkin_cache/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
