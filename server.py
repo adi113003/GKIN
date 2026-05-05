@@ -54,8 +54,11 @@ load_dotenv()
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
-from fastapi.responses import StreamingResponse, FileResponse
+import urllib.parse
+import httpx
+
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Query
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -81,11 +84,14 @@ MODEL_FAST    = "llama-3.1-8b-instant"
 MODEL_VISION  = "llama-3.2-90b-vision-preview"
 MODEL_WHISPER = "whisper-large-v3"
 
-WELFAKE_CSV       = "WELFake_Dataset.csv"
-MONGODB_URI       = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
-SECRET_KEY        = os.environ.get("SECRET_KEY", "gkin-dev-" + secrets.token_hex(16))
-ALGORITHM         = "HS256"
-TOKEN_EXPIRE_DAYS = 7
+WELFAKE_CSV          = "WELFake_Dataset.csv"
+MONGODB_URI          = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
+SECRET_KEY           = os.environ.get("SECRET_KEY", "gkin-dev-" + secrets.token_hex(16))
+ALGORITHM            = "HS256"
+TOKEN_EXPIRE_DAYS    = 7
+GOOGLE_CLIENT_ID     = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_REDIRECT_URI  = os.environ.get("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
 
 NARRATIVE_CLUSTERS = [
     "anti_vaccine", "election_fraud", "climate_denial", "immigration_threat",
@@ -683,6 +689,74 @@ async def me(user: dict = Depends(require_auth)):
         "email": user.get("email", ""),
         "created_at": user.get("created_at", ""),
     }
+
+
+# ── Google OAuth ──────────────────────────────────────────────────────────────
+
+@app.get("/auth/google")
+async def auth_google():
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(503, "Google OAuth not configured — set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET")
+    params = urllib.parse.urlencode({
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "offline",
+        "prompt": "select_account",
+    })
+    return RedirectResponse(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
+
+
+@app.get("/auth/google/callback")
+async def auth_google_callback(code: str = Query(None), error: str = Query(None)):
+    if error or not code:
+        return RedirectResponse("/?auth_error=google_denied")
+
+    async with httpx.AsyncClient() as http:
+        token_resp = await http.post("https://oauth2.googleapis.com/token", data={
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": GOOGLE_REDIRECT_URI,
+            "grant_type": "authorization_code",
+        })
+        tokens = token_resp.json()
+        if "error" in tokens:
+            return RedirectResponse("/?auth_error=token_exchange_failed")
+
+        userinfo_resp = await http.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {tokens['access_token']}"},
+        )
+        userinfo = userinfo_resp.json()
+
+    email = userinfo.get("email", "")
+    if not email:
+        return RedirectResponse("/?auth_error=no_email")
+
+    col = _get_users_col()
+    user = await col.find_one({"email": email}, {"_id": 0})
+
+    if user:
+        username = user["username"]
+    else:
+        base = re.sub(r'[^a-zA-Z0-9_]', '', email.split("@")[0].replace(".", "_"))[:28] or "user"
+        username = base
+        counter = 1
+        while await col.find_one({"username": username}):
+            username = f"{base}{counter}"
+            counter += 1
+        await col.insert_one({
+            "username": username,
+            "email": email,
+            "google_id": userinfo.get("id", ""),
+            "hashed_password": None,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+    token = _create_token(username)
+    return RedirectResponse(f"/?token={token}&username={urllib.parse.quote(username)}")
 
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────
