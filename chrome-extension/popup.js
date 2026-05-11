@@ -1,6 +1,6 @@
 // popup.js — GKIN Truth Navigator Chrome Extension
 
-const DEFAULT_SERVER = "http://localhost:8000";
+const DEFAULT_SERVER = "https://gkin.app";
 const CIRC = 163; // stroke-dasharray circumference
 
 function getStorage(keys) { return new Promise(r => chrome.storage.local.get(keys, r)); }
