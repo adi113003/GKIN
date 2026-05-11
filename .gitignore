@@ -6,3 +6,16 @@ __pycache__/
 *.py[cod]
 users.json
 .gkin_cache/
+
+# Local tooling
+.claude/
+
+# Node — exclude all node_modules anywhere
+node_modules/
+
+# Vite build cache + intermediates (static/landing/ output IS committed for deploy)
+landing-src/dist/
+landing-src/.vite/
+*.tsbuildinfo
+landing-src/vite.config.js
+landing-src/vite.config.d.ts

@@ -582,6 +582,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="GKIN Truth Navigator v3", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+app.mount("/landing", StaticFiles(directory="static/landing"), name="landing")
 
 
 def get_client() -> AsyncGroq:
@@ -1533,7 +1534,12 @@ def random_article(user: dict = Depends(require_auth)):
 
 
 @app.get("/")
-def index():
+def landing():
+    return FileResponse("static/landing/index.html")
+
+
+@app.get("/app")
+def app_page():
     return FileResponse("static/index.html")
 
 
