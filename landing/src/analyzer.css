@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0e0d16;
+  color: #e4e1ee;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  overflow-x: hidden;
+}
+
+/* Subtle purple dot-grid background matching landing page */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(195,192,255,0.04) 1px, transparent 0),
+    linear-gradient(to right,  rgba(195,192,255,0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(195,192,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px, 120px 120px, 120px 120px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * { position: relative; z-index: 1; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0e0d16; }
+::-webkit-scrollbar-thumb { background: rgba(195,192,255,0.15); border-radius: 2px; }
+
+::selection { background: rgba(195,192,255,0.2); }
+
+@keyframes pulse   { 0%,100%{opacity:1}50%{opacity:0.4} }
+@keyframes spin    { to{transform:rotate(360deg)} }
+@keyframes shimmer { 0%{transform:translateX(-100%)}100%{transform:translateX(100%)} }
+@keyframes marquee { 0%{transform:translateX(0)}100%{transform:translateX(-50%)} }

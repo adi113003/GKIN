@@ -30,7 +30,7 @@ Endpoints:
   GET  /              → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura motor
+  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura motor youtube-transcript-api
   export GROQ_API_KEY="your_key"
   export SECRET_KEY="your-secret-key"   # optional, auto-generated if omitted
   export MONGODB_URI="mongodb://localhost:27017"  # optional, defaults to localhost
@@ -39,12 +39,15 @@ Setup:
 
 import os
 import re
+import html as _html
 import json
 import base64
 import asyncio
 import pathlib
 import secrets
 import statistics as _stats
+import urllib.parse
+import urllib.request
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -193,6 +196,8 @@ Use the article analysis as your starting point, then go further:
 
 When you use a tool, incorporate its results into your answer. Be substantive and cite your sources. Aim for 3-6 sentences or more when questions warrant depth.
 
+IMPORTANT: All web search queries MUST be in English regardless of the article's original language. Translate any non-English claim or topic to English before calling search tools. Always respond to the user in English.
+
 MODE: Open research — analysis + web tools + world knowledge.
 
 ARTICLE ANALYSIS:
@@ -212,6 +217,8 @@ Use the article analysis as your investigative starting point, then explore:
 - Follow the money: what financial stakes, contracts, political careers, or geopolitical interests are in play?
 
 Use the manipulation index, persuasion techniques, emotional framing, and missing context as investigative clues. Be analytically speculative and connect the dots — but stay grounded in the evidence from the analysis.
+
+IMPORTANT: All web search queries MUST be in English. Translate non-English topics before calling search tools. Always respond in English.
 
 ⚠️ SPECULATIVE MODE ACTIVE: All alternative theories presented are for critical thinking and media literacy purposes only. These represent possible alternative framings, not established facts.
 
@@ -583,6 +590,7 @@ app = FastAPI(title="GKIN Truth Navigator v3", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
 app.mount("/landing", StaticFiles(directory="static/landing"), name="landing")
+app.mount("/analyzer", StaticFiles(directory="static/analyzer"), name="analyzer")
 
 
 def get_client() -> AsyncGroq:
@@ -1180,13 +1188,50 @@ async def _verify_claim(client: AsyncGroq, claim_text: str) -> dict:
             return {"verdict": "unverifiable", "explanation": "Verification unavailable."}
 
 
+async def _translate_if_needed(client, text: str) -> tuple[str, str]:
+    """Detect language; translate to English if non-English.
+    Returns (text, language_name). Falls back silently on any error."""
+    try:
+        detect_resp = await client.chat.completions.create(
+            model=MODEL_FAST,
+            messages=[{"role": "user", "content":
+                f"What language is this text written in? Reply with just the language name, nothing else.\n\n{text[:600]}"}],
+            temperature=0.0,
+            max_tokens=12,
+        )
+        language = detect_resp.choices[0].message.content.strip().strip(".")
+    except Exception:
+        return text, "English"
+
+    if "english" in language.lower():
+        return text, "English"
+
+    try:
+        trans_resp = await client.chat.completions.create(
+            model=MODEL_FAST,
+            messages=[
+                {"role": "system", "content":
+                    "Translate the following text to English. Preserve the full meaning and all details. "
+                    "Output only the translation with no preamble or explanation."},
+                {"role": "user", "content": text},
+            ],
+            temperature=0.1,
+            max_tokens=6000,
+        )
+        translated = trans_resp.choices[0].message.content.strip()
+        return translated, language
+    except Exception:
+        return text, language
+
+
 @app.post("/analyze")
 async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     if len(req.article) < 200:
         raise HTTPException(400, "Article too short (need at least 200 chars)")
 
     client = get_client()
-    article_text = req.article[:12000]
+    raw_text = req.article[:12000]
+    article_text, source_language = await _translate_if_needed(client, raw_text)
 
     thinking = ""
     try:
@@ -1236,6 +1281,7 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     result["reasoning_trace"] = thinking
     result["fake_detection"] = fake_result
     result["ai_detection"] = ai_result
+    result["source_language"] = source_language
     return result
 
 
@@ -1352,18 +1398,105 @@ def _fetch_article_sync(url: str):
         text = " ".join(words[:MAX_WORDS_URL]) + " [...truncated]"
     return title, text
 
+# ── YouTube transcript helpers ─────────────────────────────────────────────────
+
+_YT_HOSTS = {"www.youtube.com", "youtube.com", "youtu.be", "m.youtube.com"}
+
+def _is_youtube_url(url: str) -> bool:
+    return urllib.parse.urlparse(url).netloc in _YT_HOSTS
+
+def _extract_youtube_video_id(url: str) -> str | None:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.netloc == "youtu.be":
+        return parsed.path.lstrip("/").split("?")[0] or None
+    return urllib.parse.parse_qs(parsed.query).get("v", [None])[0]
+
+def _get_youtube_title_sync(video_id: str) -> str:
+    try:
+        req = urllib.request.Request(
+            f"https://www.youtube.com/watch?v={video_id}",
+            headers={"User-Agent": "Mozilla/5.0"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            page = resp.read().decode("utf-8", errors="ignore")
+        m = re.search(r'<meta property="og:title" content="([^"]+)"', page)
+        if m:
+            return _html.unescape(m.group(1))
+        m = re.search(r'<title>([^<]+)</title>', page)
+        if m:
+            return _html.unescape(m.group(1).replace(" - YouTube", "").strip())
+    except Exception:
+        pass
+    return f"YouTube Video ({video_id})"
+
+def _fetch_youtube_transcript_sync(url: str):
+    from youtube_transcript_api import YouTubeTranscriptApi
+    from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled
+
+    video_id = _extract_youtube_video_id(url)
+    if not video_id:
+        raise ValueError("Could not parse a YouTube video ID from that URL.")
+
+    title = _get_youtube_title_sync(video_id)
+
+    api = YouTubeTranscriptApi()
+    try:
+        # Try English first, then fall back to any available language
+        try:
+            fetched = api.fetch(video_id, languages=["en", "en-US", "en-GB"])
+        except NoTranscriptFound:
+            transcript_list = api.list(video_id)
+            transcript = next(iter(transcript_list))
+            fetched = api.fetch(video_id, languages=[transcript.language_code])
+    except TranscriptsDisabled:
+        raise ValueError("This video has captions/transcripts disabled by the uploader.")
+    except StopIteration:
+        raise ValueError(
+            "No transcript found for this video. "
+            "Try a video that has captions (auto-generated or manual)."
+        )
+    except Exception as e:
+        raise ValueError(f"Could not fetch transcript: {e}")
+
+    # Join all caption segments into flowing text
+    text = " ".join(entry.text.strip() for entry in fetched)
+    text = re.sub(r"\s+", " ", text).strip()
+
+    words = text.split()
+    if len(words) > MAX_WORDS_URL:
+        text = " ".join(words[:MAX_WORDS_URL]) + " [...truncated]"
+
+    return title, text
+
 @app.post("/fetch-url")
 async def fetch_url(req: FetchUrlRequest, _user: dict = Depends(require_auth)):
     url = req.url.strip()
     if not url.startswith(("http://", "https://")):
         raise HTTPException(400, "URL must start with http:// or https://")
+
+    is_yt = _is_youtube_url(url)
     try:
-        title, text = await asyncio.to_thread(_fetch_article_sync, url)
+        if is_yt:
+            title, text = await asyncio.to_thread(_fetch_youtube_transcript_sync, url)
+        else:
+            title, text = await asyncio.to_thread(_fetch_article_sync, url)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
     except Exception as e:
         raise HTTPException(500, f"Failed to fetch URL: {e}")
-    if not text or len(text) < 100:
-        raise HTTPException(422, "Could not extract enough article text from that URL. Try pasting the text directly.")
-    return {"title": title, "text": text}
+
+    if not text or len(text) < 50:
+        raise HTTPException(422, "Could not extract enough content from that URL. Try pasting the text directly.")
+
+    client = get_client()
+    text, source_language = await _translate_if_needed(client, text)
+
+    return {
+        "title": title,
+        "text": text,
+        "source_type": "youtube" if is_yt else "article",
+        "source_language": source_language,
+    }
 
 
 # ── Transcription ──────────────────────────────────────────────────────────────
@@ -1537,10 +1670,9 @@ def random_article(user: dict = Depends(require_auth)):
 def landing():
     return FileResponse("static/landing/index.html")
 
-
 @app.get("/app")
-def app_page():
-    return FileResponse("static/index.html")
+def analyzer():
+    return FileResponse("static/analyzer/analyzer.html")
 
 
 if __name__ == "__main__":
