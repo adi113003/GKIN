@@ -32,7 +32,7 @@ export function FinalCTA() {
           <p className="text-ink-3 text-[17px] max-w-[52ch] mx-auto mb-9">
             Open GKIN. Paste the article that&apos;s been bugging you. Get the verdict in seconds.
           </p>
-          <Button variant="primary" size="lg" href="/app">
+          <Button variant="primary" size="lg" href={import.meta.env.BASE_URL + "login.html"}>
             Launch GKIN
             <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.4} />
           </Button>

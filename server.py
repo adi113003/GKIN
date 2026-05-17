@@ -95,6 +95,7 @@ TOKEN_EXPIRE_DAYS    = 7
 GOOGLE_CLIENT_ID     = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 GOOGLE_REDIRECT_URI  = os.environ.get("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
+FRONTEND_URL         = os.environ.get("FRONTEND_URL", "")
 
 NARRATIVE_CLUSTERS = [
     "anti_vaccine", "election_fraud", "climate_denial", "immigration_threat",
@@ -765,7 +766,8 @@ async def auth_google_callback(code: str = Query(None), error: str = Query(None)
         })
 
     token = _create_token(username)
-    return RedirectResponse(f"/?token={token}&username={urllib.parse.quote(username)}")
+    base = FRONTEND_URL.rstrip("/") if FRONTEND_URL else ""
+    return RedirectResponse(f"{base}/login.html?token={token}&username={urllib.parse.quote(username)}")
 
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────

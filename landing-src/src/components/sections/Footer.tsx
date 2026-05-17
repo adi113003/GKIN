@@ -1,3 +1,5 @@
+const loginUrl = import.meta.env.BASE_URL + "login.html";
+
 export function Footer() {
   return (
     <footer className="relative z-10 border-t border-white/[0.07] py-9 px-7">
@@ -5,7 +7,7 @@ export function Footer() {
         <span className="text-[13.5px] text-ink-3">GKIN · Truth Navigator</span>
         <div className="flex gap-5">
           {[
-            { label: "Launch", href: "/app" },
+            { label: "Launch", href: loginUrl },
             { label: "Analyzer", href: "#analyze" },
             { label: "Compare", href: "#compare" },
             { label: "Proof", href: "#proof" },
