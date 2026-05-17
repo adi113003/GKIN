@@ -4,31 +4,35 @@ import {
   Shield, Search, Network, Brain, BarChart3, ScrollText,
   Plus, ArrowRight, Activity, Bell, Settings, Upload,
   Clock, Loader2, Lock, User, Mail,
-  Eye, EyeOff, X, Radio, Zap, FileText, Link2, Mic,
-  Youtube, MessageSquare, Send, RefreshCw, AlertTriangle,
+  Eye, EyeOff, X, Radio, Zap, FileText, Mic,
+  MessageSquare, RefreshCw, AlertTriangle,
 } from "lucide-react";
+import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 
 // ── Palette ───────────────────────────────────────────────────────────────────
+// Aligned with landing-src tailwind brand + ink ramp.
 const P = {
-  bg:       "#0e0d16",
-  nav:      "#0a0918",
-  card:     "#1a1928",
-  panel:    "#141322",
-  border:   "rgba(195,192,255,0.08)",
-  border2:  "rgba(195,192,255,0.15)",
-  border3:  "rgba(195,192,255,0.25)",
-  accent:   "#c3c0ff",         // lavender primary
-  accentDim:"rgba(195,192,255,0.12)",
-  accentGlow:"rgba(195,192,255,0.2)",
-  text:     "#e4e1ee",
-  text2:    "#c7c4d8",
-  muted:    "#918fa1",
-  faint:    "#464555",
-  body:     "#d4d0e8",
-  green:    "#4ae176",         // real / low threat
-  red:      "#ef4444",
-  yellow:   "#fbbf24",
-  blue:     "#a5b4fc",
+  bg:       "#050505",
+  nav:      "rgba(8,8,12,0.72)",       // glass over mesh
+  card:     "rgba(255,255,255,0.03)",
+  panel:    "rgba(255,255,255,0.02)",
+  border:   "rgba(255,255,255,0.08)",
+  border2:  "rgba(255,255,255,0.14)",
+  border3:  "rgba(255,255,255,0.24)",
+  accent:    "#9b7bff",                // brand-violet
+  accentCyan:"#5dd9ff",                // brand-cyan
+  accentRose:"#ff6b8b",                // brand-rose
+  accentDim: "rgba(155,123,255,0.12)",
+  accentGlow:"rgba(155,123,255,0.28)",
+  text:     "#fafafa",                 // ink-DEFAULT
+  text2:    "#d4d4d8",                 // ink-2
+  muted:    "#a1a1aa",                 // ink-3
+  faint:    "#52525b",                 // ink-5
+  body:     "#d4d4d8",
+  green:    "#4ade80",                 // brand-green
+  red:      "#ff5d63",                 // brand-red
+  yellow:   "#ffb547",                 // brand-amber
+  blue:     "#4b8bff",                 // brand-blue
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -97,7 +101,7 @@ function DriftChart({ data }: { data: number[] }) {
         const barH = Math.max(2, (v / max) * h), y = h - barH + 4;
         return (
           <motion.rect key={i} x={i * (w + 3)} y={y} width={w} height={barH} rx={2}
-            fill={`rgba(195,192,255,${0.2 + (v / max) * 0.6})`}
+            fill={`rgba(155,123,255,${0.2 + (v / max) * 0.6})`}
             initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
             transition={{ duration: 0.6, delay: i * 0.04, ease: "easeOut" }}
             style={{ transformOrigin: `${i * (w + 3) + w / 2}px ${h + 4}px` }} />
@@ -119,13 +123,13 @@ function EntityGraph({ count }: { count: number }) {
   return (
     <svg width="100%" height={160} viewBox="0 0 260 160">
       {nodes.map((p, i) => nodes.slice(i + 1).map((q, j) => (
-        <line key={`e-${i}-${j}`} x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke="rgba(195,192,255,0.1)" strokeWidth="1" />
+        <line key={`e-${i}-${j}`} x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke="rgba(155,123,255,0.1)" strokeWidth="1" />
       )))}
-      <circle cx={130} cy={80} r={9} fill="rgba(195,192,255,0.2)" stroke={P.accent} strokeWidth="1.5" />
+      <circle cx={130} cy={80} r={9} fill="rgba(155,123,255,0.2)" stroke={P.accent} strokeWidth="1.5" />
       {nodes.map((p, i) => (
         <g key={`n-${i}`}>
-          <line x1={130} y1={80} x2={p.x} y2={p.y} stroke="rgba(195,192,255,0.15)" strokeWidth="1" />
-          <motion.circle cx={p.x} cy={p.y} r={5} fill="rgba(195,192,255,0.12)" stroke="rgba(195,192,255,0.45)" strokeWidth="1"
+          <line x1={130} y1={80} x2={p.x} y2={p.y} stroke="rgba(155,123,255,0.15)" strokeWidth="1" />
+          <motion.circle cx={p.x} cy={p.y} r={5} fill="rgba(155,123,255,0.12)" stroke="rgba(155,123,255,0.45)" strokeWidth="1"
             initial={{ scale: 0 }} animate={{ scale: 1 }}
             transition={{ delay: i * 0.08, duration: 0.4 }}
             style={{ transformOrigin: `${p.x}px ${p.y}px` }} />
@@ -151,10 +155,10 @@ function PersuasionNet({ techniques }: { techniques: PersuasionTechnique[] }) {
   return (
     <div style={{ background: "rgba(10,9,24,0.6)", borderRadius: 4, overflow: "hidden" }}>
       <svg width="100%" height={100} viewBox="0 0 240 100">
-        {edges.map(e => <line key={e.key} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="rgba(195,192,255,0.1)" strokeWidth="0.8" />)}
+        {edges.map(e => <line key={e.key} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="rgba(155,123,255,0.1)" strokeWidth="0.8" />)}
         {nodes.map((n, i) => (
           <circle key={i} cx={n.x} cy={n.y} r={i === 0 ? 7 : 4}
-            fill={i === 0 ? "rgba(195,192,255,0.25)" : "rgba(165,180,252,0.2)"}
+            fill={i === 0 ? "rgba(155,123,255,0.25)" : "rgba(165,180,252,0.2)"}
             stroke={i === 0 ? P.accent : "rgba(165,180,252,0.5)"} strokeWidth="1" />
         ))}
       </svg>
@@ -212,7 +216,7 @@ function LoginModal({ onClose, onAuth }: { onClose: () => void; onAuth: (t: stri
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }}
-        style={{ width: 360, background: P.card, border: `1px solid ${P.border2}`, borderRadius: 8, padding: 28, boxShadow: `0 0 40px rgba(195,192,255,0.08)` }}>
+        style={{ width: 360, background: P.card, border: `1px solid ${P.border2}`, borderRadius: 8, padding: 28, boxShadow: `0 0 40px rgba(155,123,255,0.08)` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <span style={{ fontSize: 11, letterSpacing: "0.12em", color: P.accent, fontWeight: 700 }}>
             {mode === "login" ? "AUTHENTICATE" : "REGISTER AGENT"}
@@ -240,7 +244,7 @@ function LoginModal({ onClose, onAuth }: { onClose: () => void; onAuth: (t: stri
             </button>
           </div>
           <button onClick={submit} disabled={loading}
-            style={{ background: P.accent, border: "none", color: "#1d00a5", fontFamily: "inherit", fontSize: 10, letterSpacing: "0.1em", fontWeight: 700, padding: "11px", borderRadius: 4, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, marginTop: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            style={{ background: P.accent, border: "none", color: "#0a0a0f", fontFamily: "inherit", fontSize: 10, letterSpacing: "0.1em", fontWeight: 700, padding: "11px", borderRadius: 4, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, marginTop: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             {loading && <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} />}
             {loading ? "AUTHENTICATING…" : mode === "login" ? "DECRYPT ACCESS" : "CREATE AGENT"}
           </button>
@@ -311,20 +315,21 @@ export default function Analyzer() {
     } catch { /* silent */ }
   }, []);
 
-  const executeScan = async () => {
+  const executeScan = async (overrideText?: string) => {
     if (!token) { setShowLogin(true); return; }
-    if (!input.trim()) return;
+    const sourceText = overrideText ?? input;
+    if (!sourceText.trim()) return;
     setLoading(true); setResult(null); setFetchedTitle(""); setLangBadge("");
     setChatMessages([]); setSuggestions([]);
     try {
-      let articleText = input, displayTitle = "";
-      if (activeTab === "URL") {
+      let articleText = sourceText, displayTitle = "";
+      if (activeTab === "URL" && !overrideText) {
         setLoadingMsg("FETCHING EVIDENCE");
-        const r = await apiFetch("/fetch-url", { method: "POST", body: JSON.stringify({ url: input }) });
+        const r = await apiFetch("/fetch-url", { method: "POST", body: JSON.stringify({ url: sourceText }) });
         if (r.status === 401) { setShowLogin(true); return; }
         if (!r.ok) throw new Error(await r.text());
         const d = await r.json();
-        articleText = d.text; displayTitle = d.title || input;
+        articleText = d.text; displayTitle = d.title || sourceText;
         if (d.source_language && d.source_language !== "English") setLangBadge(d.source_language);
         setFetchedTitle(displayTitle);
       }
@@ -334,13 +339,136 @@ export default function Analyzer() {
       if (!r2.ok) throw new Error(await r2.text());
       const analysis: AnalysisResult = await r2.json();
       setResult(analysis);
-      saveInvestigation(analysis, displayTitle || input);
+      saveInvestigation(analysis, displayTitle || sourceText);
       setActiveNav("neural");
       fetchSuggestions(analysis);
     } catch (e: unknown) {
       alert("SCAN ERROR: " + (e instanceof Error ? e.message : String(e)));
     } finally { setLoading(false); }
   };
+
+  // ── Ingestion-hub: Upload / Mic / Link / Youtube ──
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isRecording, setIsRecording]   = useState(false);
+  const mediaRecRef = useRef<MediaRecorder | null>(null);
+  const recChunksRef = useRef<Blob[]>([]);
+  const recStreamRef = useRef<MediaStream | null>(null);
+
+  const openFilePicker = () => {
+    if (!token) { setShowLogin(true); return; }
+    fileInputRef.current?.click();
+  };
+
+  const onFileChosen = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";  // allow re-selecting the same file
+    if (!file) return;
+    const name = file.name.toLowerCase();
+    const type = file.type || "";
+
+    // Image → /analyze-image (returns full analysis directly)
+    if (type.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp)$/.test(name)) {
+      if (!token) { setShowLogin(true); return; }
+      setLoading(true); setLoadingMsg("READING IMAGE"); setResult(null);
+      setFetchedTitle(file.name); setChatMessages([]); setSuggestions([]);
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const r = await fetch("/analyze-image", { method: "POST", headers: { Authorization: `Bearer ${getToken()}` }, body: fd });
+        if (r.status === 401) { setShowLogin(true); return; }
+        if (!r.ok) throw new Error(await r.text());
+        const analysis: AnalysisResult = await r.json();
+        setResult(analysis);
+        saveInvestigation(analysis, file.name);
+        setActiveNav("neural");
+        fetchSuggestions(analysis);
+      } catch (err) {
+        alert("IMAGE SCAN ERROR: " + (err instanceof Error ? err.message : String(err)));
+      } finally { setLoading(false); }
+      return;
+    }
+
+    // Audio → /transcribe → fill input → executeScan
+    if (type.startsWith("audio/") || /\.(mp3|wav|m4a|ogg|webm|mp4|flac)$/.test(name)) {
+      await transcribeAndScan(file, file.name);
+      return;
+    }
+
+    // Text / markdown → read as text into the input box
+    if (type.startsWith("text/") || /\.(txt|md|rtf|csv)$/.test(name)) {
+      const text = await file.text();
+      setActiveTab("TEXT");
+      setInput(text);
+      setFetchedTitle(file.name);
+      return;
+    }
+
+    alert(`Unsupported file type: ${file.name}\nSupported: text, images (jpg/png/webp), audio (mp3/wav/m4a/webm).`);
+  };
+
+  const transcribeAndScan = async (blob: Blob, label: string) => {
+    if (!token) { setShowLogin(true); return; }
+    setLoading(true); setLoadingMsg("TRANSCRIBING AUDIO"); setResult(null);
+    setChatMessages([]); setSuggestions([]);
+    try {
+      const fd = new FormData();
+      const fileForUpload = blob instanceof File ? blob : new File([blob], label, { type: blob.type || "audio/webm" });
+      fd.append("file", fileForUpload);
+      const r = await fetch("/transcribe", { method: "POST", headers: { Authorization: `Bearer ${getToken()}` }, body: fd });
+      if (r.status === 401) { setShowLogin(true); return; }
+      if (!r.ok) throw new Error(await r.text());
+      const { transcript } = await r.json();
+      if (!transcript || !transcript.trim()) { alert("No speech detected."); return; }
+      setActiveTab("TEXT");
+      setInput(transcript);
+      setFetchedTitle(label);
+      setLoading(false);  // let executeScan re-set loading
+      await executeScan(transcript);
+    } catch (err) {
+      alert("TRANSCRIPTION ERROR: " + (err instanceof Error ? err.message : String(err)));
+      setLoading(false);
+    }
+  };
+
+  const toggleMic = async () => {
+    if (!token) { setShowLogin(true); return; }
+    if (isRecording) {
+      mediaRecRef.current?.stop();
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      alert("Microphone not supported in this browser.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recStreamRef.current = stream;
+      recChunksRef.current = [];
+      const mime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      rec.ondataavailable = ev => { if (ev.data.size) recChunksRef.current.push(ev.data); };
+      rec.onstop = async () => {
+        setIsRecording(false);
+        recStreamRef.current?.getTracks().forEach(t => t.stop());
+        recStreamRef.current = null;
+        const blob = new Blob(recChunksRef.current, { type: mime || "audio/webm" });
+        if (blob.size < 1000) { alert("Recording too short."); return; }
+        await transcribeAndScan(blob, `mic-${Date.now()}.webm`);
+      };
+      mediaRecRef.current = rec;
+      rec.start();
+      setIsRecording(true);
+    } catch (err) {
+      alert("Mic access denied: " + (err instanceof Error ? err.message : String(err)));
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      mediaRecRef.current?.state === "recording" && mediaRecRef.current.stop();
+      recStreamRef.current?.getTracks().forEach(t => t.stop());
+    };
+  }, []);
 
   const sendChat = async (message: string) => {
     if (!message.trim() || !result || chatLoading) return;
@@ -419,14 +547,12 @@ export default function Analyzer() {
   const S = {
     card: { background: P.card, border: `1px solid ${P.border}`, borderRadius: 8 } as React.CSSProperties,
     cardHd: { padding: "10px 16px", borderBottom: `1px solid ${P.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 10, letterSpacing: "0.12em", color: P.muted, fontWeight: 700 } as React.CSSProperties,
-    btnFilled: { background: P.accent, border: "none", color: "#1d00a5", fontFamily: "inherit", fontSize: 10, letterSpacing: "0.1em", fontWeight: 700, padding: "9px 18px", borderRadius: 4, cursor: "pointer" } as React.CSSProperties,
+    btnFilled: { background: P.accent, border: "none", color: "#0a0a0f", fontFamily: "inherit", fontSize: 10, letterSpacing: "0.1em", fontWeight: 700, padding: "9px 18px", borderRadius: 4, cursor: "pointer" } as React.CSSProperties,
     btnOutline: { background: "transparent", border: `1px solid ${P.border3}`, color: P.accent, fontFamily: "inherit", fontSize: 10, letterSpacing: "0.1em", fontWeight: 700, padding: "8px 14px", borderRadius: 4, cursor: "pointer" } as React.CSSProperties,
     btnGhost: { background: "transparent", border: `1px solid ${P.border}`, color: P.muted, fontFamily: "inherit", fontSize: 10, letterSpacing: "0.08em", padding: "7px 12px", borderRadius: 4, cursor: "pointer" } as React.CSSProperties,
     tab: (active: boolean): React.CSSProperties => ({ fontSize: 10, letterSpacing: "0.08em", padding: "4px 10px", borderRadius: 3, cursor: "pointer", fontFamily: "inherit", border: active ? `1px solid ${P.border3}` : `1px solid transparent`, background: active ? P.accentDim : "transparent", color: active ? P.accent : P.muted }),
     navItem: (active: boolean): React.CSSProperties => ({ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 6, fontSize: 11, letterSpacing: "0.06em", color: active ? P.accent : P.muted, cursor: "pointer", border: active ? `1px solid ${P.border3}` : "1px solid transparent", background: active ? P.accentDim : "transparent", width: "100%", fontFamily: "inherit" }),
   };
-
-  const chatModeLabel = { context: "Article Only", open: "Web Research", conspiracy: "Conspiracy" };
 
   return (
     <>
@@ -436,9 +562,11 @@ export default function Analyzer() {
 
         {/* ── Top Nav ── */}
         <nav style={{ gridColumn: "1/-1", gridRow: 1, background: P.nav, borderBottom: `1px solid ${P.border}`, display: "flex", alignItems: "center", padding: "0 20px", gap: 24, position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(20px)" }}>
-          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ background: P.accent, color: "#1d00a5", fontWeight: 900, fontSize: 13, padding: "2px 7px", borderRadius: 3 }}>G</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: P.text, letterSpacing: "0.04em" }}>GKIN</span>
+          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 24, height: 24, borderRadius: 6, background: "linear-gradient(135deg, #fff, #a8a8b0)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Search size={13} color="#000" strokeWidth={2.6} />
+            </span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: P.text, letterSpacing: "-0.02em" }}>GKIN</span>
           </a>
           <div style={{ flex: 1 }} />
           {["Analyzer", "Product", "Database", "Archives"].map(n => (
@@ -500,11 +628,11 @@ export default function Analyzer() {
           </div>
 
           <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontSize: 40, fontWeight: 800, color: P.text, letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 10 }}>
-              Analyzer<br />
-              <span style={{ color: P.accent, textShadow: `0 0 30px ${P.accentGlow}` }}>Workspace</span>
+            <h1 className="text-balance" style={{ fontSize: 56, fontWeight: 600, letterSpacing: "-0.038em", lineHeight: 0.98, marginBottom: 14 }}>
+              <span className="grad-title">Analyzer</span><br />
+              <span className="grad-accent">Workspace.</span>
             </h1>
-            <p style={{ fontSize: 12, color: P.muted, lineHeight: 1.7, maxWidth: 480 }}>
+            <p style={{ fontSize: 14, color: P.muted, lineHeight: 1.6, maxWidth: 520 }}>
               Forensic deconstruction of digital narratives. Identifying manipulation patterns and synthetic context in real-time.
             </p>
           </div>
@@ -542,9 +670,38 @@ export default function Analyzer() {
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px" }}>
               <div style={{ display: "flex", gap: 6 }}>
-                {([<Upload size={13} />, <Mic size={13} />, <Link2 size={13} />, <Youtube size={13} />] as React.ReactNode[]).map((icon, i) => (
-                  <button key={i} style={S.btnGhost}>{icon}</button>
-                ))}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="text/*,image/*,audio/*,.txt,.md,.csv,.rtf,.png,.jpg,.jpeg,.webp,.gif,.mp3,.wav,.m4a,.ogg,.webm,.flac"
+                  style={{ display: "none" }}
+                  onChange={onFileChosen}
+                />
+                <button
+                  type="button"
+                  style={S.btnGhost}
+                  onClick={openFilePicker}
+                  title="Upload a file — text, image, or audio"
+                  aria-label="Upload file"
+                >
+                  <Upload size={13} />
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    ...S.btnGhost,
+                    background: isRecording ? "rgba(239,68,68,0.14)" : S.btnGhost.background,
+                    border: isRecording ? `1px solid ${P.red}` : S.btnGhost.border,
+                    color: isRecording ? P.red : P.muted,
+                    animation: isRecording ? "pulse 1.4s ease-in-out infinite" : undefined,
+                  }}
+                  onClick={toggleMic}
+                  title={isRecording ? "Stop recording — auto-scan on stop" : "Record from microphone"}
+                  aria-label="Record from microphone"
+                  aria-pressed={isRecording}
+                >
+                  <Mic size={13} />
+                </button>
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {loading && (
@@ -553,7 +710,7 @@ export default function Analyzer() {
                   </span>
                 )}
                 <button style={{ ...S.btnFilled, display: "flex", alignItems: "center", gap: 6, opacity: (loading || !input.trim()) ? 0.5 : 1, cursor: (loading || !input.trim()) ? "not-allowed" : "pointer", boxShadow: (!loading && input.trim()) ? `0 0 20px ${P.accentGlow}` : "none" }}
-                  onClick={executeScan} disabled={loading || !input.trim()}>
+                  onClick={() => executeScan()} disabled={loading || !input.trim()}>
                   {loading ? <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} /> : <Zap size={11} />}
                   EXECUTE_SCAN
                 </button>
@@ -753,16 +910,15 @@ export default function Analyzer() {
                   <div style={S.card}>
                     <div style={S.cardHd}>
                       <span>AI ASSISTANT</span>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        {(["context", "open", "conspiracy"] as const).map(m => (
-                          <button key={m} style={S.tab(chatMode === m)} onClick={() => setChatMode(m)}>{chatModeLabel[m]}</button>
-                        ))}
-                      </div>
+                      <button onClick={() => setChatMessages([])} style={S.btnGhost} title="Clear chat">
+                        <RefreshCw size={11} /> CLEAR
+                      </button>
                     </div>
 
                     {chatMode === "conspiracy" && (
-                      <div style={{ margin: "10px 16px 0", padding: "8px 12px", background: "rgba(168,85,247,0.08)", border: "1px solid rgba(168,85,247,0.2)", borderRadius: 4, fontSize: 10, color: "#a855f7" }}>
-                        ⚠ Speculative Mode — Alternative theories for critical thinking only.
+                      <div style={{ margin: "10px 16px 0", padding: "8px 12px", background: "rgba(255,107,139,0.08)", border: `1px solid rgba(255,107,139,0.25)`, borderRadius: 6, fontSize: 11, color: P.accentRose, display: "flex", alignItems: "center", gap: 8 }}>
+                        <AlertTriangle size={12} />
+                        Speculative Mode — Alternative theories for critical thinking only.
                       </div>
                     )}
 
@@ -799,17 +955,16 @@ export default function Analyzer() {
                       <div ref={chatEndRef} />
                     </div>
 
-                    <div style={{ borderTop: `1px solid ${P.border}`, padding: "10px 14px", display: "flex", gap: 8 }}>
-                      <input value={chatInput} onChange={e => setChatInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(chatInput); } }}
+                    <div style={{ borderTop: `1px solid ${P.border}`, padding: "10px 14px" }}>
+                      <PromptInputBox
+                        value={chatInput}
+                        onValueChange={setChatInput}
+                        onSend={msg => { sendChat(msg); }}
+                        mode={chatMode}
+                        onModeChange={setChatMode}
+                        isLoading={chatLoading}
                         placeholder="Ask a question about the article…"
-                        style={{ flex: 1, background: P.bg, border: `1px solid ${P.border2}`, borderRadius: 4, padding: "8px 12px", color: P.body, fontSize: 11, outline: "none", fontFamily: "inherit" }}
                       />
-                      <button onClick={() => sendChat(chatInput)} disabled={chatLoading || !chatInput.trim()}
-                        style={{ ...S.btnFilled, display: "flex", alignItems: "center", gap: 6, opacity: (chatLoading || !chatInput.trim()) ? 0.5 : 1, cursor: (chatLoading || !chatInput.trim()) ? "not-allowed" : "pointer" }}>
-                        <Send size={11} /> SEND
-                      </button>
-                      <button onClick={() => setChatMessages([])} style={S.btnGhost} title="Clear chat"><RefreshCw size={11} /></button>
                     </div>
                   </div>
                 )}

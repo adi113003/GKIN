@@ -6,6 +6,11 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: "/analyzer/",
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src"),
+    },
+  },
   build: {
     outDir: "../static/analyzer",
     emptyOutDir: true,
