@@ -767,7 +767,7 @@ async def auth_google_callback(code: str = Query(None), error: str = Query(None)
 
     token = _create_token(username)
     base = FRONTEND_URL.rstrip("/") if FRONTEND_URL else ""
-    return RedirectResponse(f"{base}/login.html?token={token}&username={urllib.parse.quote(username)}")
+    return RedirectResponse(f"{base}/login?token={token}&username={urllib.parse.quote(username)}")
 
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────
@@ -1671,6 +1671,10 @@ def random_article(user: dict = Depends(require_auth)):
 @app.get("/")
 def landing():
     return FileResponse("static/landing/index.html")
+
+@app.get("/login")
+def login_page():
+    return FileResponse("static/landing/login.html")
 
 @app.get("/app")
 def analyzer():

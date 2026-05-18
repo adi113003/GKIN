@@ -1,4 +1,4 @@
-const loginUrl = import.meta.env.BASE_URL + "login.html";
+const loginUrl = "/login";
 
 export function Footer() {
   return (

@@ -17,6 +17,7 @@ export function LoginPage() {
       localStorage.setItem("gkin_token", token);
       localStorage.setItem("gkin_user", user);
       window.location.href = API + "/app";
+      return;
     }
   }, []);
   const [username, setUsername] = useState("");

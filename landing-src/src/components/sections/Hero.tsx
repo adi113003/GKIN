@@ -60,7 +60,7 @@ export function Hero() {
         transition={{ duration: 0.8, delay: 0.24, ease: [0.2, 0.7, 0.3, 1] }}
         className="flex flex-wrap gap-3 justify-center items-center mb-20"
       >
-        <Button variant="primary" size="lg" href={import.meta.env.BASE_URL + "login.html"}>
+        <Button variant="primary" size="lg" href="/login">
           Launch GKIN
           <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.4} />
         </Button>

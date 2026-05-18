@@ -45,7 +45,7 @@ export function Nav() {
             </a>
           ))}
           <a
-            href={import.meta.env.BASE_URL + "login.html"}
+            href="/login"
             className="ml-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-white text-black text-[13px] font-semibold rounded-md hover:bg-white hover:-translate-y-px transition-all"
           >
             Launch
