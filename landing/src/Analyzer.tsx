@@ -273,7 +273,7 @@ export default function Analyzer() {
     setAuth(t, u); setToken(t); setUsername(u);
     try { setInvestigations(JSON.parse(localStorage.getItem(invKey(u)) || "[]")); } catch { setInvestigations([]); }
   };
-  const handleLogout = () => { clearAuth(); setToken(""); setUsername("guest"); setResult(null); setInvestigations([]); setShowArchives(false); };
+  const handleLogout = () => { clearAuth(); window.location.href = "/"; };
 
   const saveInvestigation = useCallback((res: AnalysisResult, snippet: string) => {
     const verdict =
@@ -581,10 +581,11 @@ export default function Analyzer() {
             </button>
           ))}
           <div style={{ flex: 1 }} />
-          {token && (
-            <><span style={{ fontSize: 10, color: P.muted, letterSpacing: "0.06em" }}>{username.toUpperCase()}</span>
-              <button style={S.btnFilled} onClick={handleLogout}>LOGOUT</button></>
-          )}
+          {token
+            ? <><span style={{ fontSize: 10, color: P.muted, letterSpacing: "0.06em" }}>{username.toUpperCase()}</span>
+                <button style={S.btnFilled} onClick={handleLogout}>LOGOUT</button></>
+            : <button style={{ ...S.btnFilled, boxShadow: `0 0 20px ${P.accentGlow}` }} onClick={() => setShowLogin(true)}>Log in</button>
+          }
           <Bell size={16} style={{ color: P.muted, cursor: "pointer" }} />
           <Settings size={16} style={{ color: P.muted, cursor: "pointer" }} />
         </nav>
