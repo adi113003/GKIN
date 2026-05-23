@@ -372,9 +372,19 @@ FAKE_DETECT_PROMPT = """You are an expert misinformation analyst. Your job is to
 You have been given:
 1. The original article text
 2. A manipulation analysis
-3. Full scraped content from up to 10 web pages found by searching the article's key claims
+3. Scraped web pages — each labeled with its trust tier
 
-Cross-reference the article's claims against the scraped pages. If multiple credible pages corroborate the events, it is likely real. If no pages corroborate it, or pages actively contradict it, it is likely fake.
+SOURCE TRUST TIERS (apply when scoring):
+- Tier 1 (highest): government .gov sites, peer-reviewed journals (PubMed/arXiv/JSTOR), official press releases
+- Tier 2 (verified journalism): Reuters, AP, AFP, BBC, NPR, NYT, Washington Post, WSJ, major regional outlets
+- Tier 3 (fact-checkers): PolitiFact, Snopes, FactCheck.org, Full Fact, AP Fact Check
+- Unverified: social media, anonymous blogs, partisan sites — do NOT treat as corroboration
+
+SCORING RULES:
+- Corroboration from Tier 1 or Tier 2 sources strongly lowers fake_confidence.
+- Corroboration ONLY from Unverified sources should NOT lower fake_confidence.
+- If {only_unverified} is true (no Tier 1/2/3 sources found), raise fake_confidence by at least 20 points.
+- Contradiction from any Tier 1 or Tier 2 source raises fake_confidence significantly.
 
 Article:
 \"\"\"
@@ -387,21 +397,73 @@ Manipulation analysis:
 - Dominant emotions: {emotions}
 - Narrative cluster: {narrative_cluster}
 - Claim verdicts: {claim_verifications}
+- Trusted sources found: {trusted_source_count} of {total_sources} scraped pages are Tier 1/2/3
 
-Scraped web pages for verification:
+Scraped web pages for verification (with trust tier):
 {search_results}
 
 Return ONLY valid JSON — no prose, no markdown:
 {{
   "fake_confidence": 0,
-  "reasoning": "2-3 sentences on why this score was assigned, referencing specific scraped page findings",
+  "reasoning": "2-3 sentences referencing specific scraped pages and their tiers",
   "red_flags": ["specific red flags found"],
-  "trust_signals": ["specific trust signals found"]
+  "trust_signals": ["specific trust signals found, citing tier where relevant"]
 }}
 
 fake_confidence is an integer 0-100. 0 = definitely real, 100 = definitely fake.
-Base your score on whether the scraped pages corroborate or contradict the article's core claims.
 """
+
+# ── Trusted source allowlist ──────────────────────────────────────────────────
+
+TRUSTED_SOURCES: dict[str, dict] = {
+    # Tier 1 — Primary / Official
+    ".gov":              {"tier": 1, "name": "Government (.gov)"},
+    "pubmed.ncbi.nlm.nih.gov": {"tier": 1, "name": "PubMed"},
+    "arxiv.org":         {"tier": 1, "name": "arXiv"},
+    "jstor.org":         {"tier": 1, "name": "JSTOR"},
+    "who.int":           {"tier": 1, "name": "WHO"},
+    "un.org":            {"tier": 1, "name": "United Nations"},
+    "europa.eu":         {"tier": 1, "name": "European Union"},
+    # Tier 2 — Established journalism
+    "reuters.com":       {"tier": 2, "name": "Reuters"},
+    "apnews.com":        {"tier": 2, "name": "Associated Press"},
+    "afp.com":           {"tier": 2, "name": "AFP"},
+    "bbc.com":           {"tier": 2, "name": "BBC News"},
+    "bbc.co.uk":         {"tier": 2, "name": "BBC News"},
+    "npr.org":           {"tier": 2, "name": "NPR"},
+    "pbs.org":           {"tier": 2, "name": "PBS NewsHour"},
+    "nytimes.com":       {"tier": 2, "name": "New York Times"},
+    "washingtonpost.com":{"tier": 2, "name": "Washington Post"},
+    "wsj.com":           {"tier": 2, "name": "Wall Street Journal"},
+    "theguardian.com":   {"tier": 2, "name": "The Guardian"},
+    "economist.com":     {"tier": 2, "name": "The Economist"},
+    "ft.com":            {"tier": 2, "name": "Financial Times"},
+    "bloomberg.com":     {"tier": 2, "name": "Bloomberg"},
+    "time.com":          {"tier": 2, "name": "TIME"},
+    "theatlantic.com":   {"tier": 2, "name": "The Atlantic"},
+    # Tier 3 — Fact-checkers
+    "politifact.com":    {"tier": 3, "name": "PolitiFact"},
+    "snopes.com":        {"tier": 3, "name": "Snopes"},
+    "factcheck.org":     {"tier": 3, "name": "FactCheck.org"},
+    "fullfact.org":      {"tier": 3, "name": "Full Fact"},
+}
+
+
+def _source_tier(url: str) -> dict:
+    """Return tier info for a URL, or unverified if not in allowlist."""
+    try:
+        host = urllib.parse.urlparse(url).hostname or ""
+    except Exception:
+        return {"tier": 0, "name": "Unverified", "trusted": False}
+    # Exact match first, then suffix match
+    for domain, info in TRUSTED_SOURCES.items():
+        if domain.startswith("."):
+            if host.endswith(domain) or host == domain[1:]:
+                return {**info, "trusted": True}
+        elif host == domain or host.endswith("." + domain):
+            return {**info, "trusted": True}
+    return {"tier": 0, "name": host or "Unverified", "trusted": False}
+
 
 # ── Tool definitions ───────────────────────────────────────────────────────────
 
@@ -850,11 +912,16 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
                 all_urls.append(r["url"])
                 url_to_claim.setdefault(r["url"], "topic search")
 
+    # Prioritise trusted sources: sort so Tier 1/2/3 URLs come first
+    all_urls.sort(key=lambda u: _source_tier(u)["tier"] if _source_tier(u)["trusted"] else 99)
+
     # ── Step 3: Scrape up to 10 pages (with metadata for citations) ───────────
     scraped = await _scrape_pages_with_meta(all_urls[:10])
     scraped_block = ""
     for i, page in enumerate(scraped):
-        scraped_block += f"\n--- Page {i+1} ({page['url']}) ---\n{page['text']}\n"
+        tier_info = _source_tier(page.get("url", ""))
+        tier_label = f"Tier {tier_info['tier']} — {tier_info['name']}" if tier_info["trusted"] else f"Unverified — {tier_info['name']}"
+        scraped_block += f"\n--- Page {i+1} [{tier_label}] ({page['url']}) ---\n{page['text']}\n"
     if not scraped_block:
         scraped_block = "No pages could be scraped."
 
@@ -876,6 +943,7 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
             cut = max(snippet.rfind(". "), snippet.rfind("! "), snippet.rfind("? "))
             if cut > 80:
                 snippet = snippet[: cut + 1]
+        tier_info = _source_tier(url)
         sources_used.append({
             "url": url,
             "hostname": hostname,
@@ -883,6 +951,9 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
             "published_date": page.get("date") or None,
             "claim_supported": url_to_claim.get(url, "topic search"),
             "relevance_snippet": snippet,
+            "tier": tier_info["tier"],
+            "tier_name": tier_info["name"],
+            "trusted": tier_info["trusted"],
         })
 
     # ── Step 4: LLM reasoning over scraped content ─────────────────────────────
@@ -894,6 +965,9 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
         for c in claims[:5]
     ]
 
+    trusted_count = sum(1 for s in sources_used if s.get("trusted"))
+    only_unverified = trusted_count == 0 and len(sources_used) > 0
+
     prompt = FAKE_DETECT_PROMPT.format(
         article=article_text[:4000],
         manipulation_index=structured.get("manipulation_index", 0),
@@ -902,6 +976,9 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
         narrative_cluster=structured.get("narrative_cluster", "none"),
         claim_verifications="; ".join(claim_verdicts) or "none",
         search_results=scraped_block[:8000],
+        trusted_source_count=trusted_count,
+        total_sources=len(sources_used),
+        only_unverified=only_unverified,
     )
 
     llm_fc = 50
@@ -950,6 +1027,8 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
         "trust_signals": trust_signals,
         "sources_checked": sources_checked[:10],
         "sources_used": sources_used,
+        "trusted_source_count": trusted_count,
+        "only_unverified_sources": only_unverified,
         "ml_score": ml_fc,
         "pages_scraped": len(scraped),
     }
