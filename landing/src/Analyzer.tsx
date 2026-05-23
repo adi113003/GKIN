@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Shield, Search, Network, Brain, BarChart3, ScrollText,
-  Plus, ArrowRight, Activity, Bell, Settings, Upload,
+  ArrowRight, Bell, Settings, Upload,
   Clock, Loader2, Lock, User, Mail,
   Eye, EyeOff, X, Radio, Zap, FileText, Mic,
   MessageSquare, RefreshCw, AlertTriangle,
@@ -89,53 +89,6 @@ function Gauge({ score }: { score: number }) {
         </div>
       </div>
     </div>
-  );
-}
-
-// ── Bar chart ─────────────────────────────────────────────────────────────────
-function DriftChart({ data }: { data: number[] }) {
-  const max = Math.max(...data, 1), h = 70, w = 14;
-  return (
-    <svg width="100%" height={h + 8} viewBox={`0 0 ${data.length * (w + 3)} ${h + 8}`} preserveAspectRatio="none">
-      {data.map((v, i) => {
-        const barH = Math.max(2, (v / max) * h), y = h - barH + 4;
-        return (
-          <motion.rect key={i} x={i * (w + 3)} y={y} width={w} height={barH} rx={2}
-            fill={`rgba(155,123,255,${0.2 + (v / max) * 0.6})`}
-            initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
-            transition={{ duration: 0.6, delay: i * 0.04, ease: "easeOut" }}
-            style={{ transformOrigin: `${i * (w + 3) + w / 2}px ${h + 4}px` }} />
-        );
-      })}
-    </svg>
-  );
-}
-
-// ── Entity graph ──────────────────────────────────────────────────────────────
-function EntityGraph({ count }: { count: number }) {
-  const nodes = useMemo(() => {
-    const cx = 130, cy = 80, r = 55, n = Math.min(Math.max(count, 3), 8);
-    return Array.from({ length: n }, (_, i) => {
-      const a = (i / n) * 2 * Math.PI - Math.PI / 2;
-      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
-    });
-  }, [count]);
-  return (
-    <svg width="100%" height={160} viewBox="0 0 260 160">
-      {nodes.map((p, i) => nodes.slice(i + 1).map((q, j) => (
-        <line key={`e-${i}-${j}`} x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke="rgba(155,123,255,0.1)" strokeWidth="1" />
-      )))}
-      <circle cx={130} cy={80} r={9} fill="rgba(155,123,255,0.2)" stroke={P.accent} strokeWidth="1.5" />
-      {nodes.map((p, i) => (
-        <g key={`n-${i}`}>
-          <line x1={130} y1={80} x2={p.x} y2={p.y} stroke="rgba(155,123,255,0.15)" strokeWidth="1" />
-          <motion.circle cx={p.x} cy={p.y} r={5} fill="rgba(155,123,255,0.12)" stroke="rgba(155,123,255,0.45)" strokeWidth="1"
-            initial={{ scale: 0 }} animate={{ scale: 1 }}
-            transition={{ delay: i * 0.08, duration: 0.4 }}
-            style={{ transformOrigin: `${p.x}px ${p.y}px` }} />
-        </g>
-      ))}
-    </svg>
   );
 }
 
@@ -501,15 +454,6 @@ export default function Analyzer() {
   const fakeRaw = result?.fake_detection?.fake_confidence ?? result?.fake_detection?.confidence ?? 0;
   const srcObfPct = Math.round(fakeRaw * (fakeRaw <= 1 ? 100 : 1));
 
-  const driftData = useMemo(() => {
-    const text = result?.summary || result?.reasoning_trace || "";
-    if (!text) return [3, 5, 4, 7, 6, 8, 5, 9, 7, 6, 4, 8, 5, 3];
-    const words = text.split(/\s+/), bins = Array(14).fill(0) as number[];
-    words.forEach(w => { const b = Math.min(13, Math.floor(w.length * 14 / 12)); bins[b]++; });
-    return bins;
-  }, [result]);
-
-  const claimCount  = result?.claims?.length ?? 0;
   const techniques  = result?.persuasion_techniques ?? [];
   const gaps        = result?.missing_context ?? [];
   const emotionScores = result?.emotion_scores ?? {};
@@ -726,27 +670,6 @@ export default function Analyzer() {
                 {/* Neural Scan */}
                 {activeNav === "neural" && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                      <div style={S.card}>
-                        <div style={S.cardHd}><span>LINGUISTIC DRIFT</span><Activity size={11} /></div>
-                        <div style={{ padding: "14px 14px 12px" }}>
-                          <DriftChart data={driftData} />
-                          <p style={{ fontSize: 10, color: P.muted, marginTop: 10, lineHeight: 1.6 }}>
-                            Semantic variance: {Math.round(40 + mi * 0.44)}% from baseline.
-                          </p>
-                        </div>
-                      </div>
-                      <div style={S.card}>
-                        <div style={S.cardHd}><span>ENTITY RELATIONS</span><Network size={11} /></div>
-                        <div style={{ padding: "14px 14px 12px" }}>
-                          <EntityGraph count={Math.max(claimCount, 3)} />
-                          <p style={{ fontSize: 10, color: P.muted, marginTop: 4, lineHeight: 1.6 }}>
-                            {claimCount * 1842 + 3400} metadata nodes correlated.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
                     {Object.keys(emotionScores).length > 0 && (
                       <div style={S.card}>
                         <div style={S.cardHd}><span>EMOTIONAL FRAMING</span><BarChart3 size={11} /></div>
