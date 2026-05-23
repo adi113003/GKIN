@@ -219,7 +219,7 @@ function LoginModal({ onClose, onAuth }: { onClose: () => void; onAuth: (t: stri
           <button onClick={submit} disabled={loading}
             style={{ background: P.accent, border: "none", color: "#0a0a0f", fontFamily: "inherit", fontSize: 10, letterSpacing: "0.1em", fontWeight: 700, padding: "11px", borderRadius: 4, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, marginTop: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             {loading && <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} />}
-            {loading ? "AUTHENTICATING…" : mode === "login" ? "DECRYPT ACCESS" : "CREATE AGENT"}
+            {loading ? "AUTHENTICATING…" : mode === "login" ? "LOG IN" : "CREATE ACCOUNT"}
           </button>
         </div>
         <div style={{ marginTop: 14, textAlign: "center", fontSize: 10, color: P.muted }}>
