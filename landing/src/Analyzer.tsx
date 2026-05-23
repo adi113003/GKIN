@@ -62,9 +62,10 @@ interface ChatMsg { role: "user" | "assistant"; content: string; }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 const getToken  = () => localStorage.getItem("gkin_token") || "";
-const getUser   = () => localStorage.getItem("gkin_user") || "AGENT_01";
+const getUser   = () => localStorage.getItem("gkin_user") || "guest";
 const setAuth   = (t: string, u: string) => { localStorage.setItem("gkin_token", t); localStorage.setItem("gkin_user", u); };
 const clearAuth = () => { localStorage.removeItem("gkin_token"); localStorage.removeItem("gkin_user"); };
+const invKey    = (u: string) => `gkin_inv_${u || "guest"}`;
 async function apiFetch(path: string, opts: RequestInit = {}) {
   return fetch(path, { ...opts, headers: { "Content-Type": "application/json", ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}), ...opts.headers } });
 }
@@ -221,6 +222,7 @@ export default function Analyzer() {
   const [showLogin, setShowLogin]     = useState(false);
   const [activeNav, setActiveNav]     = useState("neural");
   const [activeTab, setActiveTab]     = useState<"TEXT" | "URL" | "MEDIA">("TEXT");
+  const [showArchives, setShowArchives] = useState(false);
   const [input, setInput]             = useState("");
   const [loading, setLoading]         = useState(false);
   const [loadingMsg, setLoadingMsg]   = useState("INITIALIZING");
@@ -228,7 +230,7 @@ export default function Analyzer() {
   const [fetchedTitle, setFetchedTitle] = useState("");
   const [langBadge, setLangBadge]     = useState("");
   const [investigations, setInvestigations] = useState<Investigation[]>(() => {
-    try { return JSON.parse(localStorage.getItem("gkin_inv_v3") || "[]"); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(invKey(getUser())) || "[]"); } catch { return []; }
   });
   const [sessionId] = useState(() => `VX-${Math.floor(Math.random() * 9000) + 1000}-OMEGA`);
 
@@ -241,8 +243,11 @@ export default function Analyzer() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
 
-  const handleAuth   = (t: string, u: string) => { setAuth(t, u); setToken(t); setUsername(u); };
-  const handleLogout = () => { clearAuth(); setToken(""); setUsername("AGENT_01"); setResult(null); };
+  const handleAuth = (t: string, u: string) => {
+    setAuth(t, u); setToken(t); setUsername(u);
+    try { setInvestigations(JSON.parse(localStorage.getItem(invKey(u)) || "[]")); } catch { setInvestigations([]); }
+  };
+  const handleLogout = () => { clearAuth(); setToken(""); setUsername("guest"); setResult(null); setInvestigations([]); setShowArchives(false); };
 
   const saveInvestigation = useCallback((res: AnalysisResult, snippet: string) => {
     const verdict =
@@ -253,8 +258,8 @@ export default function Analyzer() {
       snippet: snippet.slice(0, 90), timestamp: Date.now(), verdict, result: res,
     };
     setInvestigations(prev => {
-      const next = [inv, ...prev].slice(0, 10);
-      localStorage.setItem("gkin_inv_v3", JSON.stringify(next));
+      const next = [inv, ...prev].slice(0, 100);
+      localStorage.setItem(invKey(getUser()), JSON.stringify(next));
       return next;
     });
   }, []);
@@ -513,11 +518,12 @@ export default function Analyzer() {
             <span style={{ fontSize: 15, fontWeight: 600, color: P.text, letterSpacing: "-0.02em" }}>GKIN</span>
           </a>
           <div style={{ flex: 1 }} />
-          {["Analyzer", "Product", "Database", "Archives"].map(n => (
-            <a key={n} href={n === "Analyzer" ? "/app" : "#"}
-              style={{ fontSize: 11, color: n === "Analyzer" ? P.accent : P.muted, textDecoration: "none", letterSpacing: "0.06em" }}>
-              {n}
-            </a>
+          {[{ label: "Analyzer", active: !showArchives }, { label: "Archives", active: showArchives }].map(({ label, active }) => (
+            <button key={label}
+              onClick={() => setShowArchives(label === "Archives")}
+              style={{ fontSize: 11, color: active ? P.accent : P.muted, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", letterSpacing: "0.06em", padding: 0 }}>
+              {label}
+            </button>
           ))}
           <div style={{ flex: 1 }} />
           {token
@@ -559,6 +565,53 @@ export default function Analyzer() {
 
         {/* ── Main ── */}
         <main style={{ gridColumn: 2, gridRow: 2, padding: 24, overflowY: "auto", maxHeight: "calc(100vh - 52px)" }}>
+
+          {/* ── Archives View ── */}
+          {showArchives && (
+            <div>
+              <div style={{ marginBottom: 28 }}>
+                <h1 className="text-balance" style={{ fontSize: 48, fontWeight: 600, letterSpacing: "-0.038em", lineHeight: 0.98, marginBottom: 14 }}>
+                  <span className="grad-title">Investigation</span><br />
+                  <span className="grad-accent">Archives.</span>
+                </h1>
+                <p style={{ fontSize: 13, color: P.muted, lineHeight: 1.6, maxWidth: 480 }}>
+                  {token ? `All saved analyses for ${username.toUpperCase()}.` : "Log in to see your saved investigations."} {investigations.length > 0 ? `${investigations.length} record${investigations.length !== 1 ? "s" : ""} found.` : ""}
+                </p>
+              </div>
+
+              {investigations.length === 0 ? (
+                <div style={{ ...S.card, padding: 40, textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: P.faint, letterSpacing: "0.08em" }}>
+                    {token ? "NO INVESTIGATIONS ON FILE — RUN A SCAN TO BEGIN" : "LOG IN TO VIEW YOUR INVESTIGATION HISTORY"}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {investigations.map(inv => {
+                    const vs = verdictStyle(inv.verdict);
+                    return (
+                      <div key={inv.id}
+                        onClick={() => { setShowArchives(false); setResult(inv.result); setActiveNav("neural"); setChatMessages([]); fetchSuggestions(inv.result); }}
+                        style={{ ...S.card, padding: "14px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                            <span style={{ fontSize: 9, color: P.faint, letterSpacing: "0.06em" }}>#{inv.id}</span>
+                            <span style={{ fontSize: 9, letterSpacing: "0.08em", fontWeight: 700, padding: "2px 8px", borderRadius: 3, background: vs.bg, color: vs.color, border: `1px solid ${vs.border}` }}>{inv.verdict}</span>
+                            <span style={{ fontSize: 9, color: P.faint, marginLeft: "auto" }}>{timeAgo(inv.timestamp)}</span>
+                          </div>
+                          <p style={{ fontSize: 11, color: P.body, lineHeight: 1.5, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{inv.snippet}{inv.snippet.length >= 90 ? "…" : ""}</p>
+                        </div>
+                        <ArrowRight size={13} color={P.muted} style={{ flexShrink: 0 }} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Normal Workspace (hidden when archives open) ── */}
+          {!showArchives && <>
 
           {/* Status bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "8px 14px", background: P.panel, borderRadius: 6, border: `1px solid ${P.border}`, fontSize: 9, letterSpacing: "0.08em", color: P.muted, flexWrap: "wrap" }}>
@@ -925,6 +978,7 @@ export default function Analyzer() {
               </div>
             </div>
           )}
+          </>}
         </main>
 
         {/* ── Right Panel ── */}
