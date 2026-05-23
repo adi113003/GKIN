@@ -581,10 +581,10 @@ export default function Analyzer() {
             </button>
           ))}
           <div style={{ flex: 1 }} />
-          {token
-            ? <><span style={{ fontSize: 10, color: P.muted, letterSpacing: "0.06em" }}>{username.toUpperCase()}</span>
-                <button style={S.btnFilled} onClick={handleLogout}>LOGOUT</button></>
-            : <button style={{ ...S.btnFilled, boxShadow: `0 0 20px ${P.accentGlow}` }} onClick={() => setShowLogin(true)}>DECRYPT</button>}
+          {token && (
+            <><span style={{ fontSize: 10, color: P.muted, letterSpacing: "0.06em" }}>{username.toUpperCase()}</span>
+              <button style={S.btnFilled} onClick={handleLogout}>LOGOUT</button></>
+          )}
           <Bell size={16} style={{ color: P.muted, cursor: "pointer" }} />
           <Settings size={16} style={{ color: P.muted, cursor: "pointer" }} />
         </nav>
