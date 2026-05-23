@@ -6,6 +6,7 @@ import {
   Clock, Loader2, Lock, User, Mail,
   Eye, EyeOff, X, Radio, Zap, FileText, Mic,
   MessageSquare, RefreshCw, AlertTriangle,
+  Link as LinkIcon, GitBranch, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 
@@ -38,7 +39,22 @@ const P = {
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface PersuasionTechnique { technique: string; span?: string; explanation?: string; }
 interface ContextGap { gap: string; why_it_matters?: string; }
-interface Claim { text: string; verification?: { verdict: string; explanation: string }; }
+interface Claim {
+  text: string;
+  type?: string;
+  verification?: { verdict: string; explanation: string };
+  citation_ids?: number[];
+}
+interface SourceUsed {
+  url: string;
+  hostname: string;
+  title: string;
+  published_date: string | null;
+  claim_supported: string;
+  relevance_snippet: string;
+}
+interface TimelineEntry { date: string; hostname: string; url: string; how_claim_changed: string; }
+interface ClaimTimeline { claim: string; first_reported: string; timeline_entries: TimelineEntry[]; }
 interface AnalysisResult {
   summary?: string;
   manipulation_index?: number;
@@ -48,14 +64,17 @@ interface AnalysisResult {
   narrative_cluster?: string;
   bias_orientation?: string;
   missing_context?: ContextGap[];
+  sources_used?: SourceUsed[];
   fake_detection?: {
     verdict?: string; confidence?: number; fake_confidence?: number;
     trust_rating?: number; explanation?: string; reasoning?: string;
     red_flags?: string[]; trust_signals?: string[];
+    sources_used?: SourceUsed[];
   };
   ai_detection?: { verdict?: string; score?: number; ai_confidence?: number; explanation?: string; };
   reasoning_trace?: string;
   source_language?: string;
+  _article_text?: string;  // cached for /timeline lazy fetch (not from server)
 }
 interface Investigation { id: string; snippet: string; timestamp: number; verdict: string; result: AnalysisResult; }
 interface ChatMsg { role: "user" | "assistant"; content: string; }
@@ -240,6 +259,13 @@ export default function Analyzer() {
   const [chatMode, setChatMode]         = useState<"context" | "open" | "conspiracy">("context");
   const [chatLoading, setChatLoading]   = useState(false);
   const [suggestions, setSuggestions]   = useState<string[]>([]);
+
+  // Claim timeline (lazy-loaded so /analyze stays under 1.8s)
+  const [claimTimeline, setClaimTimeline] = useState<ClaimTimeline[] | null>(null);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [timelineError, setTimelineError] = useState("");
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [expandedSrc, setExpandedSrc] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
 
@@ -273,12 +299,39 @@ export default function Analyzer() {
     } catch { /* silent */ }
   }, []);
 
+  const buildClaimTimeline = useCallback(async () => {
+    if (!result || timelineLoading) return;
+    const article = result._article_text
+      || result.summary
+      || (result.claims || []).map(c => c.text).join(". ")
+      || "";
+    if (article.length < 100) {
+      setTimelineError("Not enough article context to build a timeline. Re-run the scan with the article URL.");
+      return;
+    }
+    setTimelineLoading(true); setTimelineError("");
+    try {
+      const r = await apiFetch("/timeline", { method: "POST", body: JSON.stringify({ article }) });
+      if (r.status === 401) { setShowLogin(true); return; }
+      if (!r.ok) throw new Error(await r.text());
+      const d = await r.json();
+      setClaimTimeline(d.claim_timeline || []);
+      // If /analyze had no sources_used (e.g. older cached investigation), borrow from /timeline.
+      if (!result.sources_used?.length && Array.isArray(d.sources_used) && d.sources_used.length) {
+        setResult(prev => prev ? { ...prev, sources_used: d.sources_used } : prev);
+      }
+    } catch (e) {
+      setTimelineError("Could not build timeline: " + (e instanceof Error ? e.message : String(e)));
+    } finally { setTimelineLoading(false); }
+  }, [result, timelineLoading]);
+
   const executeScan = async (overrideText?: string) => {
     if (!token) { setShowLogin(true); return; }
     const sourceText = overrideText ?? input;
     if (!sourceText.trim()) return;
     setLoading(true); setResult(null); setFetchedTitle(""); setLangBadge("");
     setChatMessages([]); setSuggestions([]);
+    setClaimTimeline(null); setTimelineError(""); setTimelineOpen(false); setExpandedSrc(null);
     try {
       let articleText = sourceText, displayTitle = "";
       if (activeTab === "URL" && !overrideText) {
@@ -296,8 +349,9 @@ export default function Analyzer() {
       if (r2.status === 401) { setShowLogin(true); return; }
       if (!r2.ok) throw new Error(await r2.text());
       const analysis: AnalysisResult = await r2.json();
-      setResult(analysis);
       saveInvestigation(analysis, displayTitle || sourceText);
+      analysis._article_text = articleText;  // for lazy /timeline lookup (not persisted)
+      setResult(analysis);
       setActiveNav("neural");
       fetchSuggestions(analysis);
     } catch (e: unknown) {
@@ -484,12 +538,13 @@ export default function Analyzer() {
   ];
 
   const navItems = [
-    { id: "neural",   icon: <Radio size={13} />,         label: "Neural Scan"  },
-    { id: "source",   icon: <Network size={13} />,       label: "Source Trace" },
-    { id: "logic",    icon: <Brain size={13} />,         label: "Logic Audit"  },
-    { id: "metadata", icon: <FileText size={13} />,      label: "Metadata"     },
-    { id: "report",   icon: <ScrollText size={13} />,    label: "Report"       },
-    { id: "chat",     icon: <MessageSquare size={13} />, label: "AI Assistant" },
+    { id: "neural",    icon: <Radio size={13} />,         label: "Neural Scan"  },
+    { id: "source",    icon: <Network size={13} />,       label: "Source Trace" },
+    { id: "citations", icon: <LinkIcon size={13} />,      label: "Citations"    },
+    { id: "logic",     icon: <Brain size={13} />,         label: "Logic Audit"  },
+    { id: "metadata",  icon: <FileText size={13} />,      label: "Metadata"     },
+    { id: "report",    icon: <ScrollText size={13} />,    label: "Report"       },
+    { id: "chat",      icon: <MessageSquare size={13} />, label: "AI Assistant" },
   ];
 
   // ── Shared styles ──
@@ -751,9 +806,30 @@ export default function Analyzer() {
                           : (result.claims || []).map((c, i) => {
                               const v = c.verification?.verdict || "unverifiable";
                               const col = v === "accurate" ? P.green : v === "false" ? P.red : P.yellow;
+                              const citationIds = c.citation_ids || [];
+                              const sources = result.sources_used || [];
                               return (
                                 <div key={i} style={{ borderLeft: `2px solid ${col}`, paddingLeft: 14 }}>
-                                  <p style={{ fontSize: 11, color: P.body, marginBottom: 6, lineHeight: 1.6 }}>{c.text}</p>
+                                  <p style={{ fontSize: 11, color: P.body, marginBottom: 6, lineHeight: 1.6 }}>
+                                    {c.text}
+                                    {citationIds.length > 0 && (
+                                      <span style={{ marginLeft: 4, display: "inline-flex", gap: 3, verticalAlign: "baseline" }}>
+                                        {citationIds.slice(0, 6).map(idx => {
+                                          const s = sources[idx];
+                                          if (!s) return null;
+                                          const tip = `${s.hostname}${s.published_date ? " · " + s.published_date : ""}${s.relevance_snippet ? "\n\n" + s.relevance_snippet : ""}`;
+                                          return (
+                                            <button key={idx}
+                                              title={tip}
+                                              onClick={() => { setActiveNav("citations"); setExpandedSrc(idx); }}
+                                              style={{ display: "inline-flex", alignItems: "center", fontSize: 9, fontWeight: 700, color: P.accent, background: P.accentDim, border: `1px solid ${P.border3}`, borderRadius: 3, padding: "1px 5px", cursor: "pointer", fontFamily: "inherit", letterSpacing: "0.02em", lineHeight: 1.2 }}>
+                                              [{idx + 1}]
+                                            </button>
+                                          );
+                                        })}
+                                      </span>
+                                    )}
+                                  </p>
                                   <span style={{ fontSize: 10, color: col, letterSpacing: "0.06em", fontWeight: 700, textTransform: "uppercase" }}>{v}</span>
                                   {c.verification?.explanation && <p style={{ fontSize: 10, color: P.muted, marginTop: 4 }}>{c.verification.explanation}</p>}
                                 </div>
@@ -877,6 +953,158 @@ export default function Analyzer() {
                     </div>
                   </div>
                 )}
+
+                {/* Citations & Claim Timeline */}
+                {activeNav === "citations" && (() => {
+                  const sources = result.sources_used || [];
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                      <div style={S.card}>
+                        <div style={S.cardHd}>
+                          <span>SOURCES &amp; CITATIONS{sources.length > 0 ? ` (${sources.length})` : ""}</span>
+                          <LinkIcon size={11} />
+                        </div>
+                        {sources.length === 0 ? (
+                          <div style={{ padding: 24, textAlign: "center", fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>
+                            NO SOURCES RETRIEVED — EVIDENCE PIPELINE DID NOT FIND CORROBORATING PAGES
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            {sources.map((s, i) => {
+                              const expanded = expandedSrc === i;
+                              return (
+                                <div key={i} style={{ borderBottom: i < sources.length - 1 ? `1px solid ${P.border}` : "none", padding: "14px 16px" }}>
+                                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: P.accent, background: P.accentDim, border: `1px solid ${P.border3}`, borderRadius: 4, padding: "2px 7px", minWidth: 28, textAlign: "center", flexShrink: 0 }}>
+                                      [{i + 1}]
+                                    </span>
+                                    {s.hostname && (
+                                      <img
+                                        src={`https://www.google.com/s2/favicons?domain=${s.hostname}&sz=32`}
+                                        alt=""
+                                        width={16}
+                                        height={16}
+                                        style={{ marginTop: 2, borderRadius: 3, flexShrink: 0, opacity: 0.85 }}
+                                        onError={e => { (e.target as HTMLImageElement).style.visibility = "hidden"; }}
+                                      />
+                                    )}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <a href={s.url} target="_blank" rel="noopener noreferrer"
+                                        style={{ color: P.text, textDecoration: "none", fontSize: 12, fontWeight: 600, lineHeight: 1.4, display: "block", marginBottom: 4 }}>
+                                        {s.title || s.hostname || s.url}
+                                      </a>
+                                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", fontSize: 9, color: P.muted, letterSpacing: "0.06em", marginBottom: 6 }}>
+                                        <span style={{ color: P.accentCyan }}>{s.hostname || "unknown source"}</span>
+                                        {s.published_date && (
+                                          <span style={{ background: P.panel, border: `1px solid ${P.border}`, borderRadius: 3, padding: "2px 6px", color: P.text2 }}>
+                                            {s.published_date}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div style={{ fontSize: 10, color: P.muted, lineHeight: 1.5 }}>
+                                        <span style={{ color: P.faint, letterSpacing: "0.08em" }}>SUPPORTS: </span>
+                                        <span style={{ color: P.text2 }}>{s.claim_supported}</span>
+                                      </div>
+                                      {s.relevance_snippet && (
+                                        <button
+                                          onClick={() => setExpandedSrc(expanded ? null : i)}
+                                          style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: P.accent, fontSize: 10, letterSpacing: "0.06em", cursor: "pointer", padding: 0, fontFamily: "inherit" }}
+                                        >
+                                          {expanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                                          {expanded ? "HIDE EXCERPT" : "SHOW EXCERPT"}
+                                        </button>
+                                      )}
+                                      {expanded && s.relevance_snippet && (
+                                        <p style={{ fontSize: 11, color: P.text2, lineHeight: 1.65, marginTop: 8, padding: "10px 12px", background: P.panel, borderLeft: `2px solid ${P.accent}`, borderRadius: 3 }}>
+                                          "{s.relevance_snippet}"
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Claim Timeline — lazy load to keep /analyze under 1.8s */}
+                      <div style={S.card}>
+                        <div style={S.cardHd}>
+                          <button onClick={() => setTimelineOpen(o => !o)}
+                            style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", color: P.muted, fontSize: 10, letterSpacing: "0.12em", fontWeight: 700, cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+                            {timelineOpen ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                            CLAIM TIMELINE
+                          </button>
+                          <GitBranch size={11} />
+                        </div>
+                        {timelineOpen && (
+                          <div style={{ padding: 16 }}>
+                            {!claimTimeline && !timelineLoading && (
+                              <div style={{ textAlign: "center" }}>
+                                <p style={{ fontSize: 11, color: P.muted, lineHeight: 1.6, marginBottom: 14 }}>
+                                  Trace how this claim spread across outlets over time. This runs a deeper scrape (~6–10s).
+                                </p>
+                                <button style={S.btnFilled} onClick={buildClaimTimeline}>
+                                  BUILD TIMELINE
+                                </button>
+                              </div>
+                            )}
+                            {timelineLoading && (
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "16px 0", color: P.accent, fontSize: 11, letterSpacing: "0.08em" }}>
+                                <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} />
+                                TRACING NARRATIVE LINEAGE…
+                              </div>
+                            )}
+                            {timelineError && (
+                              <p style={{ fontSize: 11, color: P.red, lineHeight: 1.6 }}>{timelineError}</p>
+                            )}
+                            {claimTimeline && claimTimeline.length === 0 && !timelineLoading && (
+                              <p style={{ fontSize: 11, color: P.faint, letterSpacing: "0.06em", textAlign: "center" }}>
+                                NO DATED EVIDENCE FOUND TO RECONSTRUCT TIMELINE
+                              </p>
+                            )}
+                            {claimTimeline && claimTimeline.length > 0 && (
+                              <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+                                {claimTimeline.map((ct, ci) => (
+                                  <div key={ci}>
+                                    <div style={{ marginBottom: 12 }}>
+                                      <div style={{ fontSize: 9, color: P.muted, letterSpacing: "0.1em", marginBottom: 4 }}>CLAIM</div>
+                                      <p style={{ fontSize: 12, color: P.text, lineHeight: 1.5, fontWeight: 600, margin: 0 }}>{ct.claim}</p>
+                                      {ct.first_reported && (
+                                        <div style={{ fontSize: 10, color: P.accentCyan, marginTop: 6, letterSpacing: "0.04em" }}>
+                                          FIRST REPORTED: {ct.first_reported}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div style={{ position: "relative", paddingLeft: 18 }}>
+                                      <div style={{ position: "absolute", left: 5, top: 6, bottom: 6, width: 1, background: P.border2 }} />
+                                      {ct.timeline_entries.map((te, ti) => (
+                                        <div key={ti} style={{ position: "relative", paddingBottom: 14 }}>
+                                          <div style={{ position: "absolute", left: -16, top: 5, width: 9, height: 9, borderRadius: "50%", background: P.bg, border: `2px solid ${P.accent}` }} />
+                                          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
+                                            <span style={{ fontSize: 10, color: P.accent, fontWeight: 700, letterSpacing: "0.04em" }}>
+                                              {te.date || "date unknown"}
+                                            </span>
+                                            <a href={te.url} target="_blank" rel="noopener noreferrer"
+                                              style={{ fontSize: 10, color: P.accentCyan, textDecoration: "none", letterSpacing: "0.04em" }}>
+                                              {te.hostname}
+                                            </a>
+                                          </div>
+                                          <p style={{ fontSize: 11, color: P.body, lineHeight: 1.55, margin: 0 }}>{te.how_claim_changed}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* AI Assistant */}
                 {activeNav === "chat" && (

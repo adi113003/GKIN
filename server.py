@@ -133,7 +133,7 @@ Analysis:
 Return ONLY valid JSON matching this schema exactly:
 {{
   "claims": [
-    {{"text": "claim text", "type": "Verifiable | Opinion | Unverifiable", "confidence": 0.0}}
+    {{"text": "claim text", "type": "Verifiable | Opinion | Unverifiable", "confidence": 0.0, "citation_ids": []}}
   ],
   "persuasion_techniques": [
     {{"technique": "fear_appeal | bandwagon | loaded_language | false_urgency | authority_appeal | whataboutism | black_and_white",
@@ -150,6 +150,10 @@ Return ONLY valid JSON matching this schema exactly:
 Rules:
 - All scores 0-100 integers. narrative_cluster must be one of: {clusters}.
 - Cap techniques at 8, claims at 12, missing_context at 5.
+- For each Verifiable claim, include a citation_ids array. Leave it empty here — the
+  server populates it after evidence retrieval by matching the scraped sources used
+  to verify that claim (indices into sources_used). Opinion/Unverifiable claims
+  must keep citation_ids as an empty array.
 """
 
 CLAIM_VERIFY_PROMPT = """You are a fact-checker. Evaluate this specific claim in one sentence.
@@ -812,6 +816,7 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
     # ── Step 2: Search DDG for each verifiable claim, collect real URLs ────────
     sources_checked: list[dict] = []
     all_urls: list[str] = []
+    url_to_claim: dict[str, str] = {}  # which Verifiable claim each URL was retrieved for
 
     for claim_obj in verifiable:
         claim_text = claim_obj.get("text", "")[:150]
@@ -826,6 +831,7 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
                 "supports": None,
             })
             all_urls.append(r["url"])
+            url_to_claim.setdefault(r["url"], claim_text)
 
     # Broader topic search to pad up to 10 pages
     if len(all_urls) < 10:
@@ -842,14 +848,42 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
                     "supports": None,
                 })
                 all_urls.append(r["url"])
+                url_to_claim.setdefault(r["url"], "topic search")
 
-    # ── Step 3: Scrape up to 10 pages ─────────────────────────────────────────
-    scraped = await _scrape_pages(all_urls[:10])
+    # ── Step 3: Scrape up to 10 pages (with metadata for citations) ───────────
+    scraped = await _scrape_pages_with_meta(all_urls[:10])
     scraped_block = ""
     for i, page in enumerate(scraped):
         scraped_block += f"\n--- Page {i+1} ({page['url']}) ---\n{page['text']}\n"
     if not scraped_block:
         scraped_block = "No pages could be scraped."
+
+    # Build sources_used: surfacing the scraped evidence with full metadata so
+    # the frontend can render citations + a per-claim timeline. No new API calls
+    # — this is the same scrape data the LLM sees, just preserved in the response.
+    sources_used: list[dict] = []
+    for page in scraped:
+        url = page.get("url", "")
+        hostname = page.get("hostname") or ""
+        if not hostname and url:
+            try:
+                hostname = urllib.parse.urlparse(url).hostname or ""
+            except Exception:
+                hostname = ""
+        snippet = (page.get("text") or "")[:240].strip()
+        if snippet:
+            # Round to nearest sentence end if possible
+            cut = max(snippet.rfind(". "), snippet.rfind("! "), snippet.rfind("? "))
+            if cut > 80:
+                snippet = snippet[: cut + 1]
+        sources_used.append({
+            "url": url,
+            "hostname": hostname,
+            "title": page.get("title", "") or hostname or url,
+            "published_date": page.get("date") or None,
+            "claim_supported": url_to_claim.get(url, "topic search"),
+            "relevance_snippet": snippet,
+        })
 
     # ── Step 4: LLM reasoning over scraped content ─────────────────────────────
     techniques = [t.get("technique", "") for t in structured.get("persuasion_techniques", [])[:5]]
@@ -915,6 +949,7 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
         "red_flags": red_flags,
         "trust_signals": trust_signals,
         "sources_checked": sources_checked[:10],
+        "sources_used": sources_used,
         "ml_score": ml_fc,
         "pages_scraped": len(scraped),
     }
@@ -1098,6 +1133,8 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
             "topic": topic,
             "core_claim": core_claim,
             "entries": [],
+            "sources_used": [],
+            "claim_timeline": [],
             "narrative_shifts": [],
             "dropped_context": [],
             "amplification_chain": [],
@@ -1158,10 +1195,61 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
         e["key_quote"] = asmt.get("key_quote", "")
         e["bias_note"] = asmt.get("bias_note", "")
 
+    # Step 7: build sources_used + claim_timeline for the citations UI.
+    # /timeline currently focuses on a single core_claim, so claim_timeline is
+    # a one-entry array. pages is already sorted oldest→newest above.
+    sources_used = []
+    for p in pages:
+        snippet = (p.get("text") or "")[:240].strip()
+        cut = max(snippet.rfind(". "), snippet.rfind("! "), snippet.rfind("? "))
+        if cut > 80:
+            snippet = snippet[: cut + 1]
+        sources_used.append({
+            "url": p.get("url", ""),
+            "hostname": p.get("hostname", "") or "",
+            "title": p.get("title", "") or p.get("hostname", "") or p.get("url", ""),
+            "published_date": p.get("date") or None,
+            "claim_supported": core_claim or topic,
+            "relevance_snippet": snippet,
+        })
+
+    dated = [p for p in pages if p.get("date")]
+    first_reported = ""
+    if dated:
+        d0 = dated[0]
+        first_reported = f"{d0.get('hostname', '')} · {d0.get('date', '')}".strip(" ·")
+
+    timeline_entries = []
+    for i, p in enumerate(pages):
+        a = assessments.get(i + 1, {})
+        corro = (a.get("corroboration") or "INDEPENDENT").upper()
+        diff_map = {
+            "CORROBORATES": "Restates the original claim.",
+            "CONTRADICTS":  "Contradicts the original claim.",
+            "PARTIAL":      "Partial agreement; some details differ.",
+            "INDEPENDENT":  "Independent report on the same topic.",
+            "UNRELATED":    "Adjacent topic; does not address the claim.",
+        }
+        how = a.get("key_quote") or diff_map.get(corro, "Coverage of the same topic.")
+        timeline_entries.append({
+            "date": p.get("date") or "",
+            "hostname": p.get("hostname", "") or "",
+            "url": p.get("url", ""),
+            "how_claim_changed": how[:200],
+        })
+
+    claim_timeline = [{
+        "claim": core_claim or topic,
+        "first_reported": first_reported,
+        "timeline_entries": timeline_entries,
+    }] if timeline_entries else []
+
     return {
         "topic": topic,
         "core_claim": core_claim,
         "entries": entries,
+        "sources_used": sources_used,
+        "claim_timeline": claim_timeline,
         "narrative_shifts": ana.get("narrative_shifts", []),
         "dropped_context": ana.get("dropped_context", []),
         "amplification_chain": ana.get("amplification_chain", []),
@@ -1284,6 +1372,46 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     result["fake_detection"] = fake_result
     result["ai_detection"] = ai_result
     result["source_language"] = source_language
+
+    # Attach citation_ids to each Verifiable claim by matching against the
+    # claim text used at DDG-search time (preserved in sources_used.claim_supported).
+    # Deterministic — same scrape data the LLM already saw, no extra API call.
+    raw_sources = fake_result.get("sources_used", []) if isinstance(fake_result, dict) else []
+    claim_to_indices: dict[str, list[int]] = {}
+    if raw_sources:
+        for i, s in enumerate(raw_sources):
+            key = s.get("claim_supported", "")
+            claim_to_indices.setdefault(key, []).append(i)
+
+    referenced: set[int] = set()
+    if result.get("claims"):
+        for claim in result["claims"]:
+            if claim.get("type") != "Verifiable":
+                claim["citation_ids"] = []
+                continue
+            needle = (claim.get("text", "") or "")[:150]
+            ids = claim_to_indices.get(needle, [])
+            claim["_pending_ids"] = ids
+            referenced.update(ids)
+
+    # Prune sources_used to only sources at least one Verifiable claim cites.
+    # Drops "topic search" padding + any scraped page no claim tied back to.
+    kept_sources: list[dict] = []
+    old_to_new: dict[int, int] = {}
+    for old_idx, s in enumerate(raw_sources):
+        if old_idx in referenced:
+            old_to_new[old_idx] = len(kept_sources)
+            kept_sources.append(s)
+
+    if result.get("claims"):
+        for claim in result["claims"]:
+            pending = claim.pop("_pending_ids", None)
+            if pending is None:
+                continue
+            claim["citation_ids"] = [old_to_new[i] for i in pending if i in old_to_new]
+
+    result["sources_used"] = kept_sources
+
     return result
 
 
