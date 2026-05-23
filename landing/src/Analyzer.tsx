@@ -547,20 +547,17 @@ export default function Analyzer() {
           </div>
 
           <button style={{ ...S.btnOutline, width: "100%", marginBottom: 6 }}
-            onClick={() => { setResult(null); setInput(""); setFetchedTitle(""); setLangBadge(""); setActiveNav("neural"); setChatMessages([]); setSuggestions([]); }}>
+            onClick={() => { setResult(null); setInput(""); setFetchedTitle(""); setLangBadge(""); setActiveNav("neural"); setChatMessages([]); setSuggestions([]); setShowArchives(false); }}>
             + NEW INVESTIGATION
           </button>
 
-          {navItems.map(item => (
+          {result && navItems.map(item => (
             <button key={item.id} style={S.navItem(activeNav === item.id)} onClick={() => setActiveNav(item.id)}>
               {item.icon} {item.label}
             </button>
           ))}
 
           <div style={{ flex: 1 }} />
-          <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 10 }}>
-            <a href="/old-app" style={{ fontSize: 9, color: P.faint, textDecoration: "none", letterSpacing: "0.06em" }}>← Legacy UI</a>
-          </div>
         </aside>
 
         {/* ── Main ── */}
