@@ -30,7 +30,7 @@ Endpoints:
   GET  /              → static/index.html
 
 Setup:
-  pip install fastapi uvicorn groq pandas python-multipart duckduckgo-search python-jose[cryptography] passlib[bcrypt] trafilatura motor youtube-transcript-api
+  pip install fastapi uvicorn groq pandas python-multipart ddgs python-jose[cryptography] passlib[bcrypt] trafilatura motor youtube-transcript-api
   export GROQ_API_KEY="your_key"
   export SECRET_KEY="your-secret-key"   # optional, auto-generated if omitted
   export MONGODB_URI="mongodb://localhost:27017"  # optional, defaults to localhost
@@ -547,7 +547,12 @@ TOOL_DEFINITIONS = [
 
 def _ddg_search(query: str, max_results: int = 5) -> list[dict]:
     try:
-        from duckduckgo_search import DDGS
+        # duckduckgo_search was renamed to ddgs; prefer the new package and fall
+        # back to the old name. Both return href/title/body.
+        try:
+            from ddgs import DDGS
+        except ImportError:
+            from duckduckgo_search import DDGS
         with DDGS() as ddgs:
             raw = list(ddgs.text(query, max_results=max_results))
         return [
@@ -555,7 +560,7 @@ def _ddg_search(query: str, max_results: int = 5) -> list[dict]:
             for r in raw
         ]
     except ImportError:
-        return [{"error": "duckduckgo-search not installed. Run: pip install duckduckgo-search"}]
+        return [{"error": "search package not installed. Run: pip install ddgs"}]
     except Exception as e:
         return [{"error": str(e)}]
 
