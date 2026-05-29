@@ -734,17 +734,15 @@ export default function Analyzer() {
   return (
     <>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} onAuth={handleAuth} />}
-      <AnimatePresence>
-        {showNarrativeModal && (
-          <NarrativeModal
-            claimTimeline={claimTimeline}
-            timelineLoading={timelineLoading}
-            timelineError={timelineError}
-            onBuildTimeline={buildClaimTimeline}
-            onClose={() => setShowNarrativeModal(false)}
-          />
-        )}
-      </AnimatePresence>
+      {showNarrativeModal && (
+        <NarrativeModal
+          claimTimeline={claimTimeline}
+          timelineLoading={timelineLoading}
+          timelineError={timelineError}
+          onBuildTimeline={buildClaimTimeline}
+          onClose={() => setShowNarrativeModal(false)}
+        />
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 300px", gridTemplateRows: "52px 1fr", minHeight: "100vh" }}>
 
@@ -1418,13 +1416,7 @@ export default function Analyzer() {
 
           <div style={{ ...S.card, flex: 1 }}>
             <div style={S.cardHd}>
-              <span>PERSUASION MAPPING</span>
-              {result && (
-                <button onClick={() => setShowNarrativeModal(true)}
-                  style={{ background: P.accentDim, border: `1px solid ${P.border3}`, color: P.accentCyan, fontSize: 9, letterSpacing: "0.06em", fontWeight: 700, padding: "3px 8px", borderRadius: 3, cursor: "pointer", fontFamily: "inherit" }}>
-                  VIEW TIMELINE ↗
-                </button>
-              )}
+              PERSUASION MAPPING
             </div>
             <div style={{ padding: 14 }}>
               <PersuasionNet techniques={techniques} />
@@ -1442,6 +1434,13 @@ export default function Analyzer() {
                   </div>
                 ))}
               </div>
+              {result && (
+                <button
+                  onClick={() => { setShowNarrativeModal(true); }}
+                  style={{ marginTop: 14, width: "100%", padding: "10px", background: P.accentDim, border: `1px solid ${P.accent}`, color: P.accent, fontSize: 10, letterSpacing: "0.08em", fontWeight: 700, borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>
+                  ↗ OPEN NARRATIVE MAP
+                </button>
+              )}
             </div>
           </div>
 
