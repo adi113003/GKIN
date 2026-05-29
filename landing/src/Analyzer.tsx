@@ -666,16 +666,12 @@ export default function Analyzer() {
           {/* ── Normal Workspace (hidden when archives open) ── */}
           {!showArchives && <>
 
-          {/* Status bar */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "8px 14px", background: P.panel, borderRadius: 6, border: `1px solid ${P.border}`, fontSize: 9, letterSpacing: "0.08em", color: P.muted, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <div style={{ width: 7, height: 7, background: P.green, borderRadius: "50%", boxShadow: `0 0 6px ${P.green}`, animation: "pulse 2s infinite" }} />
-              <span style={{ color: P.green, fontWeight: 700 }}>SYSTEM: ACTIVE</span>
+          {/* Translation badge */}
+          {langBadge && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "6px 12px", background: P.panel, borderRadius: 6, border: `1px solid ${P.border}`, fontSize: 9, letterSpacing: "0.08em", width: "fit-content" }}>
+              <span style={{ color: P.yellow, fontWeight: 700 }}>TRANSLATED FROM: {langBadge.toUpperCase()}</span>
             </div>
-            <span>SESSION: {sessionId}</span>
-            <span>NODE: CLUSTER_09</span>
-            {langBadge && <span style={{ color: P.yellow, fontWeight: 700 }}>TRANSLATED FROM: {langBadge.toUpperCase()}</span>}
-          </div>
+          )}
 
           <div style={{ marginBottom: 28 }}>
             <h1 className="text-balance" style={{ fontSize: 56, fontWeight: 600, letterSpacing: "-0.038em", lineHeight: 0.98, marginBottom: 14 }}>
@@ -1273,15 +1269,6 @@ export default function Analyzer() {
         </aside>
       </div>
 
-      <footer style={{ background: P.nav, borderTop: `1px solid ${P.border}`, padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 11, color: P.muted, fontWeight: 700, letterSpacing: "0.06em" }}>GKIN // TRUTH_NAV</span>
-        <div style={{ display: "flex", gap: 20 }}>
-          {["Terminal","API Docs","Privacy","Support"].map(l => (
-            <a key={l} href="#" style={{ fontSize: 9, color: P.faint, textDecoration: "none", letterSpacing: "0.06em" }}>{l}</a>
-          ))}
-        </div>
-        <span style={{ fontSize: 9, color: P.faint, letterSpacing: "0.06em" }}>© {new Date().getFullYear()} FORENSIC_OS v4.2</span>
-      </footer>
 
       <style>{`
         @keyframes pulse  { 0%,100%{opacity:1}50%{opacity:0.4} }
