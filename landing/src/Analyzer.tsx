@@ -251,7 +251,6 @@ export default function Analyzer() {
   const [investigations, setInvestigations] = useState<Investigation[]>(() => {
     try { return JSON.parse(localStorage.getItem(invKey(getUser())) || "[]"); } catch { return []; }
   });
-  const [sessionId] = useState(() => `VX-${Math.floor(Math.random() * 9000) + 1000}-OMEGA`);
 
   // Chat
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
