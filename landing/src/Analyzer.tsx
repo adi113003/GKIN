@@ -52,6 +52,8 @@ interface SourceUsed {
   published_date: string | null;
   claim_supported: string;
   relevance_snippet: string;
+  tier?: number;
+  trusted?: boolean;
 }
 interface TimelineEntry { date: string; hostname: string; url: string; how_claim_changed: string; }
 interface ClaimTimeline { claim: string; first_reported: string; timeline_entries: TimelineEntry[]; }
@@ -136,6 +138,157 @@ function PersuasionNet({ techniques }: { techniques: PersuasionTechnique[] }) {
         ))}
       </svg>
     </div>
+  );
+}
+
+// ── Narrative source map modal ────────────────────────────────────────────────
+function NarrativeModal({ sources, techniques, onClose }: {
+  sources: SourceUsed[];
+  techniques: PersuasionTechnique[];
+  onClose: () => void;
+}) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const W = 680, H = 460, cx = W / 2, cy = H / 2;
+
+  const sourceNodes = useMemo(() => {
+    const n = Math.max(sources.length, 1);
+    return sources.map((s, i) => {
+      const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+      const r = sources.length <= 6 ? 170 : 185;
+      return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle), s };
+    });
+  }, [sources]);
+
+  const techNodes = useMemo(() => {
+    const n = Math.max(techniques.length, 1);
+    return techniques.map((t, i) => {
+      const angle = (i / n) * 2 * Math.PI - Math.PI / 4;
+      return { x: cx + 90 * Math.cos(angle), y: cy + 90 * Math.sin(angle), t };
+    });
+  }, [techniques]);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(10px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <motion.div initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.88, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+        onClick={e => e.stopPropagation()}
+        style={{ background: "#0d0c1a", border: `1px solid ${P.border2}`, borderRadius: 14, overflow: "hidden", width: 780, maxWidth: "94vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+
+        {/* header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${P.border}` }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: P.text, letterSpacing: "0.1em" }}>NARRATIVE SOURCE MAP</div>
+            <div style={{ fontSize: 9, color: P.muted, letterSpacing: "0.06em", marginTop: 3 }}>
+              {sources.length} source{sources.length !== 1 ? "s" : ""} mapped · click any node to open
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: P.muted, cursor: "pointer", padding: 4 }}><X size={15} /></button>
+        </div>
+
+        {/* graph */}
+        <div style={{ padding: "16px 20px 0", flex: 1, overflow: "hidden" }}>
+          <svg width="100%" viewBox={`0 0 ${W} ${H}`}
+            style={{ background: "rgba(8,7,20,0.9)", borderRadius: 8, display: "block" }}>
+
+            {/* edges: center → sources */}
+            {sourceNodes.map((n, i) => (
+              <line key={`se-${i}`} x1={cx} y1={cy} x2={n.x} y2={n.y}
+                stroke={hovered === i ? P.accent : "rgba(155,123,255,0.13)"}
+                strokeWidth={hovered === i ? 1.6 : 0.7}
+                style={{ transition: "stroke 0.15s, stroke-width 0.15s" }} />
+            ))}
+
+            {/* edges: center → techniques */}
+            {techNodes.map((n, i) => (
+              <line key={`te-${i}`} x1={cx} y1={cy} x2={n.x} y2={n.y}
+                stroke="rgba(251,191,36,0.07)" strokeWidth="0.6" />
+            ))}
+
+            {/* source nodes */}
+            {sourceNodes.map((n, i) => {
+              const isHov = hovered === i;
+              const label = (n.s.hostname || n.s.url).replace(/^www\./, "").slice(0, 14);
+              return (
+                <g key={`sn-${i}`} style={{ cursor: "pointer" }}
+                  onClick={() => window.open(n.s.url, "_blank", "noopener")}
+                  onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
+                  <circle cx={n.x} cy={n.y} r={isHov ? 28 : 22}
+                    fill={isHov ? "rgba(155,123,255,0.28)" : "rgba(155,123,255,0.10)"}
+                    stroke={isHov ? P.accent : "rgba(155,123,255,0.38)"}
+                    strokeWidth={isHov ? 1.8 : 1}
+                    style={{ transition: "all 0.15s" }} />
+                  {/* favicon */}
+                  {n.s.hostname && (
+                    <image href={`https://www.google.com/s2/favicons?domain=${n.s.hostname}&sz=16`}
+                      x={n.x - 7} y={n.y - 17} width={14} height={14} style={{ borderRadius: 2 }} />
+                  )}
+                  <text x={n.x} y={n.y + 1} textAnchor="middle" dominantBaseline="middle"
+                    fill={isHov ? P.text : P.text2} fontSize={isHov ? "8" : "7"}
+                    style={{ pointerEvents: "none", transition: "fill 0.15s" }}>
+                    {label}
+                  </text>
+                  {/* tier badge */}
+                  {n.s.tier !== undefined && (
+                    <text x={n.x} y={n.y + 13} textAnchor="middle"
+                      fill={n.s.trusted ? P.green : P.yellow} fontSize="6.5"
+                      style={{ pointerEvents: "none" }}>
+                      TIER {n.s.tier}
+                    </text>
+                  )}
+                  {/* index badge */}
+                  <text x={n.x + 16} y={n.y - 16} textAnchor="middle"
+                    fill={P.accent} fontSize="8" fontWeight="bold"
+                    style={{ pointerEvents: "none" }}>
+                    [{i + 1}]
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* technique nodes */}
+            {techNodes.map((n, i) => (
+              <g key={`tn-${i}`}>
+                <circle cx={n.x} cy={n.y} r={13}
+                  fill="rgba(251,191,36,0.07)" stroke="rgba(251,191,36,0.28)" strokeWidth="1" />
+                <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="middle"
+                  fill="rgba(251,191,36,0.75)" fontSize="5.8"
+                  style={{ pointerEvents: "none" }}>
+                  {n.t.technique.replace(/_/g, " ").slice(0, 12)}
+                </text>
+              </g>
+            ))}
+
+            {/* center node */}
+            <circle cx={cx} cy={cy} r={28}
+              fill="rgba(155,123,255,0.22)" stroke={P.accent} strokeWidth="2.2" />
+            <text x={cx} y={cy - 6} textAnchor="middle" fill={P.text} fontSize="10" fontWeight="bold" style={{ pointerEvents: "none" }}>ARTICLE</text>
+            <text x={cx} y={cy + 8} textAnchor="middle" fill={P.muted} fontSize="7" style={{ pointerEvents: "none" }}>ORIGIN NODE</text>
+          </svg>
+        </div>
+
+        {/* source link list */}
+        {sources.length > 0 && (
+          <div style={{ borderTop: `1px solid ${P.border}`, padding: "12px 20px", display: "flex", flexWrap: "wrap", gap: 8, overflowY: "auto", maxHeight: 120 }}>
+            {sources.map((s, i) => (
+              <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
+                onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
+                style={{ fontSize: 10, color: hovered === i ? P.accent : P.muted, background: P.panel, border: `1px solid ${hovered === i ? P.border3 : P.border}`, borderRadius: 4, padding: "4px 10px", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}>
+                <span style={{ color: P.accent, fontWeight: 700 }}>[{i + 1}]</span>
+                {(s.hostname || s.url).replace(/^www\./, "").slice(0, 28)}
+              </a>
+            ))}
+          </div>
+        )}
+
+        {sources.length === 0 && (
+          <div style={{ padding: 24, textAlign: "center", fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>
+            NO SOURCES — RUN A SCAN WITH A URL OR ARTICLE TEXT TO MAP NARRATIVE SOURCES
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -241,7 +394,8 @@ export default function Analyzer() {
   const [showLogin, setShowLogin]     = useState(false);
   const [activeNav, setActiveNav]     = useState("neural");
   const [activeTab, setActiveTab]     = useState<"TEXT" | "URL" | "MEDIA">("TEXT");
-  const [showArchives, setShowArchives] = useState(false);
+  const [showArchives, setShowArchives]         = useState(false);
+  const [showNarrativeModal, setShowNarrativeModal] = useState(false);
   const [input, setInput]             = useState("");
   const [loading, setLoading]         = useState(false);
   const [loadingMsg, setLoadingMsg]   = useState("INITIALIZING");
@@ -560,6 +714,15 @@ export default function Analyzer() {
   return (
     <>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} onAuth={handleAuth} />}
+      <AnimatePresence>
+        {showNarrativeModal && (
+          <NarrativeModal
+            sources={result?.sources_used || []}
+            techniques={techniques}
+            onClose={() => setShowNarrativeModal(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 300px", gridTemplateRows: "52px 1fr", minHeight: "100vh" }}>
 
@@ -1231,8 +1394,13 @@ export default function Analyzer() {
             </div>
           </div>
 
-          <div style={{ ...S.card, flex: 1 }}>
-            <div style={S.cardHd}>PERSUASION MAPPING</div>
+          <div style={{ ...S.card, flex: 1, cursor: result ? "pointer" : "default" }}
+            onClick={() => result && setShowNarrativeModal(true)}
+            title={result ? "Click to open narrative source map" : ""}>
+            <div style={S.cardHd}>
+              <span>PERSUASION MAPPING</span>
+              {result && <span style={{ fontSize: 9, color: P.accentCyan, letterSpacing: "0.06em" }}>CLICK TO EXPAND ↗</span>}
+            </div>
             <div style={{ padding: 14 }}>
               <PersuasionNet techniques={techniques} />
               <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
