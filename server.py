@@ -790,8 +790,9 @@ class VerifyClaimsRequest(BaseModel):
     claims: list[str]
     max_claims: int = 5      # per-article cap on claims that run the loop
     force_refresh: bool = False
-    # Search backend: 'auto' (default; prefer Brave, then Google, then DDG),
-    # or force 'brave' | 'google' | 'ddg'. Keyed backends require env keys.
+    # Search backend: 'auto' (default; best available general search merged with
+    # Wikipedia), or force 'wikipedia' | 'ddg' | 'brave' | 'google'. Wikipedia and
+    # DDG are free/keyless; Brave/Google need env keys (and Brave needs billing).
     search_backend: Optional[str] = None
 
 

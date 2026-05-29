@@ -94,13 +94,81 @@ def test_resolve_backend_routing():
 
     # ddg -> the raw injected callable
     assert search.resolve_backend("ddg", sentinel_ddg) is sentinel_ddg
+    # wikipedia -> the wikipedia backend itself
+    assert search.resolve_backend("wikipedia", sentinel_ddg) is search.wikipedia_search
 
-    # brave/google/auto -> chains that fall back to ddg when keys are absent
+    # brave/google -> chains that fall back to ddg when keys are absent
     with _env(BRAVE_SEARCH_API_KEY=None, GOOGLE_SEARCH_API_KEY=None, GOOGLE_SEARCH_CX=None):
-        for name in ("brave", "google", "auto", None):
+        for name in ("brave", "google"):
             fn = search.resolve_backend(name, sentinel_ddg)
             out = fn("q", 5)
             assert out and out[0]["url"] == "https://ddg.example/z", name
+
+
+def test_merged_dedupes_and_concatenates():
+    def a(q, n):
+        return [{"title": "1", "snippet": "", "url": "https://x/1"},
+                {"title": "dup", "snippet": "", "url": "https://x/dup"}]
+
+    def b(q, n):
+        return [{"title": "dup2", "snippet": "", "url": "https://x/dup"},  # dropped (dup url)
+                {"title": "2", "snippet": "", "url": "https://x/2"}]
+
+    out = search.merged(a, b)("q", 5)
+    urls = [r["url"] for r in out]
+    assert urls == ["https://x/1", "https://x/dup", "https://x/2"], urls
+
+
+def test_auto_merges_general_with_wikipedia(monkeypatch=None):
+    # auto = merged(chained(brave,google,ddg), wikipedia). With no keys, the
+    # general chain falls to ddg; wikipedia results are appended.
+    sentinel_ddg = lambda q, n: [{"title": "ddg", "snippet": "", "url": "https://ddg.example/z"}]
+    search_wiki_orig = search.wikipedia_search
+    search.wikipedia_search = lambda q, n=10: [{"title": "W", "snippet": "s", "url": "https://en.wikipedia.org/wiki/W"}]
+    try:
+        with _env(BRAVE_SEARCH_API_KEY=None, GOOGLE_SEARCH_API_KEY=None, GOOGLE_SEARCH_CX=None):
+            fn = search.resolve_backend("auto", sentinel_ddg)
+            urls = [r["url"] for r in fn("q", 5)]
+        assert "https://ddg.example/z" in urls
+        assert "https://en.wikipedia.org/wiki/W" in urls
+    finally:
+        search.wikipedia_search = search_wiki_orig
+
+
+def test_wikipedia_parsing_without_network():
+    # Monkeypatch httpx.get to return a canned MediaWiki response.
+    class FakeResp:
+        def raise_for_status(self): pass
+        def json(self):
+            return {"query": {"search": [
+                {"title": "Moon landing", "snippet": "The <span class=\"searchmatch\">Apollo</span> program &quot;landed&quot;"},
+                {"title": "Great Wall of China", "snippet": "not visible from the Moon"},
+            ]}}
+
+    orig = search.httpx.get
+    search.httpx.get = lambda *a, **k: FakeResp()
+    try:
+        out = search.wikipedia_search("moon", 5)
+    finally:
+        search.httpx.get = orig
+    assert len(out) == 2
+    assert out[0]["url"] == "https://en.wikipedia.org/wiki/Moon_landing"
+    # HTML stripped, entities decoded
+    assert "<span" not in out[0]["snippet"]
+    assert '"landed"' in out[0]["snippet"]
+    assert "Apollo" in out[0]["snippet"]
+
+
+def test_wikipedia_error_is_soft():
+    orig = search.httpx.get
+    def boom(*a, **k):
+        raise RuntimeError("offline")
+    search.httpx.get = boom
+    try:
+        out = search.wikipedia_search("x")
+    finally:
+        search.httpx.get = orig
+    assert out == [{"error": "wikipedia: offline"}]
 
 
 def main():
