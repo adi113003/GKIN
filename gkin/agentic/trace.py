@@ -122,11 +122,12 @@ def _emit(
     latency_ms: float,
     tokens: dict,
 ) -> None:
-    # Skip self/cls and injected callables in the input summary — the state dict
-    # is what matters for debugging prompt changes.
-    summarized_args = [
-        _summarize(a) for a in args if not callable(a)
-    ]
+    # Skip injected callables and dependency containers (marked _trace_skip) in
+    # the input summary — the state dict is what matters for debugging prompts.
+    def _skip(v: Any) -> bool:
+        return callable(v) or getattr(v, "_trace_skip", False)
+
+    summarized_args = [_summarize(a) for a in args if not _skip(a)]
     record = {
         "event": "node",
         "node": name,
@@ -135,7 +136,7 @@ def _emit(
         "tokens": tokens,
         "input": {
             "args": summarized_args,
-            "kwargs": {k: _summarize(v) for k, v in kwargs.items() if not callable(v)},
+            "kwargs": {k: _summarize(v) for k, v in kwargs.items() if not _skip(v)},
         },
         "output": _summarize(result) if ok else None,
         "error": error,
