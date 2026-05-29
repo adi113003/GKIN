@@ -70,6 +70,8 @@ from groq import AsyncGroq
 import pandas as pd
 import trafilatura
 
+from gkin.agentic import Deps as AgenticDeps, VerdictCache, configure_tracing, verify_claims
+
 try:
     from jose import JWTError, jwt
     from passlib.context import CryptContext
@@ -629,15 +631,18 @@ _client: Optional[AsyncGroq] = None
 _welfake_df = None
 _claim_sem: Optional[asyncio.Semaphore] = None
 _fake_model = None
+_verdict_cache: Optional[VerdictCache] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _client, _claim_sem, _mongo_client, _users_col, _fake_model
+    global _client, _claim_sem, _mongo_client, _users_col, _fake_model, _verdict_cache
     api_key = os.environ.get("GROQ_API_KEY")
     if api_key:
         _client = AsyncGroq(api_key=api_key)
     _claim_sem = asyncio.Semaphore(4)
+    configure_tracing()          # structured JSON traces for the agentic loop
+    _verdict_cache = VerdictCache()
     _mongo_client = AsyncIOMotorClient(MONGODB_URI)
     _users_col = _mongo_client["gkin"]["users"]
     await _users_col.create_index("username", unique=True)
@@ -710,6 +715,11 @@ class FetchUrlRequest(BaseModel):
 
 class TimelineRequest(BaseModel):
     article: str
+
+class VerifyClaimsRequest(BaseModel):
+    claims: list[str]
+    max_claims: int = 5      # per-article cap on claims that run the loop
+    force_refresh: bool = False
 
 
 # ── Auth endpoints ─────────────────────────────────────────────────────────────
@@ -1187,19 +1197,29 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
         queries = [topic]
         core_claim = topic
 
-    # Step 2: run all 6 queries, 6 results each = up to 36 candidates
+    # Step 2: run all queries in parallel — 4 results each, deduped.
+    # Sequential search was the main reason /timeline hit nginx's 60s timeout.
+    async def _one_search(q: str) -> list[dict]:
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(_ddg_search, q, 4), timeout=10.0
+            )
+        except Exception:
+            return []
+    search_batches = await asyncio.gather(*[_one_search(q) for q in queries])
+
     all_urls: list[str] = []
     seen: set[str] = set()
-    for q in queries:
-        results = await asyncio.to_thread(_ddg_search, q, 6)
-        for r in results:
+    for batch in search_batches:
+        for r in batch:
             url = r.get("url", "")
             if url and url not in seen and not r.get("error"):
                 seen.add(url)
                 all_urls.append(url)
 
-    # Step 3: scrape up to 20 pages with full metadata
-    pages = await _scrape_pages_with_meta(all_urls[:20])
+    # Step 3: scrape up to 12 pages with full metadata (was 20 — still enough
+    # signal for the narrative analysis, halves worst-case scrape time)
+    pages = await _scrape_pages_with_meta(all_urls[:12])
 
     # Sort by date where available
     def _date_key(p):
@@ -1492,6 +1512,42 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     result["sources_used"] = kept_sources
 
     return result
+
+
+def _build_agentic_deps() -> AgenticDeps:
+    """Wire the agentic loop to this server's existing DuckDuckGo + trafilatura
+    + source-tier path. Injected so gkin.agentic never imports server."""
+    return AgenticDeps(
+        client=get_client(),
+        ddg_search=_ddg_search,
+        scrape_pages=_scrape_pages_with_meta,
+        source_tier=_source_tier,
+    )
+
+
+@app.post("/verify-claims")
+async def verify_claims_endpoint(req: VerifyClaimsRequest, _user: dict = Depends(require_auth)):
+    """Agentic, retrieval-grounded per-claim fact-checking.
+
+    Each claim runs the explicit state machine (extract -> query -> retrieve ->
+    ground -> emit) and returns an auditable SUPPORTED / CONTRADICTED /
+    INSUFFICIENT verdict carrying the exact source URLs + sentences. Grounded by
+    construction, claim-hash cached, capped at max_claims per request.
+
+    Independent of /analyze. This is the intended eventual replacement for the
+    ungrounded _verify_claim path, but /analyze is left unchanged for now.
+    """
+    if not req.claims:
+        raise HTTPException(400, "claims is required and must be non-empty")
+    deps = _build_agentic_deps()
+    verdicts = await verify_claims(
+        req.claims,
+        deps,
+        cache=_verdict_cache,
+        max_claims=req.max_claims,
+        force_refresh=req.force_refresh,
+    )
+    return {"count": len(verdicts), "verdicts": verdicts}
 
 
 # ── Agentic streaming chat ─────────────────────────────────────────────────────
@@ -1873,6 +1929,55 @@ def random_article(user: dict = Depends(require_auth)):
         "text": str(row.get("text", "")),
         "label": int(row.get("label", -1)),
     }
+
+
+@app.get("/benchmark")
+def benchmark():
+    """Latest GKIN benchmark numbers, read from disk.
+
+    Frontend uses this to render a live "How accurate is GKIN?" panel. Public
+    (no auth) — these are the same numbers the report exposes. Returns 404 if
+    the benchmark hasn't been run yet so the frontend can hide the panel.
+    """
+    bench_dir = pathlib.Path(__file__).parent / "benchmark" / "results"
+    payload: dict = {"available": False}
+    files = {
+        "ood_latest": "ood_benchmark.json",
+        "ood_liar": "ood_benchmark_liar.json",
+        "ood_gonzalo": "ood_benchmark_gonzalo.json",
+        "manipulation": "manipulation_benchmark.json",
+    }
+    for key, fname in files.items():
+        fp = bench_dir / fname
+        if not fp.exists():
+            continue
+        try:
+            payload[key] = json.loads(fp.read_text())
+            payload["available"] = True
+        except (OSError, json.JSONDecodeError):
+            continue
+
+    if not payload["available"]:
+        raise HTTPException(404, "No benchmark results on disk. Run `python benchmark/run_benchmark.py`.")
+
+    # Pull a compact, frontend-friendly headline from whichever OOD run is the
+    # truly-OOD one (LIAR by convention) so callers don't have to navigate the
+    # full payload to render the hero number.
+    primary = payload.get("ood_liar") or payload.get("ood_latest")
+    if primary:
+        gk = primary.get("gkin", {})
+        rb = primary.get("baseline_random", {})
+        payload["headline"] = {
+            "dataset": primary.get("metadata", {}).get("dataset"),
+            "gkin_accuracy": gk.get("accuracy"),
+            "random_baseline_accuracy": rb.get("accuracy"),
+            "delta_vs_random": primary.get("delta_vs_random"),
+            "n_total": primary.get("metadata", {}).get("n_total"),
+            "model_kind": primary.get("metadata", {}).get("model_kind"),
+            "run_at": primary.get("metadata", {}).get("run_at"),
+        }
+
+    return payload
 
 
 @app.get("/")

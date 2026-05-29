@@ -6,6 +6,18 @@ verifiable claim into an auditable SUPPORTED / CONTRADICTED / INSUFFICIENT
 verdict carrying the exact source URLs and sentences that justify it.
 """
 
+from .cache import VerdictCache
+from .controller import run_claim
+from .nodes import Deps
+from .service import verify_claims
 from .trace import configure_tracing, record_usage, trace
 
-__all__ = ["configure_tracing", "record_usage", "trace"]
+__all__ = [
+    "Deps",
+    "VerdictCache",
+    "configure_tracing",
+    "record_usage",
+    "run_claim",
+    "trace",
+    "verify_claims",
+]
