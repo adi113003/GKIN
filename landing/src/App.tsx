@@ -71,9 +71,9 @@ function Typewriter() {
   }, [displayed, deleting, phraseIdx]);
 
   return (
-    <span className="text-primary neon-text font-mono">
+    <span className="grad-accent font-mono font-bold tracking-tight">
       {displayed}
-      <span className="animate-pulse">█</span>
+      <span className="animate-pulse text-primary opacity-50 ml-1">|</span>
     </span>
   );
 }
@@ -167,27 +167,22 @@ const Hero = () => {
   useEffect(() => { setTimeout(() => setInView(true), 500); }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
-      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-        <ParticleCanvas />
-      </div>
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] border border-primary/10 rounded-full animate-[spin_60s_linear_infinite]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-dashed border-primary/15 rounded-full animate-[spin_40s_linear_infinite_reverse]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-primary/20 rounded-full animate-[spin_25s_linear_infinite]" />
+    <section className="relative min-h-screen flex items-center pt-24 pb-20 overflow-hidden">
+      <div className="absolute inset-0 z-0 pointer-events-none flex justify-center items-center opacity-40">
+        <div className="w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-primary/20 blur-[120px] rounded-full mix-blend-screen" />
       </div>
 
       <div className="relative z-10 w-full px-6 md:px-16 max-w-7xl mx-auto lg:grid lg:grid-cols-2 gap-16 items-center">
-        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.9, ease: "easeOut" }} className="space-y-6">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-container-highest/60 border border-primary/20 rounded-full backdrop-blur-sm">
-            <span className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#4ae176] animate-pulse" />
-            <span className="font-mono text-[10px] text-primary tracking-widest uppercase">Media Forensics · Live</span>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className="space-y-8">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-container-high/40 border border-outline-variant/50 rounded-full backdrop-blur-md shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(52,211,153,0.5)] animate-pulse" />
+            <span className="font-mono text-[10px] text-on-surface-variant tracking-widest uppercase font-semibold">Media Forensics · Live</span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold text-on-surface leading-tight tracking-tight">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-balance leading-[1.1] tracking-tight text-on-surface">
             Cut Through the Noise.<br />
-            <span className="text-primary neon-text">Detect the Lie.</span>
+            <span className="grad-accent">Detect the Lie.</span>
           </h1>
 
           <div className="h-8">
@@ -694,12 +689,8 @@ const Footer = () => (
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <div className="min-h-screen relative mesh-bg">
-      <div className="fixed inset-0 pointer-events-none z-[60] grain" />
-      <div className="fixed inset-0 pointer-events-none z-[61] overflow-hidden">
-        <div className="scanline absolute top-0 animate-scanline" />
-      </div>
-      <div className="fixed inset-0 pointer-events-none z-0 digital-abyss" />
+    <div className="min-h-screen relative mesh-bg bg-background text-on-background selection:bg-primary/30">
+      <div className="fixed inset-0 pointer-events-none z-[60] grain mix-blend-overlay opacity-30" />
       <div className="relative z-10">
         <Nav />
         <Hero />

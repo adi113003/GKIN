@@ -14,14 +14,12 @@ let lastAnalysis    = null;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (async () => {
-  const stored = await getStorage(["gkin_server","gkin_token","gkin_user","gkin_ext_theme"]);
+  const stored = await getStorage(["gkin_server","gkin_token","gkin_user","gkin_ext_theme", "gkin_pending_text"]);
   serverUrl  = stored.gkin_server || DEFAULT_SERVER;
   authToken  = stored.gkin_token  || "";
-  $("server-url").value = serverUrl;
 
-  // Apply saved theme
-  if (stored.gkin_ext_theme === "light") applyLightTheme();
-  else applyDarkTheme();
+  // Clear badge text
+  await chrome.action.setBadgeText({ text: "" });
 
   if (authToken) {
     try {
@@ -29,7 +27,22 @@ let lastAnalysis    = null;
       if (!r.ok) throw new Error();
       const d = await r.json();
       showAnalyzeSection(d.username);
-      loadCurrentPage();
+      
+      // Check for pending text from right-click context menu
+      if (stored.gkin_pending_text) {
+        currentPageData = { text: stored.gkin_pending_text, title: "Selected Text", url: "" };
+        $("page-title-text").textContent = "Selected Text";
+        $("chars-note").textContent = `${currentPageData.text.length.toLocaleString()} chars from selection`;
+        $("analyze-btn").disabled = false;
+        
+        // Clear it from storage so it doesn't trigger again
+        await setStorage({ gkin_pending_text: "" });
+        
+        // Auto-analyze
+        $("analyze-btn").click();
+      } else {
+        loadCurrentPage();
+      }
     } catch {
       await setStorage({gkin_token:"",gkin_user:""});
       authToken = "";
@@ -39,65 +52,6 @@ let lastAnalysis    = null;
     showAuthSection();
   }
 })();
-
-// ── Theme toggle ──────────────────────────────────────────────────────────────
-function applyDarkTheme() {
-  document.documentElement.removeAttribute("data-light");
-  $("theme-toggle").textContent = "🌙";
-  setStorage({gkin_ext_theme:"dark"});
-}
-function applyLightTheme() {
-  document.documentElement.setAttribute("data-light","");
-  $("theme-toggle").textContent = "💡";
-  setStorage({gkin_ext_theme:"light"});
-}
-$("theme-toggle").addEventListener("click", () => {
-  if (document.documentElement.hasAttribute("data-light")) applyDarkTheme();
-  else applyLightTheme();
-});
-
-// Light theme overrides via attribute selector in popup.html head style block
-const lightStyle = document.createElement("style");
-lightStyle.textContent = `
-  html[data-light] { filter: none; }
-  html[data-light] body { background:#ffffff; color:#111111; }
-  html[data-light] .header { background:#f4f4f4; border-color:rgba(0,0,0,0.1); }
-  html[data-light] .brand { color:#000000; }
-  html[data-light] .brand em { color:#8a5e10; }
-  html[data-light] .icon-btn { color:#555555; border-color:rgba(0,0,0,0.15); }
-  html[data-light] .icon-btn:hover { background:#e8e8e8; }
-  html[data-light] .settings-box { background:#f8f8f8; border-color:rgba(0,0,0,0.1); }
-  html[data-light] .settings-input { background:#ffffff; border-color:rgba(0,0,0,0.2); color:#111111; }
-  html[data-light] .btn-ghost { color:#333333; border-color:rgba(0,0,0,0.2); }
-  html[data-light] .btn-ghost:hover { background:#e8e8e8; }
-  html[data-light] .auth-field input { background:#ffffff; border-color:rgba(0,0,0,0.2); color:#111111; }
-  html[data-light] .auth-field input::placeholder { color:#aaaaaa; }
-  html[data-light] .btn-primary { background:#111111; color:#ffffff; }
-  html[data-light] .auth-label { color:#666666; }
-  html[data-light] .auth-switch { color:#666666; }
-  html[data-light] .user-info { color:#666666; }
-  html[data-light] .page-card { background:#f4f4f4; border-color:rgba(0,0,0,0.1); }
-  html[data-light] .page-card-label { color:#888888; }
-  html[data-light] .page-title-text { color:#333333; }
-  html[data-light] .chars-note { color:#888888; }
-  html[data-light] .btn-analyze { background:#111111; color:#ffffff; }
-  html[data-light] .result-card { background:#ffffff; border-color:rgba(0,0,0,0.1); }
-  html[data-light] .metric-section { border-color:rgba(0,0,0,0.08); }
-  html[data-light] .metric-header { color:#888888; }
-  html[data-light] .gauge-bg { stroke:#eeeeee; }
-  html[data-light] .gauge-denom { color:#888888; }
-  html[data-light] .tech-item { background:#f4f4f4; border-color:rgba(0,0,0,0.08); }
-  html[data-light] .tech-span { color:#444444; }
-  html[data-light] .cluster-row { color:#888888; border-color:rgba(0,0,0,0.08); }
-  html[data-light] .techniques-section { border-color:rgba(0,0,0,0.08); }
-  html[data-light] .section-label { color:#888888; }
-  html[data-light] .actions { border-color:rgba(0,0,0,0.08); }
-  html[data-light] .btn-open { color:#333333; border-color:rgba(0,0,0,0.2); }
-  html[data-light] .btn-open:hover { background:#f0f0f0; }
-  html[data-light] hr { border-color:rgba(0,0,0,0.1); }
-  html[data-light] .user-row { border-color:rgba(0,0,0,0.08); }
-`;
-document.head.appendChild(lightStyle);
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
 function showAuthSection()        { $("auth-section").style.display="block"; $("analyze-section").style.display="none"; }
@@ -224,24 +178,24 @@ function animateGauge(gaugeId, numId, value, color) {
 }
 
 function miColor(v) {
-  if (v >= 60) return "#cc3333";
-  if (v >= 40) return "#c09030";
-  if (v >= 20) return "#a0a030";
-  return "#2a8a18";
+  if (v >= 60) return "#f43f5e"; // Rose
+  if (v >= 40) return "#f59e0b"; // Amber
+  if (v >= 20) return "#eab308"; // Yellow
+  return "#10b981"; // Emerald
 }
 function trustColor(fc) {
-  if (fc <= 20) return "#2a8a18";
-  if (fc <= 40) return "#5a8a18";
-  if (fc <= 60) return "#c09030";
-  if (fc <= 80) return "#c06020";
-  return "#cc3333";
+  if (fc <= 20) return "#10b981"; // Emerald
+  if (fc <= 40) return "#84cc16"; // Lime
+  if (fc <= 60) return "#eab308"; // Yellow
+  if (fc <= 80) return "#f97316"; // Orange
+  return "#f43f5e"; // Rose
 }
 function aiColor(ac) {
-  if (ac <= 20) return "#2a8a18";
-  if (ac <= 40) return "#5a8a18";
-  if (ac <= 60) return "#3a6acc";
-  if (ac <= 80) return "#9050cc";
-  return "#b030cc";
+  if (ac <= 20) return "#10b981"; // Emerald
+  if (ac <= 40) return "#84cc16"; // Lime
+  if (ac <= 60) return "#6366f1"; // Indigo
+  if (ac <= 80) return "#8b5cf6"; // Violet
+  return "#d946ef"; // Fuchsia
 }
 
 function renderResult(a) {

@@ -3,9 +3,7 @@ import { Nav } from "@/components/sections/Nav";
 import { Hero } from "@/components/sections/Hero";
 import { HeadlineMarquee } from "@/components/sections/HeadlineMarquee";
 import { PipelineBeams } from "@/components/sections/PipelineBeams";
-import { FeatureAnalyzer } from "@/components/sections/FeatureAnalyzer";
-import { FeatureInputs } from "@/components/sections/FeatureInputs";
-import { FeatureCompare } from "@/components/sections/FeatureCompare";
+import { BentoGrid } from "@/components/sections/BentoGrid";
 import { StickyHow } from "@/components/sections/StickyHow";
 import { Stats } from "@/components/sections/Stats";
 import { FAQ } from "@/components/sections/FAQ";
@@ -20,9 +18,7 @@ export default function App() {
       <Hero />
       <HeadlineMarquee />
       <PipelineBeams />
-      <FeatureAnalyzer />
-      <FeatureInputs />
-      <FeatureCompare />
+      <BentoGrid />
       <StickyHow />
       <Stats />
       <FAQ />

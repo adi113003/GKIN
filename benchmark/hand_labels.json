@@ -1,0 +1,34 @@
+[
+  {
+    "_README": "Hand-labeled ground truth for the GKIN manipulation benchmark.",
+    "_instructions": [
+      "1. Add one object per labeled article. Required: article_id, ground_truth_fake.",
+      "2. Either set `text` directly OR set `url` (the runner will GET the URL and use the body).",
+      "3. ground_truth_fake: true if the article is factually fake/false. false if real.",
+      "4. ground_truth_manipulative: true if the article uses persuasion techniques",
+      "   (loaded language, appeal to fear/anger, glittering generalities, etc.),",
+      "   regardless of factual accuracy. A factually true article can still be manipulative.",
+      "5. Aim for >=30 entries with a roughly even real/fake split before running.",
+      "6. Delete this README block before the runner picks it up — or leave it; the runner",
+      "   skips any entry without an `article_id` field."
+    ]
+  },
+  {
+    "article_id": "example_001",
+    "url": "",
+    "title": "Reuters wire example — REPLACE before running",
+    "text": "PASTE THE FULL ARTICLE TEXT HERE (>=200 chars or the /analyze endpoint will reject it).",
+    "ground_truth_fake": false,
+    "ground_truth_manipulative": false,
+    "notes": "Example template entry. Replace text + flags with real labeled content."
+  },
+  {
+    "article_id": "example_002",
+    "url": "",
+    "title": "Clickbait example — REPLACE before running",
+    "text": "PASTE THE FULL ARTICLE TEXT HERE (>=200 chars or the /analyze endpoint will reject it).",
+    "ground_truth_fake": true,
+    "ground_truth_manipulative": true,
+    "notes": "Example template entry. Replace text + flags with real labeled content."
+  }
+]

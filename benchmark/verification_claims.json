@@ -1,0 +1,53 @@
+{
+  "_README": {
+    "purpose": "Labeled claim set for the agentic fact-checking loop (/verify-claims). NOT the ML classifier benchmark.",
+    "label_values": {
+      "true": "factually correct; correct verdict is SUPPORTED",
+      "false": "factually incorrect; correct verdict is CONTRADICTED",
+      "unverifiable": "opinion / no evidentiary consensus; correct behavior is to ABSTAIN (INSUFFICIENT)"
+    },
+    "fields": "claim_id, claim, label, category, post_cutoff (true if the fact postdates a typical LLM training cutoff, so a no-retrieval model must guess), note",
+    "scoring": "verifiable = {true,false}. coverage = decided/total; decided_accuracy = correct among decided; misleading_rate = wrong among decided (confidently wrong, the dangerous case). For unverifiable, correct = abstained."
+  },
+  "claims": [
+    {"claim_id": "t01", "claim": "Water boils at 100 degrees Celsius at sea level.", "label": "true", "category": "science", "post_cutoff": false},
+    {"claim_id": "t02", "claim": "The Great Pyramid of Giza is located in Egypt.", "label": "true", "category": "geography", "post_cutoff": false},
+    {"claim_id": "t03", "claim": "Mount Everest is the highest mountain above sea level.", "label": "true", "category": "geography", "post_cutoff": false},
+    {"claim_id": "t04", "claim": "The human heart has four chambers.", "label": "true", "category": "science", "post_cutoff": false},
+    {"claim_id": "t05", "claim": "World War II ended in 1945.", "label": "true", "category": "history", "post_cutoff": false},
+    {"claim_id": "t06", "claim": "The Berlin Wall fell in 1989.", "label": "true", "category": "history", "post_cutoff": false},
+    {"claim_id": "t07", "claim": "Light travels faster than sound.", "label": "true", "category": "science", "post_cutoff": false},
+    {"claim_id": "t08", "claim": "The Pacific Ocean is the largest ocean on Earth.", "label": "true", "category": "geography", "post_cutoff": false},
+    {"claim_id": "t09", "claim": "Insulin is used to treat diabetes.", "label": "true", "category": "health", "post_cutoff": false},
+    {"claim_id": "t10", "claim": "The James Webb Space Telescope launched in December 2021.", "label": "true", "category": "science", "post_cutoff": false},
+    {"claim_id": "t11", "claim": "DNA carries genetic information.", "label": "true", "category": "science", "post_cutoff": false},
+    {"claim_id": "t12", "claim": "The Great Barrier Reef is located off the coast of Australia.", "label": "true", "category": "geography", "post_cutoff": false},
+
+    {"claim_id": "f01", "claim": "Humans only use 10 percent of their brains.", "label": "false", "category": "science_myth", "post_cutoff": false},
+    {"claim_id": "f02", "claim": "The Great Wall of China is visible from the Moon with the naked eye.", "label": "false", "category": "myth", "post_cutoff": false},
+    {"claim_id": "f03", "claim": "Vaccines cause autism.", "label": "false", "category": "health", "post_cutoff": false},
+    {"claim_id": "f04", "claim": "5G networks spread COVID-19.", "label": "false", "category": "conspiracy", "post_cutoff": false},
+    {"claim_id": "f05", "claim": "The Earth is flat.", "label": "false", "category": "conspiracy", "post_cutoff": false},
+    {"claim_id": "f06", "claim": "The 1969 Moon landing was faked.", "label": "false", "category": "conspiracy", "post_cutoff": false},
+    {"claim_id": "f07", "claim": "Albert Einstein failed mathematics in school.", "label": "false", "category": "history_myth", "post_cutoff": false},
+    {"claim_id": "f08", "claim": "Goldfish have a memory span of only three seconds.", "label": "false", "category": "science_myth", "post_cutoff": false},
+    {"claim_id": "f09", "claim": "Climate change is a hoax invented by China.", "label": "false", "category": "politics", "post_cutoff": false},
+    {"claim_id": "f10", "claim": "Eating carrots dramatically improves night vision in people who already have normal eyesight.", "label": "false", "category": "health_myth", "post_cutoff": false},
+    {"claim_id": "f11", "claim": "Lightning never strikes the same place twice.", "label": "false", "category": "science_myth", "post_cutoff": false},
+    {"claim_id": "f12", "claim": "Bats are blind.", "label": "false", "category": "science_myth", "post_cutoff": false},
+
+    {"claim_id": "r01", "claim": "Donald Trump won the 2024 United States presidential election.", "label": "true", "category": "recent", "post_cutoff": true},
+    {"claim_id": "r02", "claim": "The 2024 Summer Olympics were held in Paris.", "label": "true", "category": "recent", "post_cutoff": true},
+    {"claim_id": "r03", "claim": "Argentina won the 2022 FIFA World Cup.", "label": "true", "category": "recent", "post_cutoff": true},
+    {"claim_id": "r04", "claim": "Queen Elizabeth II died in 2022.", "label": "true", "category": "recent", "post_cutoff": true},
+    {"claim_id": "r05", "claim": "ChatGPT was publicly released by OpenAI in 2022.", "label": "true", "category": "recent", "post_cutoff": false},
+    {"claim_id": "r06", "claim": "The 2026 FIFA World Cup will be hosted solely by the United States.", "label": "false", "category": "recent", "post_cutoff": true, "note": "Co-hosted by USA, Canada, and Mexico."},
+
+    {"claim_id": "u01", "claim": "Coffee is the best drink in the world.", "label": "unverifiable", "category": "opinion", "post_cutoff": false},
+    {"claim_id": "u02", "claim": "Pineapple does not belong on pizza.", "label": "unverifiable", "category": "opinion", "post_cutoff": false},
+    {"claim_id": "u03", "claim": "Jazz is more sophisticated than pop music.", "label": "unverifiable", "category": "opinion", "post_cutoff": false},
+    {"claim_id": "u04", "claim": "Cats make better pets than dogs.", "label": "unverifiable", "category": "opinion", "post_cutoff": false},
+    {"claim_id": "u05", "claim": "There is intelligent extraterrestrial life elsewhere in the universe.", "label": "unverifiable", "category": "no_consensus", "post_cutoff": false},
+    {"claim_id": "u06", "claim": "The death penalty is morally wrong.", "label": "unverifiable", "category": "moral", "post_cutoff": false}
+  ]
+}

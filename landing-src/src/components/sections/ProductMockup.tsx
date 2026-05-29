@@ -18,9 +18,9 @@ const TECHS = [
 ];
 
 const TONE = {
-  v: "bg-[rgba(155,123,255,0.08)] border-[rgba(155,123,255,0.18)] text-[#c2afff]",
-  r: "bg-[rgba(255,93,99,0.08)] border-[rgba(255,93,99,0.22)] text-[#ff8d92]",
-  b: "bg-[rgba(75,139,255,0.08)] border-[rgba(75,139,255,0.22)] text-[#8bb5ff]",
+  v: "bg-[rgba(129,140,248,0.1)] border-[rgba(129,140,248,0.25)] text-[#a5b4fc]", // Indigo (Premium Primary)
+  r: "bg-[rgba(248,113,113,0.1)] border-[rgba(248,113,113,0.25)] text-[#fca5a5]", // Red
+  b: "bg-[rgba(56,189,248,0.1)] border-[rgba(56,189,248,0.25)] text-[#7dd3fc]", // Cyan
 };
 
 function Gauge({ target = 82, active }: { target?: number; active: boolean }) {
@@ -249,9 +249,9 @@ function ClaimRow({
   last?: boolean;
 }) {
   const tones = {
-    t: "bg-[rgba(74,222,128,0.1)] text-brand-green border-[rgba(74,222,128,0.22)]",
-    f: "bg-[rgba(255,93,99,0.1)] text-brand-red border-[rgba(255,93,99,0.22)]",
-    u: "bg-[rgba(255,181,71,0.1)] text-brand-amber border-[rgba(255,181,71,0.22)]",
+    t: "bg-[rgba(52,211,153,0.1)] text-brand-green border-[rgba(52,211,153,0.25)]", // Emerald
+    f: "bg-[rgba(248,113,113,0.1)] text-brand-red border-[rgba(248,113,113,0.25)]", // Red
+    u: "bg-[rgba(251,191,36,0.1)] text-brand-amber border-[rgba(251,191,36,0.25)]", // Amber
   };
   const text = { t: "TRUE", f: "FALSE", u: "UNVRF" }[verdict];
   return (

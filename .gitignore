@@ -7,6 +7,9 @@ __pycache__/
 users.json
 .gkin_cache/
 
+# Benchmark downloaded datasets (21M: liar zip + csvs)
+benchmark/_cache/
+
 # Local tooling
 .claude/
 

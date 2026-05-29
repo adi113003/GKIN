@@ -1,78 +1,73 @@
 @import "tailwindcss";
 
 @theme {
-  /* Surfaces */
-  --color-background: #13121b;
-  --color-surface: #13121b;
-  --color-surface-dim: #13121b;
-  --color-surface-bright: #393842;
-  --color-surface-container-lowest: #0e0d16;
-  --color-surface-container-low: #1b1b24;
-  --color-surface-container: #1f1f28;
-  --color-surface-container-high: #2a2933;
-  --color-surface-container-highest: #35343e;
-  --color-surface-variant: #35343e;
+  /* Surfaces - Premium Dark Mode (Zinc) */
+  --color-background: #09090b;
+  --color-surface: #09090b;
+  --color-surface-dim: #09090b;
+  --color-surface-bright: #27272a;
+  --color-surface-container-lowest: #000000;
+  --color-surface-container-low: #18181b;
+  --color-surface-container: #18181b;
+  --color-surface-container-high: #27272a;
+  --color-surface-container-highest: #3f3f46;
+  --color-surface-variant: #27272a;
 
-  /* Primary — indigo */
-  --color-primary: #c3c0ff;
-  --color-on-primary: #1d00a5;
+  /* Primary — Crisp Indigo */
+  --color-primary: #818cf8;
+  --color-on-primary: #ffffff;
   --color-primary-container: #4f46e5;
-  --color-on-primary-container: #dad7ff;
-  --color-primary-fixed: #e2dfff;
-  --color-primary-fixed-dim: #c3c0ff;
-  --color-on-primary-fixed: #0f0069;
-  --color-on-primary-fixed-variant: #3323cc;
-  --color-inverse-primary: #4d44e3;
-  --color-surface-tint: #c3c0ff;
+  --color-on-primary-container: #e0e7ff;
+  --color-primary-fixed: #e0e7ff;
+  --color-primary-fixed-dim: #a5b4fc;
+  --color-on-primary-fixed: #1e1b4b;
+  --color-on-primary-fixed-variant: #312e81;
+  --color-inverse-primary: #4338ca;
+  --color-surface-tint: #818cf8;
 
-  /* Secondary — green */
-  --color-secondary: #4ae176;
-  --color-on-secondary: #003915;
-  --color-secondary-container: #00b954;
-  --color-on-secondary-container: #004119;
-  --color-secondary-fixed: #6bff8f;
-  --color-secondary-fixed-dim: #4ae176;
-  --color-on-secondary-fixed: #002109;
-  --color-on-secondary-fixed-variant: #005321;
+  /* Secondary — Emerald (Muted) */
+  --color-secondary: #34d399;
+  --color-on-secondary: #022c22;
+  --color-secondary-container: #059669;
+  --color-on-secondary-container: #d1fae5;
+  --color-secondary-fixed: #6ee7b7;
+  --color-secondary-fixed-dim: #34d399;
+  --color-on-secondary-fixed: #022c22;
+  --color-on-secondary-fixed-variant: #064e3b;
 
-  /* Tertiary — red */
-  --color-tertiary: #ffb3ad;
-  --color-on-tertiary: #68000a;
-  --color-tertiary-container: #bc1d25;
-  --color-on-tertiary-container: #ffd0cc;
-  --color-tertiary-fixed: #ffdad7;
-  --color-tertiary-fixed-dim: #ffb3ad;
-  --color-on-tertiary-fixed: #410004;
-  --color-on-tertiary-fixed-variant: #930013;
+  /* Tertiary — Amber (Muted) */
+  --color-tertiary: #fbbf24;
+  --color-on-tertiary: #451a03;
+  --color-tertiary-container: #d97706;
+  --color-on-tertiary-container: #fef3c7;
+  --color-tertiary-fixed: #fde68a;
+  --color-tertiary-fixed-dim: #fcd34d;
+  --color-on-tertiary-fixed: #451a03;
+  --color-on-tertiary-fixed-variant: #78350f;
 
-  /* Error */
-  --color-error: #ffb4ab;
-  --color-on-error: #690005;
-  --color-error-container: #93000a;
-  --color-on-error-container: #ffdad6;
+  /* Error - Soft Red */
+  --color-error: #f87171;
+  --color-on-error: #450a0a;
+  --color-error-container: #dc2626;
+  --color-on-error-container: #fee2e2;
 
   /* Ink */
-  --color-on-background: #e4e1ee;
-  --color-on-surface: #e4e1ee;
-  --color-on-surface-variant: #c7c4d8;
-  --color-outline: #918fa1;
-  --color-outline-variant: #464555;
-  --color-inverse-surface: #e4e1ee;
-  --color-inverse-on-surface: #302f39;
+  --color-on-background: #fafafa;
+  --color-on-surface: #fafafa;
+  --color-on-surface-variant: #a1a1aa;
+  --color-outline: #52525b;
+  --color-outline-variant: #3f3f46;
+  --color-inverse-surface: #fafafa;
+  --color-inverse-on-surface: #18181b;
 
   /* Fonts */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", SFMono-Regular, monospace;
 
   /* Animations */
-  --animate-scanline: scanline 6s linear infinite;
-  --animate-marquee: marquee 35s linear infinite;
+  --animate-marquee: marquee 40s linear infinite;
   --animate-shimmer: shimmer 2s infinite;
 
-  @keyframes scanline {
-    0%   { transform: translateY(-100%); }
-    100% { transform: translateY(100vh); }
-  }
   @keyframes marquee {
     0%   { transform: translateX(0); }
     100% { transform: translateX(-33.333%); }
@@ -97,58 +92,50 @@
 
 @layer utilities {
   .grain {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.035;
-  }
-
-  .scanline {
-    width: 100%;
-    height: 200px;
-    background: linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(195, 192, 255, 0.06) 50%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-
-  .digital-abyss {
-    background-image:
-      radial-gradient(circle at 1px 1px, rgba(195, 192, 255, 0.04) 1px, transparent 0),
-      linear-gradient(to right,  rgba(195, 192, 255, 0.015) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(195, 192, 255, 0.015) 1px, transparent 1px);
-    background-size: 40px 40px, 120px 120px, 120px 120px;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    mix-blend-mode: overlay;
   }
 
   .glass-card {
-    backdrop-filter: blur(20px);
-    background: rgba(31, 31, 40, 0.55);
-    border: 1px solid rgba(195, 192, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(24, 24, 27, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 12px;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.35s ease,
-                border-color 0.35s ease;
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
   }
   .glass-card:hover {
-    border-color: rgba(195, 192, 255, 0.18);
-    box-shadow: 0 0 30px rgba(79, 70, 229, 0.08);
-  }
-
-  .neon-text {
-    text-shadow: 0 0 12px rgba(195, 192, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.3);
   }
 
   .glow-border {
-    box-shadow: 0 0 6px 0 rgba(195, 192, 255, 0.35),
-                inset 0 0 30px rgba(195, 192, 255, 0.02);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   }
 
+  .grad-title {
+    background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .grad-accent {
+    background: linear-gradient(180deg, var(--color-primary) 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Soft premium background */
   .mesh-bg {
+    background-color: var(--color-background);
     background-image:
-      radial-gradient(at 0% 0%,   rgba(79, 70, 229, 0.18) 0px, transparent 55%),
-      radial-gradient(at 50% 0%,  rgba(0, 185, 84, 0.08)  0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(195, 192, 255, 0.12) 0px, transparent 55%),
-      radial-gradient(at 50% 50%, rgba(147, 0, 10, 0.04)  0px, transparent 50%);
+      radial-gradient(ellipse at 50% -20%, rgba(129, 140, 248, 0.12), transparent 60%);
     background-attachment: fixed;
   }
 }

@@ -11,29 +11,29 @@ import {
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-// Aligned with landing-src tailwind brand + ink ramp.
+// Premium SaaS Dark Mode Ramp
 const P = {
-  bg:       "#050505",
-  nav:      "rgba(8,8,12,0.72)",       // glass over mesh
-  card:     "rgba(255,255,255,0.03)",
-  panel:    "rgba(255,255,255,0.02)",
-  border:   "rgba(255,255,255,0.08)",
-  border2:  "rgba(255,255,255,0.14)",
-  border3:  "rgba(255,255,255,0.24)",
-  accent:    "#9b7bff",                // brand-violet
-  accentCyan:"#5dd9ff",                // brand-cyan
-  accentRose:"#ff6b8b",                // brand-rose
-  accentDim: "rgba(155,123,255,0.12)",
-  accentGlow:"rgba(155,123,255,0.28)",
+  bg:       "#09090b",
+  nav:      "rgba(9,9,11,0.72)",       // glass over mesh
+  card:     "rgba(24,24,27,0.5)",
+  panel:    "rgba(24,24,27,0.4)",
+  border:   "rgba(255,255,255,0.06)",
+  border2:  "rgba(255,255,255,0.12)",
+  border3:  "rgba(255,255,255,0.20)",
+  accent:    "#818cf8",                // primary (indigo)
+  accentCyan:"#38bdf8",                // cyan
+  accentRose:"#fb7185",                // rose
+  accentDim: "rgba(129,140,248,0.12)",
+  accentGlow:"rgba(129,140,248,0.28)",
   text:     "#fafafa",                 // ink-DEFAULT
   text2:    "#d4d4d8",                 // ink-2
   muted:    "#a1a1aa",                 // ink-3
   faint:    "#52525b",                 // ink-5
   body:     "#d4d4d8",
-  green:    "#4ade80",                 // brand-green
-  red:      "#ff5d63",                 // brand-red
-  yellow:   "#ffb547",                 // brand-amber
-  blue:     "#4b8bff",                 // brand-blue
+  green:    "#34d399",                 // emerald
+  red:      "#f87171",                 // red
+  yellow:   "#fbbf24",                 // amber
+  blue:     "#60a5fa",                 // blue
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────

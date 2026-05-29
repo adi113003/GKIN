@@ -22,31 +22,31 @@
     text-wrap: balance;
   }
   .grad-title {
-    background: linear-gradient(120deg, #fff 0%, #c8c8d0 40%, #6f6f78 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .grad-accent {
-    background: linear-gradient(120deg, #5dd9ff 0%, #9b7bff 60%, #ff6b8b 100%);
+    background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .grad-meter {
-    background: linear-gradient(120deg, #fff, #5dd9ff);
+    background: linear-gradient(120deg, #ffffff, #818cf8);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .grad-feature-h {
-    background: linear-gradient(120deg, #fff 0%, #b8b8c0 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .grad-feature-em {
-    background: linear-gradient(120deg, #5dd9ff 0%, #9b7bff 100%);
+    background: linear-gradient(180deg, #818cf8 0%, #4f46e5 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;

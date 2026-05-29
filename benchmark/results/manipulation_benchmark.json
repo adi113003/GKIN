@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "run_at": "2026-05-25T02:31:32.340789+00:00",
+    "server": "http://localhost:8000",
+    "n_labels": 2,
+    "n_scored": 0,
+    "n_uncertain_verdict": 0,
+    "seed": 42
+  },
+  "accuracy_overall_includes_uncertain": null,
+  "accuracy_on_decided_only": null,
+  "false_positive_rate": null,
+  "false_negative_rate": null,
+  "confusion_matrix": {
+    "tp": 0,
+    "tn": 0,
+    "fp": 0,
+    "fn": 0,
+    "uncertain": 0
+  },
+  "manipulation_index_vs_truth_pearson": null,
+  "rows": [
+    {
+      "article_id": "example_001",
+      "url": "",
+      "ground_truth_fake": false,
+      "ground_truth_manipulative": false,
+      "error": "no_text"
+    },
+    {
+      "article_id": "example_002",
+      "url": "",
+      "ground_truth_fake": true,
+      "ground_truth_manipulative": true,
+      "error": "no_text"
+    }
+  ]
+}

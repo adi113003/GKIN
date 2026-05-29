@@ -13,13 +13,13 @@ export default {
           5: "#52525b",
         },
         brand: {
-          blue: "#4b8bff",
-          cyan: "#5dd9ff",
-          violet: "#9b7bff",
-          amber: "#ffb547",
-          rose: "#ff6b8b",
-          green: "#4ade80",
-          red: "#ff5d63",
+          blue: "#818cf8",     /* primary */
+          cyan: "#38bdf8",     /* secondary accent */
+          violet: "#4f46e5",   /* darker primary */
+          amber: "#fbbf24",    
+          rose: "#f87171",     
+          green: "#34d399",    
+          red: "#f87171",      
         },
       },
       fontFamily: {

@@ -7,19 +7,19 @@
 <style>
 /* ── Base ── */
 :root {
-  --bg:        #07080f;
-  --bg-2:      #0d0f1a;
-  --bg-3:      #141620;
-  --ink:       #f0f0f0;
-  --ink-2:     #c8c8c8;
-  --ink-3:     #888899;
-  --border:    rgba(255,255,255,0.10);
-  --border-2:  rgba(255,255,255,0.20);
-  --gold:      #c8963c;
-  --red:       #cc3333;
-  --green:     #2a8a18;
-  --blue:      #3a6acc;
-  --purple:    #9050cc;
+  --bg:        #09090b; /* Zinc 950 */
+  --bg-2:      #18181b; /* Zinc 900 */
+  --bg-3:      #27272a; /* Zinc 800 */
+  --ink:       #fafafa; /* Zinc 50 */
+  --ink-2:     #e4e4e7; /* Zinc 200 */
+  --ink-3:     #a1a1aa; /* Zinc 400 */
+  --border:    rgba(255,255,255,0.08);
+  --border-2:  rgba(255,255,255,0.14);
+  --gold:      #eab308; /* Amber 500 */
+  --red:       #f43f5e; /* Rose 500 */
+  --green:     #10b981; /* Emerald 500 */
+  --blue:      #6366f1; /* Indigo 500 */
+  --purple:    #8b5cf6; /* Violet 500 */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { width: 400px; }
@@ -38,10 +38,11 @@ body {
   background: var(--bg-2);
 }
 .brand {
-  font-size: 16px; font-weight: 700; letter-spacing: 0.06em;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--ink);
+  display: flex; align-items: center; gap: 6px;
 }
-.brand em { color: var(--gold); font-style: normal; font-weight: 400; font-size: 12px; letter-spacing: 0.14em; }
+.brand em { color: var(--blue); font-style: normal; font-weight: 600; font-size: 11px; letter-spacing: 0.1em; background: rgba(99,102,241,0.15); padding: 2px 6px; border-radius: 4px; }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .icon-btn {
   background: transparent; border: 1px solid var(--border);
@@ -125,8 +126,9 @@ body {
 
 /* ── Page info ── */
 .page-card {
-  background: var(--bg-3); border: 1px solid var(--border);
-  border-radius: 6px; padding: 10px 12px; margin-bottom: 10px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 .page-card-label {
   font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
@@ -252,9 +254,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 
 <!-- Header -->
 <div class="header">
-  <div class="brand">GKIN <em>/ TRUTH NAVIGATOR</em></div>
+  <div class="brand">GKIN <em>NAVIGATOR</em></div>
   <div class="header-right">
-    <button class="icon-btn" id="theme-toggle" title="Toggle light/dark">🌙</button>
     <button class="icon-btn" id="settings-toggle" title="Server settings">⚙</button>
   </div>
 </div>

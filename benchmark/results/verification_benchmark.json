@@ -1,0 +1,83 @@
+{
+  "metadata": {
+    "run_at": "2026-05-29T21:03:12.534420+00:00",
+    "n_claims": 6,
+    "server": "http://localhost:8000",
+    "seed": 42,
+    "systems": [
+      "gkin"
+    ]
+  },
+  "metrics": {
+    "gkin": {
+      "n_verifiable": 6,
+      "coverage": 0.0,
+      "decided_accuracy": null,
+      "misleading_rate": null,
+      "overall_accuracy_abstain_as_wrong": 0.0,
+      "recent_accuracy": null,
+      "n_recent": 0,
+      "opinion_correct_abstention": null,
+      "n_opinion": 0,
+      "wrong_claim_ids": []
+    }
+  },
+  "predictions": {
+    "gkin": {
+      "t01": {
+        "verdict": "insufficient",
+        "confidence": 0.0,
+        "low_confidence": false,
+        "n_evidence": 0,
+        "iterations": 8,
+        "retries": 1,
+        "evidence_urls": []
+      },
+      "t02": {
+        "verdict": "insufficient",
+        "confidence": 0.0,
+        "low_confidence": false,
+        "n_evidence": 0,
+        "iterations": 8,
+        "retries": 1,
+        "evidence_urls": []
+      },
+      "t03": {
+        "verdict": "insufficient",
+        "confidence": 0.0,
+        "low_confidence": false,
+        "n_evidence": 0,
+        "iterations": 7,
+        "retries": 1,
+        "evidence_urls": []
+      },
+      "t04": {
+        "verdict": "insufficient",
+        "confidence": 0.0,
+        "low_confidence": false,
+        "n_evidence": 0,
+        "iterations": 8,
+        "retries": 1,
+        "evidence_urls": []
+      },
+      "t05": {
+        "verdict": "insufficient",
+        "confidence": 0.0,
+        "low_confidence": false,
+        "n_evidence": 0,
+        "iterations": 8,
+        "retries": 1,
+        "evidence_urls": []
+      },
+      "t06": {
+        "verdict": "insufficient",
+        "confidence": 0.0,
+        "low_confidence": false,
+        "n_evidence": 0,
+        "iterations": 7,
+        "retries": 1,
+        "evidence_urls": []
+      }
+    }
+  }
+}

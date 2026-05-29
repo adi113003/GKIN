@@ -1,0 +1,1001 @@
+text_preview,ground_truth,distilbert_prediction,distilbert_confidence,prob_real,prob_fake,text_length,source_dataset,correct
+"A new Colorado law literally allows residents to print ballots from their home computers, then encourages them to turn b",false,fake,0.9719,0.0281,0.9719,23,liar,1
+Says the United States has treaties with apparently 69 countries where we are obligated to defend their borders. And the,barely-true,fake,0.8775,0.1225,0.8775,30,liar,1
+"While Mayor Kenney personally doesnt support DROP, he cant fault highly qualified city employees for appropriately utili",false,fake,0.8995,0.1005,0.8995,23,liar,1
+"Did you know under President Obama family health care premiums have increased $4,154 on the average?",barely-true,fake,0.9603,0.0397,0.9603,16,liar,1
+Theres going to be a slowdown and delays in flights as a result of the sequester.,mostly-true,fake,0.8828,0.1172,0.8828,16,liar,0
+"Republicans actually doctored emails between administration officials about Benghazi. Then, they released them to the pr",barely-true,fake,0.9215,0.0785,0.9215,23,liar,1
+Regulations on developers have thwarted construction on county-owned land in Milwaukees downtown Park East corridor.,barely-true,fake,0.9566,0.0434,0.9566,15,liar,1
+Recent data showed Nevada ranks 50th in the money received from the stimulus bill.,false,fake,0.875,0.125,0.875,14,liar,1
+"Says McCain ""voted to let governments charge rape victims"" for forensic exams.",pants-fire,fake,0.8765,0.1235,0.8765,12,liar,1
+"Although we have twice the population of Greece, the state of Florida employs three times fewer government employees.",half-true,fake,0.8282,0.1718,0.8282,18,liar,0
+"Wisconsins criminal threshold for drunken-driving is way out of line with states surrounding us, which have the second o",barely-true,fake,0.8954,0.1046,0.8954,22,liar,1
+"If you want to see the jobs that Ive saved and created in this storm he helped create, go anywhere in Ohio.",mostly-true,fake,0.7679,0.2321,0.7679,22,liar,0
+Says Denzel Washington supports Donald Trump and speaks out against Barack Obama.,pants-fire,fake,0.9364,0.0636,0.9364,12,liar,1
+Says Barack Obama promised gasoline at $2.50 a gallon.,false,fake,0.9562,0.0438,0.9562,9,liar,1
+Says Ted Cruz was just bribed by the Kochs to introduce a bill that would give them and their allies Americas national f,pants-fire,fake,0.9047,0.0953,0.9047,37,liar,1
+On the success of Cash for Clunkers,false,fake,0.9159,0.0841,0.9159,7,liar,1
+Congress has spent 66 of the first 100 days of this term in recess.,mostly-true,fake,0.7653,0.2347,0.7653,14,liar,0
+"The centerpiece of Senator McCain's education policy is to increase the voucher program in D.C. by 2,000 slots.",false,fake,0.863,0.137,0.863,18,liar,1
+"For every single illegal immigrant family in this country, it costs $20,000 it costs us $20,000; $20,000 in infrastructu",barely-true,fake,0.9088,0.0912,0.9088,26,liar,1
+"After J.D. Hayworth ""was voted out of Congress, he became a registered lobbyist"" who was ""paid thousands by a Florida co",true,fake,0.9522,0.0478,0.9522,31,liar,0
+Weve doubled our use of renewable energy.,barely-true,fake,0.8573,0.1427,0.8573,7,liar,1
+A World Health Organization report shows that more people are dying of TB.,half-true,fake,0.9556,0.0444,0.9556,13,liar,0
+North Koreahas over two-dozennuclear warheads.,half-true,fake,0.8677,0.1323,0.8677,5,liar,0
+"And while (Ted) Strickland proposed cuts for services for children, he wasted over $250,000 remodeling his bathrooms at ",pants-fire,fake,0.9291,0.0709,0.9291,21,liar,1
+Ninety six percent of employers in the Granite State are considered small businesses.,true,real,0.6206,0.6206,0.3794,13,liar,1
+"The governors not taking his own fiscal advice. ... In the first fiscal quarter of this year, weve seen a 13.5 percent i",half-true,fake,0.6697,0.3303,0.6697,37,liar,0
+"Grateful insurance company executives and their lobbyists from Bermuda gave McCain $50,000.",true,fake,0.7932,0.2068,0.7932,12,liar,0
+"Terry McAuliffe wants to raise your taxes $1,700 to pay for his infinite promises.",false,fake,0.9638,0.0362,0.9638,14,liar,1
+"In Milwaukee County, juveniles arrested for car theft get sent immediately home, because under the point system in juven",barely-true,fake,0.8805,0.1195,0.8805,29,liar,1
+A bill by Earl Blumenauer would mandate GPS tracking devices on all our vehicles.,pants-fire,fake,0.7494,0.2506,0.7494,14,liar,1
+"Georgia has lost more than 124,000 jobs and the unemployment rate has increased since the stimulus passed",mostly-true,fake,0.85,0.15,0.85,17,liar,0
+The budget I managed at the Department of Education was more than $60 million.,mostly-true,fake,0.7153,0.2847,0.7153,14,liar,0
+Tom Barrett voted for the largest tax increase in history ... raising taxes on gas and Social Security.,barely-true,fake,0.7455,0.2545,0.7455,18,liar,1
+Bing Energy said it decided to move to Florida because of Gov. Rick Scotts plan to eliminate the corporate tax.,half-true,fake,0.7703,0.2297,0.7703,20,liar,0
+"Says Texas General Land Office has earned the school children of Texas $451,932.89 on wind leases that haven't produced ",true,fake,0.7782,0.2218,0.7782,23,liar,0
+Borrowing in my 2015-17 state budget is less than half that in my predecessors last budget and the lowest it has been in,mostly-true,real,0.5938,0.5938,0.4062,25,liar,1
+"Health insurance companies are making record profits, right now.",false,fake,0.925,0.075,0.925,9,liar,1
+Says that Rep. Betty Sutton would rather riot with Occupy (Wall Street) than stand up for Ohio families.,pants-fire,fake,0.9178,0.0822,0.9178,18,liar,1
+Minnesotas advantage in economic growth has been having Republicans in charge of at least one part of government for all,false,fake,0.7012,0.2988,0.7012,38,liar,1
+The Koch network (is) spending more money (in a Senate race) in Ohio than anywhere else in the country.,true,fake,0.8898,0.1102,0.8898,19,liar,0
+"Under President Barack Obama, more Americans are in poverty ... than at any time since the Census Bureau began keeping r",half-true,fake,0.7591,0.2409,0.7591,27,liar,0
+The Arab Spring drove up gas prices.,half-true,fake,0.7613,0.2387,0.7613,7,liar,0
+"Says the federal health care law upheld by the Supreme Court has improved or saved the lives of more than 4,000 Texans o",true,fake,0.8916,0.1084,0.8916,32,liar,0
+Says the Texas State Board of Education is considering eliminating references to Christmas and the Constitution in textb,pants-fire,fake,0.8791,0.1209,0.8791,18,liar,1
+"Georgia has more than 700 law enforcement agencies, and fewer than 20 percent of them are state-certified.",mostly-true,fake,0.5339,0.4661,0.5339,17,liar,0
+The budget currently being debated significantly decreases the use of one-time resources.,true,fake,0.8658,0.1342,0.8658,12,liar,0
+Says Jonathan Gruber was some adviser who never worked on our staff.,barely-true,fake,0.7791,0.2209,0.7791,12,liar,1
+Toomey crossed party lines to stop gun sales to suspects on the terror watch list.,barely-true,fake,0.9486,0.0514,0.9486,15,liar,1
+(The Opportunity Scholarship Act) would be funded directly from public school budgets. So it would absolutely take money,mostly-true,fake,0.9415,0.0585,0.9415,31,liar,0
+Says Barack Obama said that ordinary men and women are too small-minded to govern their own affairs and that individuals,pants-fire,fake,0.7152,0.2848,0.7152,28,liar,1
+U.S. Rep. Scott Rigell wants gun owners in a federal registration system.,pants-fire,fake,0.9716,0.0284,0.9716,12,liar,1
+Jack Berry voted for a plan to cut $23.8 million from our schools.,barely-true,fake,0.8007,0.1993,0.8007,13,liar,1
+"Right now, 50 percent of Florida students leaving high school cannot read at grade level.",mostly-true,fake,0.9863,0.0137,0.9863,15,liar,0
+Existing law right now requires 700 miles of double-layered border fencing on the Mexico border.,false,fake,0.8162,0.1838,0.8162,15,liar,1
+"Says the average Ohio student graduates from a four-year college or university with nearly $27,000 in tuition debt.",half-true,fake,0.8757,0.1243,0.8757,18,liar,0
+More than one in five of veterans aged 20 to 24 cant find a job to support their family or to ease the transition to civ,mostly-true,fake,0.9304,0.0696,0.9304,27,liar,0
+Wisconsin is the only state that allows parents or guardians to purchase alcohol for their children regardless of whethe,false,fake,0.6953,0.3047,0.6953,31,liar,1
+Sixty percent of New Jersey doctors do not accept Medicaid patients.,true,fake,0.618,0.382,0.618,11,liar,0
+"Already, the Affordable Care Act is helping to slow the growth of (Medicares) health care costs.",half-true,fake,0.8265,0.1735,0.8265,16,liar,0
+The crime rate in some Atlanta neighborhoods has dropped by 35 to 51 percent.,false,fake,0.773,0.227,0.773,14,liar,1
+Says Ron Johnson calls Social Security a Ponzi scheme and wants to privatize the program.,half-true,fake,0.8898,0.1102,0.8898,15,liar,0
+Says he never donates to Democrats while Paul Workman contributes to Democrat Kirk Watson and other Democrats running ag,half-true,fake,0.8149,0.1851,0.8149,20,liar,0
+I didnt try to push a bill to reduce lottery scholarship proceeds for students.,false,fake,0.8717,0.1283,0.8717,14,liar,1
+Says Rick Scotts proposal for election reform only mandates 48 hours of early voting.,mostly-true,fake,0.8281,0.1719,0.8281,14,liar,0
+"Barack Obama ""openly supported (opposition leader) Raila Odinga during his visit to Africa in 2006.""",false,fake,0.847,0.153,0.847,15,liar,1
+Says Barack Obama and his team are socialists in every respect of the word.,pants-fire,fake,0.9326,0.0674,0.9326,14,liar,1
+Ron Johnson is willing to hand over the Great Lakes to the oil companies.,barely-true,fake,0.9035,0.0965,0.9035,14,liar,1
+"In the past four or five presidential elections, people who poll high at the beginning are not the people who end up bei",barely-true,fake,0.8693,0.1307,0.8693,25,liar,1
+"Says he turned down a Medicaid expansion under Obamacare, but because of actions he took, for the first time in Wisconsi",mostly-true,fake,0.9263,0.0737,0.9263,30,liar,0
+Says Obama sent $450 million to China to build a wind farm in Texas.,pants-fire,fake,0.9217,0.0783,0.9217,14,liar,1
+"Last year, handguns killed 48 people in Japan, 8 in Great Britain, 34 in Switzerland, 52 in Canada, 58 in Israel, 21 in ",half-true,fake,0.6406,0.3594,0.6406,34,liar,0
+Americans now spend 100 days out of the year working for government before we even start working for ourselves.,mostly-true,fake,0.8857,0.1143,0.8857,19,liar,0
+"It's just outrageous that under President Bush, the National Institutes of Health have been basically decreased in fundi",false,fake,0.981,0.019,0.981,18,liar,1
+The (State Board of Administration) transparency issue got a great airing the last legislative session.,false,fake,0.8511,0.1489,0.8511,15,liar,1
+Tyler Perrys plan to turn a majority of the former Fort McPherson into a film and television studio is expected to add o,half-true,real,0.5527,0.5527,0.4473,28,liar,1
+"Says New Jersey lost private-sector jobs between 2000 and 2009 because Democrats increased taxes, fees, regulations and ",half-true,fake,0.6551,0.3449,0.6551,19,liar,0
+I am the only candidate for lieutenant governor to oppose in-state tuition for illegal immigrants.,false,fake,0.8778,0.1222,0.8778,15,liar,1
+"The sex-offender registry has been around for a long time, and the research thats out there says that it has no positive",mostly-true,fake,0.7023,0.2977,0.7023,27,liar,0
+The health care law includes a 3.8% sales tax on all real estate transactions.,pants-fire,fake,0.6814,0.3186,0.6814,14,liar,1
+One of the biggest causes of our soaring debt and economic insecurity ends up being Pentagon spending. The budget for th,true,fake,0.7332,0.2668,0.7332,30,liar,0
+Half of all hospitalized seniors are suffering from malnutrition so severe that it either caused their illness or it pre,barely-true,fake,0.7095,0.2905,0.7095,24,liar,1
+We created as many jobs in the first six months of this year as we did in all of 2011 and 2011 was the best single year ,true,fake,0.824,0.176,0.824,35,liar,0
+Milwaukee is the most segregated city in America.,mostly-true,fake,0.9843,0.0157,0.9843,8,liar,0
+State governments have little ability to stimulate job growth in the short run.,true,fake,0.8794,0.1206,0.8794,13,liar,0
+Were the only major oil-producing nation in the world with a self-imposed ban on exporting our crude oil to other nation,mostly-true,fake,0.9336,0.0664,0.9336,21,liar,0
+Says Joe Biden went to China and said that he sympathized and wouldnt second-guess their one-child policy of forced abor,barely-true,fake,0.8615,0.1385,0.8615,22,liar,1
+"By advocating new requirements for voters to show ID cards at the polls, Republicans want to literally drag us all the w",false,fake,0.8803,0.1197,0.8803,27,liar,1
+Says Tom Barrett supports a government takeover of our health care,pants-fire,fake,0.7897,0.2103,0.7897,11,liar,1
+"The polling shows over and over again that, unlike Donald Trump, that with me as the nominee, we beat Hillary Clinton.",barely-true,fake,0.9807,0.0193,0.9807,21,liar,1
+"When President Obama landed in Cuba on Air Force One, no leader was there, nobody, to greet him -- perhaps an incident w",half-true,fake,0.8943,0.1057,0.8943,34,liar,0
+Many types of fish and shellfish from waters across the state are labeled unsafe to eat.,mostly-true,fake,0.8216,0.1784,0.8216,16,liar,0
+Says President Barack Obama promised a pathway to citizenship to undocumented immigrants and didnt deliver jack squat on,mostly-true,fake,0.8523,0.1477,0.8523,21,liar,0
+CNN did a poll recently where Obama and I are statistically tied.,pants-fire,fake,0.9673,0.0327,0.9673,12,liar,1
+More than 25 million Americans are unemployed. More than 50 million live without health insurance. Perhaps 100 million l,half-true,fake,0.9762,0.0238,0.9762,21,liar,0
+"The Texas Capitol faces South toward Goliad, in memory of the most horrific battle of the Texas Revolution.",false,fake,0.8046,0.1954,0.8046,18,liar,1
+Says Will Hurd cosponsored a bill that would militarize our border and allow 200 miles of new roads to be built in the B,half-true,real,0.6116,0.6116,0.3884,32,liar,1
+Im not a conspiracy theorist and I never allow conspiracy theorists on my program.,pants-fire,fake,0.8843,0.1157,0.8843,14,liar,1
+The state budget has actually grown by $4.6 billion under Gov. Scott Walkers actions.,half-true,fake,0.7827,0.2173,0.7827,14,liar,0
+Says Israel profiles based on ethnicity and does it very successfully.,half-true,fake,0.872,0.128,0.872,11,liar,0
+"David Beckhams proposed soccer stadium at Miamis Port threatens the 207,000 jobs and $27 billion economic impact tied to",false,fake,0.9449,0.0551,0.9449,24,liar,1
+"Without U.S. Senate action, Texas will have more federal judicial vacancies this year than any other state.",barely-true,fake,0.6436,0.3564,0.6436,17,liar,1
+Says Sen. Mitch McConnell is the No. 1 recipient of contributions from lobbyists this cycle.,true,fake,0.9207,0.0793,0.9207,15,liar,0
+The American murder rate is 50 times that of any other developed nation.,false,fake,0.9481,0.0519,0.9481,13,liar,1
+"Only five states, including Georgia, do not have a hate crimes law.",true,fake,0.8165,0.1835,0.8165,12,liar,0
+The Climatic Research Unit e-mails show that the science behind climate change has been pretty well debunked.,false,fake,0.9135,0.0865,0.9135,17,liar,1
+Barack Obama had 150 days in the U.S. Senate where he was able to vote quite often 'present.' ,false,fake,0.9463,0.0537,0.9463,18,liar,1
+"In the health care bill, ""The 'Health Choices Commissioner' will decide health benefits for you. You will have no choice",pants-fire,fake,0.9231,0.0769,0.9231,21,liar,1
+The federal government has not engaged in (border security) at all.,pants-fire,fake,0.5469,0.4531,0.5469,11,liar,1
+It is estimated that Arizona has lost more than $100 million in hospitality industry revenues since passage of the Arizo,half-true,fake,0.8468,0.1532,0.8468,22,liar,0
+I have little doubt that we've moved into recession at this point.,barely-true,fake,0.845,0.155,0.845,12,liar,1
+Says Gov. Scott Walkers repeal of a 2009 law has left Wisconsin as one of five states without an equal pay law protectin,false,fake,0.8414,0.1586,0.8414,30,liar,1
+Many just call him Lyin Ted. ... HisTV ad about John Kasich? Lie! Stations had to pull it off the air.,false,fake,0.9413,0.0587,0.9413,21,liar,1
+State legislators quietly shifted $2 billion from education to road building in 2013.,false,fake,0.7814,0.2186,0.7814,13,liar,1
+Leticia Van de Putte voted to give illegal immigrants in this country free health care--not emergency health care but to,false,fake,0.9484,0.0516,0.9484,23,liar,1
+A strong majority of Americans support the Keystone XL pipeline.,mostly-true,fake,0.9549,0.0451,0.9549,10,liar,0
+"Almost 400 arrests in the city last year for panhandling-related offenses involved just 78 suspects, an indication that ",mostly-true,fake,0.9629,0.0371,0.9629,26,liar,0
+Says Texas GOP platform calls for end to teaching critical thinking in public schools.,half-true,fake,0.8412,0.1588,0.8412,14,liar,0
+SaysPresident Obama and his allies in Congress gave power to control Medicare patients health care decisions to a commis,false,fake,0.7986,0.2014,0.7986,25,liar,1
+The studies have shown us that [drug testing for welfare recipients] will be saving us money,false,fake,0.9129,0.0871,0.9129,16,liar,1
+"A quarter of our workers make $18,000 per year.",half-true,fake,0.8942,0.1058,0.8942,9,liar,0
+"Ann Kuster turned a blind eye to those in need of funding by voting against funding for our nations veterans, low-income",barely-true,fake,0.9744,0.0256,0.9744,32,liar,1
+"Says Hillary Clinton supported North American Free Trade Agreement), and she supported Chinas entrance into the World Tr",mostly-true,fake,0.9274,0.0726,0.9274,33,liar,0
+"For the first time in U.S. history, a personal inaction will be deemed unlawful -- not purchasing a health-insurance pla",false,fake,0.8858,0.1142,0.8858,20,liar,1
+"Al-Qaida operatives, have said, Hey, we want you to use this loophole (for purchasing guns despite being on a watch list",mostly-true,fake,0.9842,0.0158,0.9842,26,liar,0
+"The IRS also investigated liberal groups, groups that had progressive in their name. ... The IRS was basically looking a",half-true,fake,0.9351,0.0649,0.9351,21,liar,0
+Unfortunately we have documented instances where people defecated in the (Statehouse) building.,pants-fire,fake,0.9873,0.0127,0.9873,12,liar,1
+"ISIS lures women with kittens, nutella.",barely-true,fake,0.9847,0.0153,0.9847,6,liar,1
+The Rhode Island Parole Board never received an objection from the attorney general to the parole of convicted murder Al,true,fake,0.8155,0.1845,0.8155,21,liar,0
+ObamaCare enrollment lie: Obama counts an enrollee as a web user putting a plan in their online shopping carts.,false,fake,0.8188,0.1812,0.8188,19,liar,1
+A judges order means theres a Constitution exemption zone if you live within 100 miles of the United States border.,false,fake,0.8214,0.1786,0.8214,20,liar,1
+"Says Obama wants to give (Iran) nuclear weapons and Michael Bennet, he was all for it.",pants-fire,fake,0.8911,0.1089,0.8911,16,liar,1
+Sen. Bob Menendez voted to enact a new tax on the sale of homes of 3.8%.,pants-fire,fake,0.7085,0.2915,0.7085,16,liar,1
+"Rick Perry attempted to fast-track unnecessary coal-fired power plants, which degrade air quality and would cost billion",mostly-true,fake,0.828,0.172,0.828,22,liar,0
+Says Democrats first proposed prohibiting the government from negotiating prices for prescription drugs in Medicare Part,barely-true,fake,0.6185,0.3815,0.6185,29,liar,1
+"Obamacare-caused paperwork will annually absorb 190 million hours or more--and Mount Rushmore could be built 1,547 times",barely-true,fake,0.5168,0.4832,0.5168,21,liar,1
+"If you are African-American in this country today, you are likely to have a net worth of about 10 percent of what white ",true,fake,0.9213,0.0787,0.9213,25,liar,0
+Saysthere are actually more people in poverty now than there were when we started the War on Poverty.,mostly-true,fake,0.9486,0.0514,0.9486,18,liar,0
+Says Texas ranks first in executions among the states.,true,fake,0.874,0.126,0.874,9,liar,0
+Hurricane Irene was the second-largest storm to hit North America in terms of power outages -- and the first hurricane t,mostly-true,fake,0.8932,0.1068,0.8932,28,liar,0
+"Says Chris Abele, opponent in Milwaukee County executive race, failed to finish 3 separate colleges, dropping out all 3 ",mostly-true,fake,0.6416,0.3584,0.6416,20,liar,0
+"In this country, we have a 25 percent dropout rate.",half-true,fake,0.733,0.267,0.733,10,liar,0
+Says President Franklin Delano Roosevelt felt there wasnt a need in the public sector to have collective bargaining beca,true,fake,0.8787,0.1213,0.8787,24,liar,0
+"Obama says America is great, but let's ""try to change it.""",pants-fire,fake,0.9822,0.0178,0.9822,11,liar,1
+"California gubernatorial candidate Steve Poizner, a Republican, ""gave $10,000 to Al Gore's recount"" effort in 2000.",mostly-true,fake,0.9525,0.0475,0.9525,16,liar,0
+The congressional district for Miami-Dade and Broward counties has a staggering drop-out rate of almost 61 percent.,false,fake,0.879,0.121,0.879,17,liar,1
+"Says Hillary Clintons State Department approved the transfer of 20 percent of Americas uranium holdings to Russia, while",barely-true,fake,0.9457,0.0543,0.9457,30,liar,1
+"When the mayor of Providences brother wrote over 100 grand in bad checks to the city, Joe Fernandez didnt have the guts ",pants-fire,fake,0.9314,0.0686,0.9314,31,liar,1
+"For middle-class families under the Baucus plan, 13 percent of what they make could be deducted directly from their payc",half-true,fake,0.569,0.431,0.569,27,liar,0
+"Says state Sen. Morgan Carrolls votes made it easier to sue doctors, small businesses, even nurses. Putting her own shad",false,fake,0.8529,0.1471,0.8529,22,liar,1
+There were more people at the Air and Space Museum than at a rally against the health care bills.,half-true,fake,0.6905,0.3095,0.6905,19,liar,0
+"Two weeks after signing a taxpayer protection pledge, (Charlie Crist) breaks it.",barely-true,fake,0.9438,0.0562,0.9438,12,liar,1
+"At Bain Capital, we helped start an early childhood learning company called Bright Horizons that First Lady Michelle Oba",true,fake,0.8856,0.1144,0.8856,21,liar,0
+"Says Hillary Clinton presided over $6 billion lost at the State Department, sold uranium to the Russians through (her) f",pants-fire,fake,0.9714,0.0286,0.9714,29,liar,1
+Weve cut the deficit by two-thirds.,mostly-true,fake,0.8581,0.1419,0.8581,6,liar,0
+Says recall organizers started their website last November and began work on their effort before he even took office.,false,fake,0.9743,0.0257,0.9743,19,liar,1
+"Ninety-six percent of the last session, (U.S. Rep. Henry Cuellar) voted with Nancy Pelosi.",mostly-true,fake,0.9561,0.0439,0.9561,14,liar,0
+"Jeb Bush recently noted, Reagan himself would have been too moderate, too reasonable for todays GOP.",half-true,fake,0.5873,0.4127,0.5873,16,liar,0
+2014 Federal Tax Refunds To Be Delayed Until October 2015.,pants-fire,fake,0.8913,0.1087,0.8913,10,liar,1
+The U.S. would gainrevenue by cutting personal income tax rates in half and ending tax breaks.,true,fake,0.6139,0.3861,0.6139,16,liar,0
+Texas this fiscal year will have more money in reserve than the other 49 states combined.,pants-fire,fake,0.927,0.073,0.927,16,liar,1
+"We have towns in West Texas that are out of water, that are having to truck in water.",barely-true,fake,0.8689,0.1311,0.8689,18,liar,1
+I didn't endorse the federal stimulus bill.,pants-fire,fake,0.9716,0.0284,0.9716,7,liar,1
+About $4.89 billion in one-time money was used to balance the current state general revenue fund budget.,false,fake,0.7951,0.2049,0.7951,17,liar,1
+On expanding Medicaid under the Affordable Care Act.,false,fake,0.9069,0.0931,0.9069,8,liar,1
+"Up until two weeks ago, John McCain was a leading proponent of amnesty. Now with me challenging him, suddenly he has cha",pants-fire,fake,0.9738,0.0262,0.9738,22,liar,1
+"Says Rick Perrys Pay to Play politics led him to send $899 million to an offshore call center in Bermuda, driving down e",false,fake,0.5705,0.4295,0.5705,27,liar,1
+There is a constitutional issue that affects the paychecks of members of Congress during a shutdown.,true,fake,0.8307,0.1693,0.8307,16,liar,0
+"New Jersey alone, my home state, is facing a ten-and-a-half billion dollar shortfall in its 2012 fiscal budget. This mea",false,fake,0.6776,0.3224,0.6776,35,liar,1
+We have a $2 trillion to $3 trillion infrastructure deficit. Weve got work that needs to get done. Weve got people that ,mostly-true,fake,0.8296,0.1704,0.8296,27,liar,0
+There are a lot of casinos across the country that have gone bankrupt.,true,fake,0.8262,0.1738,0.8262,13,liar,0
+Up to 45 percent of illegal immigrants are not people that physically crossed the southern border or northern border. Th,mostly-true,fake,0.8487,0.1513,0.8487,23,liar,0
+"Says female genital mutilation is a central African problem, not an Islamic problem, as Bill Maher suggested.",mostly-true,real,0.6491,0.6491,0.3509,17,liar,1
+"Just like the U.S. Chamber of Commerce, the AFL-CIO receives dues from foreign entities associated with it.",half-true,fake,0.9443,0.0557,0.9443,17,liar,0
+"Says the man who rushed the stage at him in Dayton, Ohio, had chatter about ISIS, or with ISIS in his social media posts",false,fake,0.9196,0.0804,0.9196,24,liar,1
+More private-sector jobs were created in the first eight months of 2010 than in the eight years of the Bush administrati,half-true,fake,0.6846,0.3154,0.6846,21,liar,0
+Says fewer than 30 percent of Texas college students graduate in four years and only 58 percent graduate within six year,true,fake,0.5872,0.4128,0.5872,21,liar,0
+University of Wisconsin Systems reserves are in the mid- to low-range of comparable university systems.,half-true,fake,0.9603,0.0397,0.9603,15,liar,0
+The governor won this state with 49 percent. We had some of the closest races in the House in history. So youre not deal,mostly-true,real,0.5173,0.5173,0.4827,33,liar,1
+"In June, jobless ranks were higher in nearly 90 percent of U.S. cities.",barely-true,fake,0.5322,0.4678,0.5322,13,liar,1
+Says Ohio budget item later signed into law by Gov. John Kasich requires women seeking an abortion to undergo a mandator,pants-fire,fake,0.6002,0.3998,0.6002,23,liar,1
+I had the longest judicial vacancy in the history of the United States.,mostly-true,fake,0.7708,0.2292,0.7708,13,liar,0
+Recommendations for a major tax overhaul for Georgia are an overall tax hike.,barely-true,fake,0.7516,0.2484,0.7516,13,liar,1
+"For every $1 spent on mitigation, $4 in post-storm cleanup and rebuilding is saved.",mostly-true,fake,0.9577,0.0423,0.9577,14,liar,0
+"Under Scott Walker, the Wisconsin middle class is shrinking at a faster rate than any other state in the country.",false,fake,0.5795,0.4205,0.5795,20,liar,1
+The presidents own advisers have said theres a war on coal.,barely-true,fake,0.6581,0.3419,0.6581,11,liar,1
+Congress is bewildered at the scope and reach of our spying apparatus but in 2008 and 2012 explicitly rejected an amendm,true,fake,0.6713,0.3287,0.6713,25,liar,0
+The top 1 percent (of income earners) paid 36.7 percent (of the taxes). ... The top 50 percent pay 97.7 percent.,true,fake,0.6052,0.3948,0.6052,21,liar,0
+Says Donald Trump has defended World War II internment camps.,half-true,fake,0.893,0.107,0.893,10,liar,0
+"In a sweetheart deal members of Congress, thanks to the Obama administration, are going to be the only people in America",pants-fire,fake,0.9533,0.0467,0.9533,28,liar,1
+Says Gov. Scott Walker has dropped Wisconsin to 45th in the nation in job growth prospects while campaigning for preside,barely-true,fake,0.601,0.399,0.601,23,liar,1
+Donald Trump says that NATO is obsolete and that we need to get rid of NATO...,barely-true,fake,0.8951,0.1049,0.8951,16,liar,1
+"German citizens were disarmed by their government in the late 1930s, which allowed the Nazis to carry out their evil int",false,fake,0.889,0.111,0.889,25,liar,1
+I dont know who (Jonathan Gruber) is.,false,fake,0.8996,0.1004,0.8996,7,liar,1
+"Says in the Legislature, (Mary Nolan) has been a party-line Democrat, showing a 100% track record in harmony with the Am",true,fake,0.7735,0.2265,0.7735,24,liar,0
+On how to respond to Puerto Ricos debt crisis.,true,fake,0.7574,0.2426,0.7574,9,liar,0
+"Says a poll shows that without a name attached, Democrats are just one point behind Gov. John Kasich.",true,fake,0.9554,0.0446,0.9554,18,liar,0
+Says the U.S. federal income tax rate was 0 percent until 1913.,half-true,fake,0.5588,0.4412,0.5588,12,liar,0
+"Barack Obama ""wants to nearly double the capital gains tax"" increasing taxes on ""mutual funds, 401(k)s"" for ""policemen, ",half-true,fake,0.8682,0.1318,0.8682,20,liar,0
+We have the best schools in the United States.,barely-true,real,0.6864,0.6864,0.3136,9,liar,0
+"Says Donald Trump is the first person running for president, Republican or Democrat, who refused to say that he would re",mostly-true,fake,0.8927,0.1073,0.8927,26,liar,0
+Says Gov. Rick Scott returned $1 million in federal funding that would have helped the state cover the cost of overseein,mostly-true,fake,0.7009,0.2991,0.7009,29,liar,0
+On expanding Medicaid as part of the health care law,false,fake,0.9121,0.0879,0.9121,10,liar,1
+Says Wisconsin Gov. Scott Walker in his budget repair bill is showing that no stone goes unturned as he asks everyone to,false,fake,0.6014,0.3986,0.6014,25,liar,1
+David Dewhurst has a record of promoting an income tax.,pants-fire,fake,0.5374,0.4626,0.5374,10,liar,1
+On high-speed rail.,false,fake,0.9543,0.0457,0.9543,3,liar,1
+"Insurers delayed an Illinois man's treatment, and he died because of it.",false,fake,0.7041,0.2959,0.7041,12,liar,1
+"Research shows the employer mandate in the House health reform bill would ""place millions 'at substantial risk of unempl",half-true,fake,0.8415,0.1585,0.8415,33,liar,0
+"In the early 1960s, all levels of government were consuming about 27 percent of the U.S. economy, a number that has rise",barely-true,fake,0.8691,0.1309,0.8691,39,liar,1
+We have never done business with Donald Trump.,half-true,fake,0.9666,0.0334,0.9666,8,liar,0
+"Overall we currently have $981 million, almost a billion dollars in active development projects right here in the City o",barely-true,fake,0.9704,0.0296,0.9704,21,liar,1
+"Every American now is $51,000 in debt. Thats money I owe, thats money my children owe before they even go to kindergarte",mostly-true,fake,0.9224,0.0776,0.9224,31,liar,0
+"Average families are spending roughly $2,000 more a year on energy costs. ... It's like a $2,000 energy tax in just the ",half-true,fake,0.7211,0.2789,0.7211,40,liar,0
+"Says Tommy Thompson favors Obamas health care mandate, was publicly thanked by Obama for health reform support and that ",false,fake,0.9159,0.0841,0.9159,25,liar,1
+The tax burden on Virginia families was lower under Tim Kaine than under George Allen.,barely-true,fake,0.8264,0.1736,0.8264,15,liar,1
+Virginia has a responsibility to fund 55 percent of public education and is payingjust 41 percent.,false,real,0.7197,0.7197,0.2803,16,liar,0
+Buying the naming rights to the new Falcons stadium is the largest marketing deal in Mercedes-Benz history.,mostly-true,fake,0.8856,0.1144,0.8856,17,liar,0
+Says Hillary Clinton savaged the dignity of people who accused Bill Clinton of sexual harassment or assault and shamed t,barely-true,fake,0.9694,0.0306,0.9694,20,liar,1
+A small business in my district needed 31 different permits and fees just to be able to expand.,mostly-true,fake,0.9455,0.0545,0.9455,18,liar,0
+Says Texas U.S. Rep. Pete Sessions said the GOPs goal is to go back to the same exact policies that were in place before,barely-true,fake,0.576,0.424,0.576,33,liar,1
+Polls show that Floridians dont want to repeal the Affordable Care Act.,barely-true,fake,0.6972,0.3028,0.6972,12,liar,1
+Al Franken said almost exactly what Trump said about John McCains military record.,half-true,fake,0.662,0.338,0.662,13,liar,0
+Says Hillary Clinton wants to go to a single-payer plan for health care,false,fake,0.9917,0.0083,0.9917,13,liar,1
+President Barack Obamas budget threatens national security by proposing an Army of fewer personnel than we had before Pe,false,fake,0.5058,0.4942,0.5058,20,liar,1
+"Financial conflict-of-interest laws dont apply to the president, right? So, the president doesnt have to have a blind tr",true,fake,0.6649,0.3351,0.6649,19,liar,0
+A 2005 gay pride vote had nothing to do with discrimination.,false,fake,0.9237,0.0763,0.9237,11,liar,1
+The American people will be appalled to learn the health care bill exempts (congressional) leadership and committee staf,mostly-true,fake,0.8934,0.1066,0.8934,18,liar,0
+Its possible that non-citizen voters were responsible for Obamas 2008 victory in North Carolina.,pants-fire,fake,0.9842,0.0158,0.9842,14,liar,1
+"Gov. Rick Perry broke his promise that he would not accept a $40,000 pay increase.",mostly-true,fake,0.9262,0.0738,0.9262,15,liar,0
+"The latest unemployment numbers have shown that nearly 315,000 Americans have simply given up hope when it comes to find",false,fake,0.8067,0.1933,0.8067,22,liar,1
+I campaigned on (the proposals in the budget repair bill for Wisconsin) all throughout the election. Anybody who says th,false,fake,0.5243,0.4757,0.5243,32,liar,1
+We are seeing kids who are healthier.,half-true,fake,0.9267,0.0733,0.9267,7,liar,0
+The Iranians continue in the view of every objective observer continue to pursue the acquisition of nuclear weapons.,false,fake,0.94,0.06,0.94,18,liar,1
+"The Banking Committee voted a 1,336-page bill ""out of committee in 21 minutes with no amendments, with the understanding",mostly-true,fake,0.7393,0.2607,0.7393,33,liar,0
+The five Guantanamo detainees swapped for Bowe Bergdahl are right now back on the battlefield.,false,fake,0.8979,0.1021,0.8979,15,liar,1
+500 percent more traffic here?,mostly-true,real,0.6764,0.6764,0.3236,5,liar,1
+Says the Congressional Budget Office is expecting a protracted economic malaise for at least the next decade under curre,half-true,fake,0.5093,0.4907,0.5093,20,liar,0
+"My opponent was on both the city of Chicago payroll and the state of Illinois payroll simultaneously, taking full salary",half-true,fake,0.8976,0.1024,0.8976,38,liar,0
+The city of San Antonio reuses almost 40 percent of its water. You know how much the city of Austin reuses? About 5 perc,barely-true,real,0.5749,0.5749,0.4251,32,liar,0
+Marijuana is less toxic than alcohol.,mostly-true,fake,0.9357,0.0643,0.9357,6,liar,0
+"When the Republicans were in charge, they actually expanded government health care with the prescription drug program.",true,fake,0.8445,0.1555,0.8445,17,liar,0
+Granite Staters who hold individual policies from Anthem...can indeed renew their policies and keep their current doctor,true,fake,0.8938,0.1062,0.8938,21,liar,0
+"In Galveston, Texas, they have allowed people to privatize part of their Social Security. And people are building wealth",true,fake,0.9506,0.0494,0.9506,19,liar,0
+"Says judges are using Shariah law in Dearborn, Mich.",false,fake,0.9184,0.0816,0.9184,9,liar,1
+American colleges amount to a cartel.,barely-true,fake,0.8609,0.1391,0.8609,6,liar,1
+Teddy Roosevelt first called for (health care) reform nearly a century ago.,true,fake,0.8185,0.1815,0.8185,12,liar,0
+"Russia has tremendous numbers of nuclear warheads 1,800, by the way where they expanded, and we didnt.",half-true,fake,0.7941,0.2059,0.7941,17,liar,0
+Says U.S. Senate candidate Tommy Thompson says hell do away with Medicare.,half-true,fake,0.8664,0.1336,0.8664,12,liar,0
+"In 1998, nearly half of Floridas fourth-graders were functionally illiterate. Today, 72% of them can read.",mostly-true,fake,0.9842,0.0158,0.9842,16,liar,0
+"Rob Portman has taken more than $125,000 from Big Oil.",mostly-true,fake,0.7332,0.2668,0.7332,10,liar,0
+Online voter registration is a more secure way of doing voter registration.,mostly-true,fake,0.9356,0.0644,0.9356,12,liar,0
+A majority of Americans still oppose this health care bill.,mostly-true,fake,0.9086,0.0914,0.9086,10,liar,0
+Says Russ Feingold was the only senator to vote against Homeland Security.,false,fake,0.935,0.065,0.935,12,liar,1
+"When his grandfather arrived in the United States, there were no government benefits for immigrants.",false,fake,0.8168,0.1832,0.8168,15,liar,1
+Says al Qaeda has camps with the drug cartels in Mexico.,false,fake,0.9213,0.0787,0.9213,11,liar,1
+Husbands rarely beat up their wives. Single women get beaten up more.,half-true,fake,0.8929,0.1071,0.8929,12,liar,0
+Two-thirds of our economy is a consumer economy.,true,fake,0.8917,0.1083,0.8917,8,liar,0
+"When asked about bills in Congress important to the North Country, Derrick responded I just dont know enough about it.",barely-true,fake,0.9253,0.0747,0.9253,20,liar,1
+A Paul Ryan-Scott Walker (or Scott Walker-Paul Ryan) ticket for the White House in 2016 would be unconstitutional becaus,false,fake,0.8302,0.1698,0.8302,24,liar,1
+"When it comes to jobless workers, Mitt Romney says he likes to fire people.",false,fake,0.8307,0.1693,0.8307,14,liar,1
+"Four balanced budgets in a row, with no new taxes for anyone. The best job growth in 12 years. Nearly 130,000 new privat",half-true,fake,0.5999,0.4001,0.5999,38,liar,0
+"In April 1997, there was a gas out conducted nationwide in protest of gas prices. Gasoline prices dropped 30 cents a gal",pants-fire,fake,0.8133,0.1867,0.8133,23,liar,1
+(Mexican immigrants) are more law-abiding than U.S. citizens and that is a statistic.,mostly-true,fake,0.9413,0.0587,0.9413,13,liar,0
+Says the 2014-15 Texas budget increases spending by less than the rate of inflation and population growth.,mostly-true,fake,0.9025,0.0975,0.9025,17,liar,0
+"America has lost over 50,000 manufacturing factories on other trade deals.",half-true,fake,0.8592,0.1408,0.8592,11,liar,0
+Florida is enjoying its lowest crime rate in 39 years.,mostly-true,fake,0.8547,0.1453,0.8547,10,liar,0
+Wisconsin is one of the few states in the country that do not currently require a photographic identification to vote.,false,fake,0.9087,0.0913,0.9087,20,liar,1
+Rhode Island voters are moving away from the Democratic party to non-affiliation,false,fake,0.8979,0.1021,0.8979,12,liar,1
+"In France, they have a (surveillance) program a thousandfold more invasive than the United States.",mostly-true,fake,0.5434,0.4566,0.5434,15,liar,0
+"There are more atheists in the country right now than Jews, Muslims, Hindus and Buddhists combined and doubled.",false,fake,0.9368,0.0632,0.9368,18,liar,1
+The average age of members of the House of Representatives is 57 years old.,true,fake,0.7748,0.2252,0.7748,14,liar,0
+"Says he has seen Border Patrol signs near the Mexico border in English, Spanish and Chinese.",true,fake,0.8145,0.1855,0.8145,16,liar,0
+The overall fact about illegal immigration is that its not actually getting worse.,true,fake,0.9807,0.0193,0.9807,13,liar,0
+"Says a man opted out of Obamacare after the marketplace launched on Oct. 1, 2013, and was informed he owed a $4,000 fine",pants-fire,fake,0.9412,0.0588,0.9412,23,liar,1
+Says New Hampshire has the third-highest property tax in the country.,true,fake,0.6887,0.3113,0.6887,11,liar,0
+"You are prohibited from walking into the Capitol with a gun, but you can go after the County Commission or the School Bo",barely-true,fake,0.9573,0.0427,0.9573,23,liar,1
+"Every time somebody new gets the Ebola virus, it mutates.",half-true,fake,0.8806,0.1194,0.8806,10,liar,0
+Says Mitch McConnell credits Republicans for recent economic improvements even though they took control of the Senate on,mostly-true,fake,0.7648,0.2352,0.7648,20,liar,0
+"Said U.S. Rep. Jim Marshall, D-Macon, sent nearly $2 billion overseas to build wind turbines and create jobs, mostly in ",false,fake,0.5805,0.4195,0.5805,21,liar,1
+Says his state budget will provide an increase in state funding for the 2011-12 school year.,mostly-true,fake,0.5095,0.4905,0.5095,16,liar,0
+The numbers of people that support Obamacare and like it have been steadily dropping.,false,fake,0.8535,0.1465,0.8535,14,liar,1
+I'm probably one of the four or five best-known Americans in the world.,pants-fire,fake,0.9651,0.0349,0.9651,13,liar,1
+"Obama ""has voted in the United States Senate to increase taxes on people who make as low as $42,000 a year.""",barely-true,fake,0.8615,0.1385,0.8615,21,liar,1
+"Secretary Clinton changes her position on (gun issues) every election year, it seems, having one position in 2000 and th",half-true,fake,0.8989,0.1011,0.8989,31,liar,0
+The Clintons foundation took millions from foreign governments including United Arab Emirates and Saudi Arabia.,true,fake,0.6991,0.3009,0.6991,15,liar,0
+Says Scott Walkers views on abortion are more restrictive than any Republican president in recent times.,true,real,0.8526,0.8526,0.1474,16,liar,1
+"If the Supreme Court throws out the federal health care law, it would be an unprecedented, extraordinary step of overtur",false,fake,0.8675,0.1325,0.8675,34,liar,1
+"The (ARC Tunnel) project was originally estimated to be $8.7 billion, and New Jersey alone was on the hook for all overr",true,fake,0.8756,0.1244,0.8756,22,liar,0
+"Wisconsin pays criminal defense lawyers who represent the indigent $40 per hour, the lowest in the country.",mostly-true,fake,0.8041,0.1959,0.8041,17,liar,0
+Ken Lanci is a lifelong Clevelander,half-true,fake,0.8694,0.1306,0.8694,6,liar,0
+Says President Bill Clinton did not sign NAFTA.,false,fake,0.8508,0.1492,0.8508,8,liar,1
+This is what President Obama said the jobless rate would be if we passed the stimulus: 5.6 percent.,barely-true,fake,0.7648,0.2352,0.7648,18,liar,1
+A Trump television ad shows Mexicans swarming over our southern border.,pants-fire,fake,0.8567,0.1433,0.8567,11,liar,1
+We've excluded lobbyists from policymaking jobs.,false,fake,0.9301,0.0699,0.9301,6,liar,1
+The water quality in the ocean is perfect. Its been tested up and down every ocean shore in New Jersey.,mostly-true,fake,0.7071,0.2929,0.7071,20,liar,0
+AGallup report recently said that nearly 50 percent of small business owners arent hiring because of what they call regu,half-true,real,0.6018,0.6018,0.3982,21,liar,1
+"The Milwaukee County Boards staff grew from four workers to 38 over four decades and now costs taxpayers a lot more, whi",mostly-true,fake,0.9331,0.0669,0.9331,36,liar,0
+"Says EPA regulation of greenhouse gases will endanger 575 Texas dairy facilities, 58 swine operations, 1,300 corn farms ",false,fake,0.9321,0.0679,0.9321,23,liar,1
+We have the highest corporate income tax in the world right now.,mostly-true,fake,0.9267,0.0733,0.9267,12,liar,0
+"After Arizona banned smoking in all public places in 2007, admissions for acute myocardial infarction stroke, asthma, [a",half-true,fake,0.867,0.133,0.867,26,liar,0
+Seven out of the 10 states with the lowest unemployment rates (have) Republican governors That approach that Republicans,half-true,real,0.573,0.573,0.427,22,liar,1
+Says Barack Obama had huge majorities in Congress during his first two years in office and did nothing with them to crea,pants-fire,fake,0.9351,0.0649,0.9351,25,liar,1
+"Federal law for Obamacare navigators does not bar or even require screening for convicted felons, including individuals ",half-true,fake,0.5533,0.4467,0.5533,23,liar,0
+Passing a federal firearms background check through the NICS database . . . typically takes 90 seconds.,mostly-true,fake,0.8023,0.1977,0.8023,17,liar,0
+The United States won every major battle of the Vietnam War. Every single one.,half-true,fake,0.6467,0.3533,0.6467,14,liar,0
+"San Antonio has seen 67% growth in water customers in the last 25 years, 0% more water used.",false,fake,0.8528,0.1472,0.8528,18,liar,1
+"Rick Perry thinks injecting 11- and 12-year-old girls with a controversial drug (the HPV vaccine), without a parents con",pants-fire,fake,0.9842,0.0158,0.9842,23,liar,1
+That luxury jet was over the top. I put it on eBay.,true,fake,0.8794,0.1206,0.8794,12,liar,0
+"Karen Handel would have felt like it was OK to go in and abort Sarah Palins son Trig, who has Down syndrome.",pants-fire,fake,0.9433,0.0567,0.9433,22,liar,1
+Justice John Roberts Signed Off On Obamas Arrest For Treason.,pants-fire,fake,0.9528,0.0472,0.9528,10,liar,1
+On pay for fired Milwaukee police officers,false,fake,0.9315,0.0685,0.9315,7,liar,1
+"A data system that goes along with Common Core is designed to collect up to 400 data points on each child, which can inc",barely-true,fake,0.5879,0.4121,0.5879,27,liar,1
+You cant pass a budget in the Senate of the United States without 60 votes.,false,fake,0.5711,0.4289,0.5711,15,liar,1
+Says Rick Scott has teamed up with a felon convicted of running a Ponzi scheme to smear Charlie Crist.,false,fake,0.8122,0.1878,0.8122,19,liar,1
+Says the Tennessee Wildlife Resources Agency brought coyotes into the state to try to keep the deer population down.,pants-fire,fake,0.9133,0.0867,0.9133,19,liar,1
+"Because of a local version of Amendment 4, the taxpayers of St. Pete Beach have had to pay hundreds of thousands in lega",true,fake,0.9289,0.0711,0.9289,24,liar,0
+"According to the Centers for Disease Control and Prevention (CDC), about 120 Americans on average die from a drug overdo",true,fake,0.9324,0.0676,0.9324,31,liar,0
+Peachtree and Pine is one of the leading sites for tuberculosis in the nation.,mostly-true,fake,0.9164,0.0836,0.9164,14,liar,0
+If Senator Clinton or John McCain had stood up in previous years for increases in fuel efficiency standards . . . then w,half-true,fake,0.9188,0.0812,0.9188,34,liar,0
+"In September, the Department of Business and Consumer Services enacted a sudden 39% workers compensation premium assessm",barely-true,fake,0.8647,0.1353,0.8647,25,liar,1
+The so-called defense minister of the Peoples Republic of Donetsk ... actually posted a bragging social media posting of,mostly-true,fake,0.8365,0.1635,0.8365,41,liar,0
+"As a senator, Hillary Clinton has her name on three laws in eight years.",half-true,fake,0.9966,0.0034,0.9966,14,liar,0
+Says shes never said dont build Texas 45 Southwest.,half-true,real,0.6564,0.6564,0.3436,9,liar,1
+"Texas prosecutor Rosemary Lehmberg purchased 72 bottles of vodka in just one store alone, in just over a year.",true,fake,0.9251,0.0749,0.9251,19,liar,0
+ISIS leader Abu Bakr al Baghdadi was released by Obama in 2009.,false,fake,0.9641,0.0359,0.9641,12,liar,1
+We worked together to enact ... the largest tax cut in Florida history.,false,fake,0.8344,0.1656,0.8344,13,liar,1
+Says Thomas Jefferson helped craft the Constitution.,false,fake,0.8267,0.1733,0.8267,7,liar,1
+The (Ohio) economy is on the mend. It is in better shape than it was when we took office.,half-true,fake,0.5659,0.4341,0.5659,19,liar,0
+"Gun violence is by far the leading cause of death for young African American men, outstripping the next nine causes of d",true,fake,0.9465,0.0535,0.9465,23,liar,0
+I have not said that I was a single-payer supporter.,false,fake,0.9409,0.0591,0.9409,10,liar,1
+"Barack Obama's network of small donors constitutes a ""parallel public financing system.""",half-true,fake,0.8204,0.1796,0.8204,12,liar,0
+Abortionists have reduced our black population by more than 25 percent since 1973.,false,fake,0.8079,0.1921,0.8079,13,liar,1
+"As Bernie Sanders said, Hillary Clinton voted for virtually every trade agreement that has cost the workers of this coun",half-true,fake,0.926,0.074,0.926,24,liar,0
+Says the U.S. Senate has passed a budget over the last three years called the Budget Control Act.,false,real,0.5359,0.5359,0.4641,18,liar,0
+"Obama voted to raise taxes on people making just $42,000.",barely-true,fake,0.9715,0.0285,0.9715,10,liar,1
+Women receive only 77 cents for every dollar a man earns.,mostly-true,fake,0.9648,0.0352,0.9648,11,liar,0
+"If we increase fuel efficiency standards to 40, 45 miles a gallon, we would have to import zero oil from the Middle East",half-true,fake,0.8355,0.1645,0.8355,23,liar,0
+Protesters in La Crosse blocked an exit and surrounded a State Patrol car carrying the governor and were beating on the ,false,fake,0.8902,0.1098,0.8902,40,liar,1
+On support for Ronald Reagans policies,false,fake,0.787,0.213,0.787,6,liar,1
+"﻿﻿Since Mayor Kennedy OBrien took office Sayreville has issued 22,081 building permits! Now OBrien is holding secret mee",barely-true,fake,0.9547,0.0453,0.9547,21,liar,1
+"After the 2012 redistricting, Wisconsin has competitive congressional districts.",barely-true,fake,0.7534,0.2466,0.7534,9,liar,1
+Washington cannot hide from the fact that Congress hiked the national debt ceiling to $14.3 trillion. They cannot hide f,true,fake,0.8208,0.1792,0.8208,48,liar,0
+"In Massachusetts, half of the primary care doctors are not accepting new patients.",true,fake,0.7127,0.2873,0.7127,13,liar,0
+The Libyan people have voted twice in free and fair elections for the kind of leadership they want.,half-true,fake,0.7292,0.2708,0.7292,18,liar,0
+"After my first year as governor, I was one of the most unpopular governors, maybe the most unpopular governor in the cou",true,real,0.5049,0.5049,0.4951,25,liar,1
+"Says U.S. Sen. Ron Johnson opposes faster broadband internet in small towns and got nearly $90,000 in campaign contribut",half-true,fake,0.88,0.12,0.88,24,liar,0
+"The Trans-Pacific trade deal could cost America 448,000 more jobs.",half-true,fake,0.8711,0.1289,0.8711,10,liar,0
+"Perdue mismanaged Pillowtex, and nearly 8,000 people got laid off.",barely-true,fake,0.5853,0.4147,0.5853,10,liar,1
+"New York State has been horribly, horribly hurt by NAFTA",barely-true,real,0.7371,0.7371,0.2629,10,liar,0
+About 95 percent of (Ohios) electricity comes from burning coal.,half-true,fake,0.9254,0.0746,0.9254,10,liar,0
+"The Employment Non-Discrimination Act discriminates against Christian daycare, Christian parents, Christian business own",false,fake,0.9853,0.0147,0.9853,19,liar,1
+You can buy lobster with food stamps.,true,fake,0.9047,0.0953,0.9047,7,liar,0
+"Today, the five largest financial institutions are 38 percent bigger than they were back in 2008, when they were too big",mostly-true,fake,0.8768,0.1232,0.8768,23,liar,0
+SaysPresident Obama hijacked the farm bill (and) turned it into a food stamp bill.,pants-fire,fake,0.9561,0.0439,0.9561,14,liar,1
+Says our 12 month job increase was the sixth highest in the nation.,half-true,fake,0.8697,0.1303,0.8697,13,liar,0
+"Says the federal stimulus program was ineffective because the number of jobs has actually decreased by 18,300 through Ju",half-true,fake,0.9607,0.0393,0.9607,20,liar,0
+Says Rick Santorum opposes right-to-work,half-true,fake,0.8634,0.1366,0.8634,5,liar,0
+Barack Obama and Hillary Clinton have changed their positions (on the Iraq war withdrawal) to follow Chris Dodd.,half-true,fake,0.7325,0.2675,0.7325,18,liar,0
+Jim Renacci cheated on his income taxes and is a deadbeat citizen.,mostly-true,fake,0.8862,0.1138,0.8862,12,liar,0
+"Inflation-adjusted defense spending has declined 21 percent since 2010, and even if we discount the drawdowns in Iraq an",mostly-true,real,0.7109,0.7109,0.2891,29,liar,1
+"[A]t his current rate, President Obama will have added more debt to the United State of America by the end of his first ",half-true,fake,0.957,0.043,0.957,33,liar,0
+In 1993 the Republicans embraced a health platform that proudly features an individual mandate as its main component.,half-true,fake,0.8585,0.1415,0.8585,18,liar,0
+The @nytimes states today that DJT believes more countries should acquire nuclear weapons. How dishonest are they. I nev,false,fake,0.8531,0.1469,0.8531,21,liar,1
+"Americans, in the last 30 years, have more than doubled the amount of money we are spending per child (on education) and",half-true,fake,0.8632,0.1368,0.8632,29,liar,0
+"No one in Rhode Island -- not just children, no one in Rhode Island -- should eat more than one serving of freshwater fi",half-true,fake,0.6801,0.3199,0.6801,30,liar,0
+The Castro regime violated international norms by secretly shipping weapons to North Korea in violation of a U.N. embarg,mostly-true,fake,0.9636,0.0364,0.9636,19,liar,0
+"Says his promise of 250,000 new private sector jobs was a big goal.",mostly-true,fake,0.8618,0.1382,0.8618,13,liar,0
+Our federal government has lent $2 billion to the state-owned oil company of Brazil to allow them to explore for oil and,false,fake,0.6277,0.3723,0.6277,23,liar,1
+"Right now, we have the lowest gas tax of anywhere in the country.",mostly-true,fake,0.731,0.269,0.731,13,liar,0
+"Last year, we borrowed $1.4 trillion -- or 41 cents of every dollar we spent. Over half of this debt is held by foreign ",true,fake,0.877,0.123,0.877,25,liar,0
+74 percent of Republicans support the Affordable Care Act.,false,fake,0.656,0.344,0.656,9,liar,1
+"John McCain has said the economy is ""not his strong suit.""",true,fake,0.6949,0.3051,0.6949,11,liar,0
+Says Mitt Romney plans to fire Big Bird.,pants-fire,fake,0.6507,0.3493,0.6507,8,liar,1
+President Barack Obama supports immigration amnesty.,half-true,fake,0.8604,0.1396,0.8604,6,liar,0
+Says Mitt Romneys plan calls for a $5 trillion tax cut.,half-true,fake,0.6391,0.3609,0.6391,11,liar,0
+"Says if current trends continue, by 2040, one out of three Texas workers will not have a high school diploma.",true,fake,0.8928,0.1072,0.8928,20,liar,0
+"The downsizing of Pinellas County government resulted in about 1,200 people being laid off in a 12 percent unemployment ",false,real,0.5006,0.5006,0.4994,42,liar,0
+"Today, the United States has, sadly, one of the lowest voter turnouts of any major country on earth.",mostly-true,fake,0.9697,0.0303,0.9697,18,liar,0
+"In the three months before the act took effect, America lost 750,000 jobs a month. In the last three months, we've lost ",mostly-true,fake,0.8469,0.1531,0.8469,27,liar,0
+Milwaukee has the second-highest number of children recovered from sex trafficking.,false,fake,0.9243,0.0757,0.9243,11,liar,1
+House Republicans just passed a bill that makes it legal for single mothers to be fired by their employers.,false,fake,0.8913,0.1087,0.8913,19,liar,1
+"Today, home sales are up nearly 50 percent from where they were in the worst of the crisis.",mostly-true,fake,0.7864,0.2136,0.7864,18,liar,0
+"Senator Chris Dodd, chairman of the Senate Banking Committee, placed an amendment in the stimulus bill that allowed for ",half-true,fake,0.9719,0.0281,0.9719,32,liar,0
+"In Cranston, it costs $5,000 to $6,000 to send out community notifications on just one Level 3 sex offender.",false,fake,0.9311,0.0689,0.9311,19,liar,1
+"Of the approximately 6 million disenfranchised felons in the United States, one-quarter are Floridians.",mostly-true,fake,0.8422,0.1578,0.8422,14,liar,0
+"For our next two years in my state, we will end with a structural surplus of $499 million.",mostly-true,fake,0.7712,0.2288,0.7712,18,liar,0
+On whether BPs $20 billion fund to compensate oil spill victims is a slush fund.,false,fake,0.9022,0.0978,0.9022,15,liar,1
+Says Wisconsin Supreme Court Justice David Prosser has prejudged matters that are likely to come before the court.,barely-true,fake,0.8077,0.1923,0.8077,18,liar,1
+"If Obamacare is fully implemented, 30 million people will still be without health insurance.",mostly-true,fake,0.849,0.151,0.849,14,liar,0
+Justin Amash is rated Michigans No. 1 conservative by National Right to Life.,false,fake,0.9361,0.0639,0.9361,13,liar,1
+Jeb Bushs plan for Social Security is disastrous for seniors and raises the retirement age to 70.,barely-true,fake,0.7202,0.2798,0.7202,17,liar,1
+The cost ofa gas tank fill-up has risen$30 sinceBarack Obama became president.,mostly-true,fake,0.9319,0.0681,0.9319,12,liar,0
+"For decades before I was elected, governors tried and failed to get Minnesota out of the top 10 highest-taxed states in ",half-true,fake,0.9499,0.0501,0.9499,27,liar,0
+China is trying to develop nuclear capability.,pants-fire,fake,0.8802,0.1198,0.8802,7,liar,1
+Were worse than a Third World country in terms of water quality and the way we treat our sewage.,half-true,fake,0.9446,0.0554,0.9446,19,liar,0
+Says he won the popular vote if you deduct the millions of people who voted illegally.,pants-fire,fake,0.9421,0.0579,0.9421,16,liar,1
+We got the highest vote count in the history of the Republican Party.,mostly-true,fake,0.9306,0.0694,0.9306,13,liar,0
+Most voters prefer zombies to the current U.S. Congress.,true,fake,0.7058,0.2942,0.7058,9,liar,0
+Says Mitt Romney has refused to say whether he would have vetoed or signed the Lilly Ledbetter Fair Pay Act.,mostly-true,fake,0.6615,0.3385,0.6615,20,liar,0
+"Obama's plan to raise the capital gains tax ""hurts the middle class.""",barely-true,fake,0.9017,0.0983,0.9017,12,liar,1
+Now we have ISIS coming over the (U.S.-Mexico) border.,false,fake,0.972,0.028,0.972,9,liar,1
+Regime change (in Iraq) took eight years,half-true,fake,0.9688,0.0312,0.9688,7,liar,0
+Bill Howell has been the consistent force behind every major tax increase in Virginia in the last decade.,mostly-true,fake,0.7465,0.2535,0.7465,18,liar,0
+North Dakotas economy is reeling.,pants-fire,fake,0.8485,0.1515,0.8485,5,liar,1
+The Obama Administration is suing a Wisconsin company for forcing employees to speak English.,barely-true,fake,0.953,0.047,0.953,14,liar,1
+Unions did not create the eight-hour work day and the 40-hour work week. Henry Ford did.,barely-true,fake,0.7691,0.2309,0.7691,16,liar,1
+On fundraising for super PACs,false,fake,0.744,0.256,0.744,5,liar,1
+Sherrod Brown gave huge bonuses to executives.,pants-fire,fake,0.9335,0.0665,0.9335,7,liar,1
+"Twenty two years ago, when he was running for governor, Bill Nelson missed 56 percent of his votes in the U.S. House.",true,fake,0.5266,0.4734,0.5266,22,liar,0
+"Under Rick Scott, homeowners are paying higher (home insurance) premiums for less coverage.",mostly-true,fake,0.7444,0.2556,0.7444,13,liar,0
+"Says Hillary Clinton has been saying lately that she thinks that I am, not qualifiedto be president.",barely-true,fake,0.9311,0.0689,0.9311,17,liar,1
+"The largest tax increase that we have ever had in our state is yours it is the business margins tax that you signed, gov",false,fake,0.5197,0.4803,0.5197,24,liar,1
+"Within a few years, we will be spending more on interest payments than on national security.",false,fake,0.5436,0.4564,0.5436,16,liar,1
+Vows to keep Georgias race for governor civil and focused on the positive.,pants-fire,fake,0.619,0.381,0.619,13,liar,1
+"George Allen voted to add $3 trillion to the federal debt, voted to raise the debt ceiling four times and voted for the ",true,fake,0.924,0.076,0.924,33,liar,0
+The Wisconsin unemployment rate was higher than the U.S. rate during only three months when Mary Burke was state commerc,false,fake,0.6004,0.3996,0.6004,21,liar,1
+"Because of Democratic tax hikes, New Jersey ended a decade with fewer private sector jobs for the first time in recorded",barely-true,fake,0.5496,0.4504,0.5496,22,liar,1
+The increase in the garbage tax that [Mayor Allan Fung] imposed in Cranston for some people has been as much as $200.,false,fake,0.8079,0.1921,0.8079,22,liar,1
+We have four combat-ready brigades out of 40 in the U.S. Army.,barely-true,fake,0.8562,0.1438,0.8562,12,liar,1
+"Says Congressman Jon Runyan has a plan to raise Medicare costs $6,400 a year.",barely-true,fake,0.6805,0.3195,0.6805,14,liar,1
+"Says if we raise the number of third-graders who read at a third-grade level, we affect everything, from graduation rate",true,fake,0.9746,0.0254,0.9746,23,liar,0
+Says she stopped Capital Metro from raising fares for senior and disabled citizens.,mostly-true,fake,0.8157,0.1843,0.8157,13,liar,0
+Inner-city crime is reaching record levels.,pants-fire,fake,0.8585,0.1415,0.8585,6,liar,1
+A regulatory thing means you cant show someone drinking beer on camera.,mostly-true,fake,0.7961,0.2039,0.7961,12,liar,0
+Says that Sherrod Brown voted to cut Medicare by over $500 billion in order to fund government-run health care.,false,fake,0.7591,0.2409,0.7591,19,liar,1
+Texas legislation would allow teachers to kill their students if they felt it was needed.,half-true,fake,0.8636,0.1364,0.8636,15,liar,0
+"Says U.S. Senate rival Tommy Thompson wants to give a new $265,000 tax cut to millionaires like himself while raising ta",half-true,fake,0.7044,0.2956,0.7044,25,liar,0
+Says Detroit dumping a bunch of sewage in Lake Erie causes big problems for Ohio.,half-true,fake,0.9071,0.0929,0.9071,15,liar,0
+Latinos are 17 percent of our countrys population but hold only 2 percent of its wealth.,true,fake,0.6789,0.3211,0.6789,16,liar,0
+"When you look at the nearly 150 men and women who have served us on the Texas Supreme Court, more than half of them had ",false,fake,0.6546,0.3454,0.6546,29,liar,1
+"Hillary Clinton ""actually differed with (John McCain) by arguing for exceptions for torture before changing positions.""",true,fake,0.9852,0.0148,0.9852,16,liar,0
+"Lois Frankel spent over $13,000 in taxpayer money on a marble shower in a private bathroom with her own toilet.",half-true,fake,0.9437,0.0563,0.9437,20,liar,0
+"Mayor Barrett saved Milwaukee $25 million, thanks to Gov. Walkers reforms.",mostly-true,fake,0.978,0.022,0.978,11,liar,0
+It takes almost a year for a refugee to be processed in the United States.,mostly-true,fake,0.744,0.256,0.744,15,liar,0
+Says wrestling was a favorite sport of Abraham Lincoln.,true,fake,0.5378,0.4622,0.5378,9,liar,0
+Says electric utilities are trying to fool you into amending your state Constitution in a way that gives them the author,half-true,fake,0.8589,0.1411,0.8589,26,liar,0
+"832,000 people lost their job while (Charlie Crist was)governor.",half-true,fake,0.6388,0.3612,0.6388,9,liar,0
+"You worked hard for your money and you paid your taxes when you earned it. Now, (Indiana Republican congressional candid",half-true,fake,0.6551,0.3449,0.6551,31,liar,0
+The (federal) debt is growing by more than $4 billion a day.,true,fake,0.7948,0.2052,0.7948,12,liar,0
+The debt limit deal allows President Obama to borrow unlimited amounts of money.,barely-true,fake,0.955,0.045,0.955,13,liar,1
+We (Trump University)have an A from the Better Business Bureau.,false,fake,0.7095,0.2905,0.7095,10,liar,1
+"Barack Obama ""passed laws moving people from welfare to work.""",mostly-true,fake,0.9736,0.0264,0.9736,10,liar,0
+Says she never received nor sent any material that was marked classified on her private email server whilesecretary of s,false,fake,0.6319,0.3681,0.6319,20,liar,1
+"One person, Kathleen Sebelius, was going to determine whether or not 10-year-old lung patient Sarah Murnaghan would live",barely-true,fake,0.9754,0.0246,0.9754,20,liar,1
+I started the whole year as a senior on the University of Illinois football team and led the team in interceptions and t,barely-true,real,0.6403,0.6403,0.3597,26,liar,0
+Corrupt political bosses. Money laundering. Fraud. Its just another day at the office for Vin Gopal.,pants-fire,fake,0.9752,0.0248,0.9752,16,liar,1
+"When the Fair Tax becomes law, it will be like waving a magic wand releasing us from pain and unfairness.",false,fake,0.858,0.142,0.858,20,liar,1
+Says a $12.5 million incentive deal she approved for Abbott Laboratories contained strong protections for taxpayers if j,false,fake,0.8981,0.1019,0.8981,23,liar,1
+Theyve seen employer-supported coverage increase in Massachusetts after this law (Romneycare) was implemented.,true,fake,0.805,0.195,0.805,13,liar,0
+"Says Clackamas County Measure 3-401 will hurt our county, cripple economic growth, and increase our taxes with excessive",false,fake,0.8926,0.1074,0.8926,20,liar,1
+Says President Barack Obama has opened up no new trade relationships with other nations.,false,fake,0.6893,0.3107,0.6893,14,liar,1
+"In the last four years, our economy has grown on average 0.9 percent a year.",barely-true,real,0.5968,0.5968,0.4032,15,liar,0
+"In the 80s, Democrats promised spending cuts, but delivered only tax hikes.",false,fake,0.828,0.172,0.828,12,liar,1
+"When a bill is sent to the governors office, there is no option for changing it. You sign it or you dont sign it. While ",half-true,fake,0.8248,0.1752,0.8248,40,liar,0
+Republican Bob Donovan has run as a Republican time and again.,half-true,fake,0.5583,0.4417,0.5583,11,liar,0
+"When asked about equal pay for women, (Rubios) quote was that it was a waste of time.",half-true,fake,0.8567,0.1433,0.8567,17,liar,0
+Estimates for adopting Obamacares Medicaid expansion show it will cost Virginia taxpayers $902 million through 2022.,barely-true,fake,0.9475,0.0525,0.9475,16,liar,1
+Alexi Giannoulias top aide was a longtime BP lobbyist.,barely-true,fake,0.8838,0.1162,0.8838,9,liar,1
+"In Chicago, which has the toughest gun laws in the United States, probably you could say by far, they have more gun viol",barely-true,fake,0.7496,0.2504,0.7496,27,liar,1
+He won't even support his colleague's ... motion to censure the Bush administration for systemic repeated illegal wireta,true,fake,0.8681,0.1319,0.8681,18,liar,0
+I spent 18 months putting together the sanctions against Iran so that we could force them to the negotiating table.,mostly-true,fake,0.8553,0.1447,0.8553,20,liar,0
+We cut taxes for 95 percent of working families.,true,fake,0.7335,0.2665,0.7335,9,liar,0
+"Romneys Medicare plan was estimated to cost the average senior about $6,000 a year.",half-true,fake,0.6777,0.3223,0.6777,14,liar,0
+Says Sidney Blumenthal wrote that the Benghazi attack was almost certainly preventable. Clinton was in charge of the Sta,false,fake,0.898,0.102,0.898,33,liar,1
+"Because theres no local option to allow communities to ban, limit or restrict the location of pot shops, if Amendment 2 ",barely-true,fake,0.9468,0.0532,0.9468,50,liar,1
+"Says Barack Obamas regulatory adviser Cass Sunstein, wants to ban hunting and says animals should be represented in cour",half-true,fake,0.8756,0.1244,0.8756,19,liar,0
+Every one of the mass shootings except two in America since 1950 have been in gun-free zones.,half-true,fake,0.988,0.012,0.988,17,liar,0
+"Crist sent his ""top policy staffer to the House Committee to testify in support of the proposal,"" then vetoed the bill.",true,fake,0.67,0.33,0.67,21,liar,0
+"If you ask how many times did Ronald Reagan attend a fundraiser when he ran for re-election in 1984, the answer is eight",mostly-true,fake,0.6483,0.3517,0.6483,43,liar,0
+Assault rifles already are banned.,barely-true,fake,0.9013,0.0987,0.9013,5,liar,1
+A majority of the candidates on this stage have supported amnesty ... I have never supported amnesty.,mostly-true,fake,0.9525,0.0475,0.9525,17,liar,0
+"Says Goldman Sachs CEO said Congress would have to cut Social Security, Medicare and Medicaid and give huge tax breaks t",half-true,fake,0.8915,0.1085,0.8915,27,liar,0
+"The U.S. initially had three federal felonies: treason, piracy, and counterfeiting securities and money.",mostly-true,fake,0.9671,0.0329,0.9671,14,liar,0
+I am the only person in this field who is against amnesty. Every other person in this field wants to allow people who ar,false,fake,0.9558,0.0442,0.9558,37,liar,1
+"The primary election results show Democrats are strong in Kentucky because the Democratic candidates ""both got more vote",half-true,fake,0.6677,0.3323,0.6677,22,liar,0
+"Says for every dollar the state spent on audits last year, it delivered $64 in cost savings.",true,fake,0.8493,0.1507,0.8493,17,liar,0
+Rick Scott vetoed funding for 30 Florida rape crisis centers. Scott said the centers werent needed.,barely-true,real,0.5501,0.5501,0.4499,16,liar,0
+U.S. House opponent Paul Ryan supports cutting funding for veterans by 24 percent.,false,fake,0.5478,0.4522,0.5478,13,liar,1
+"Says Supreme Court nominee Merrick Garlandvoted, so the folks know, in Washington, D.C., to keep guns away from private ",false,fake,0.8496,0.1504,0.8496,20,liar,1
+"Ive also offered a plan that can help (fix Social Security) thats supported by Robert Reich, secretary of labor previous",false,fake,0.6175,0.3825,0.6175,24,liar,1
+Scientists project that the Arctic will be ice-free in the summer of 2013.,barely-true,fake,0.7045,0.2955,0.7045,13,liar,1
+Our credit rating went up since Ive been in office.,false,fake,0.9293,0.0707,0.9293,10,liar,1
+"Every 20 seconds, a child dies because they lack access to clean water and sanitation.",half-true,fake,0.8113,0.1887,0.8113,15,liar,0
+"Says New Jersey is down nearly 200,000 jobs from its pre-recession peak and with Gov. Chris Christie New Jersey has trai",half-true,fake,0.7212,0.2788,0.7212,34,liar,0
+"If you work 40 hours a week at the proposed minimum wage of $10.10 an hour, you get out of poverty.",half-true,fake,0.6168,0.3832,0.6168,21,liar,0
+I never was in favor of shutting down the government. (I) voted to fund the government fully.,barely-true,fake,0.8558,0.1442,0.8558,17,liar,1
+"By 12th grade, more than 3 out of 10 girls have been pregnant at least once.",half-true,fake,0.9077,0.0923,0.9077,16,liar,0
+The Obama administrations own Environmental Protection Agency has said its Clean Power Plan will have a marginal impact ,half-true,fake,0.7107,0.2893,0.7107,21,liar,0
+Air travelers cant get on a plane in the United States without someone doing a background check on them.,half-true,fake,0.5737,0.4263,0.5737,19,liar,0
+We got a million jobs.,mostly-true,fake,0.8356,0.1644,0.8356,5,liar,0
+Says Hillary Clinton helped get done the Childrens Health Insurance Program.,mostly-true,fake,0.9742,0.0258,0.9742,11,liar,0
+"Under Gov. Scott Walker, Wisconsin projected a $1 billion (budget) surplus and it turns out to be a deficit of $2.2 bill",barely-true,fake,0.6775,0.3225,0.6775,22,liar,1
+Says Hillary Clinton wants to bring in thousands of refugees to America from all around the world without any kind of se,false,fake,0.9898,0.0102,0.9898,23,liar,1
+"Barack Obama has ""reversed"" on his commitment ""to begin withdrawing American troops from Iraq immediately.""",false,fake,0.9474,0.0526,0.9474,15,liar,1
+"A majority of Americans agree with a ban on assault weapons. And by the way, so did Ronald Reagan.",true,fake,0.7838,0.2162,0.7838,19,liar,0
+NASCAR fans are twice as likely as non fans to serve in the military and 37 percent of active servicemembers and veteran,mostly-true,fake,0.9397,0.0603,0.9397,25,liar,0
+"Says a gun bill before the Senate would make it a federal felony to leave town for more than seven days, and leave someo",half-true,fake,0.8276,0.1724,0.8276,30,liar,0
+"40,000 veterans in Texas wont get health care because Perry rejected Obamacares Medicaid expansion.",mostly-true,fake,0.8364,0.1636,0.8364,14,liar,0
+Rick Scott has paid down our debt by about $2 billion. Charlie Crists debt went up about $5 billion.,half-true,fake,0.9023,0.0977,0.9023,19,liar,0
+Says Hillary Clinton shows up in Broward County and had a private meeting with elections supervisor Brenda Snipes.,pants-fire,fake,0.9845,0.0155,0.9845,18,liar,1
+Senator Obama has the most liberal voting record in the United States Senate.,barely-true,fake,0.9777,0.0223,0.9777,13,liar,1
+Ive never supported a payroll tax.,false,fake,0.8991,0.1009,0.8991,6,liar,1
+Report that #GOP insisting on changes to Social Security as part of #fiscalcliff false. BTW those changes are supported ,half-true,fake,0.7799,0.2201,0.7799,21,liar,0
+"Since Rick Perry became governor, poverty rates in Texas increased from 15.1% to 17.5% which is higher than the national",half-true,fake,0.7922,0.2078,0.7922,21,liar,0
+"If the U.S. stops adding to the Strategic Petroleum Reserve, it ""will lessen worldwide demand for oil"" and reduce prices",barely-true,fake,0.8969,0.1031,0.8969,20,liar,1
+About 800 people refused to get a drug screening because they are out there on drugs.,false,fake,0.94,0.06,0.94,16,liar,1
+"In eighth grade math, weve fallen to ninth place.",false,fake,0.6631,0.3369,0.6631,9,liar,1
+"Every day, about 100 people will be arrested for possession of marijuana in Georgia.",barely-true,fake,0.9229,0.0771,0.9229,14,liar,1
+We spend a staggering amount of money on health care over $2-trillion and almost twice as much as any other country per ,half-true,fake,0.8962,0.1038,0.8962,23,liar,0
+On support for gay marriage,false,fake,0.5182,0.4818,0.5182,5,liar,1
+Says President Barack Obama already passed all these Obamacare taxes. About a dozen of them hit middle-income taxpayers.,barely-true,fake,0.8443,0.1557,0.8443,18,liar,1
+The entire state of Florida led the nation last year with the most prison inmates committing tax fraud.,true,fake,0.9516,0.0484,0.9516,18,liar,0
+"The Department of Veterans Affairs has a manual out there telling our veterans stuff like, 'Are you really of value to y",pants-fire,fake,0.9322,0.0678,0.9322,30,liar,1
+The highest economic growth decade was the 1960s. Income tax rates were 90 percent.,mostly-true,real,0.7469,0.7469,0.2531,14,liar,1
+"When Carly Fiorina says Hewlett-Packard revenues went up, thats because she bought Compaq. It was a terrible deal.",mostly-true,fake,0.7762,0.2238,0.7762,18,liar,0
+"As a congressman, Mark Neumann voted four times to increase our debt.",half-true,fake,0.8608,0.1392,0.8608,12,liar,0
+"In Ohio, we invested in our children, raising school funding by 5.5 percent in the last budget.",false,real,0.675,0.675,0.325,17,liar,0
+Proposed fees for Rhode Island beaches will still be less than some of the town beaches.,true,fake,0.7443,0.2557,0.7443,16,liar,0
+"Every year tobacco kills more Americans than did World War II more than AIDS, cocaine, heroin, alcohol, vehicular accide",true,fake,0.8697,0.1303,0.8697,23,liar,0
+"Wisconsin sold fresh water to California, helping that states dairy industry, and lost a bunch of jobs (and) a bunch of ",pants-fire,fake,0.877,0.123,0.877,22,liar,1
+"After merging with Tim Hortons of Canada, Burger King is not moving. Our headquarters will remain in Miami and (we) will",half-true,fake,0.8718,0.1282,0.8718,33,liar,0
+The addition of a 1 percent sales tax would cost a typical household in Hillsborough County approximately $12 a month.,mostly-true,fake,0.7184,0.2816,0.7184,20,liar,0
+"President Obama promised families making less than $250,000 a year would not see taxes go up, but Obamacare raises 18 di",barely-true,fake,0.8768,0.1232,0.8768,22,liar,1
+"Every time the price of gasoline rises 1 cent, its abillion dollarsout of our economy that goes to Saudi Arabia.",false,fake,0.8795,0.1205,0.8795,20,liar,1
+Democrats have failed to answer the most basic question of how they want to pay for the more than $1 trillion of health ,mostly-true,fake,0.7677,0.2323,0.7677,25,liar,0
+Two thirds to three quarters of people without [health] insurance in Rhode Island work.,half-true,fake,0.8187,0.1813,0.8187,14,liar,0
+"Every year since Gov. Walker and the Republicans have been in control of the Legislature weve created fewer jobs, accord",false,fake,0.6889,0.3111,0.6889,26,liar,1
+"In rural Virginia, Sen. Warner ran 8-10 points ahead of a traditional Democrat -- ahead of Senator Kaine, ahead of Gover",false,fake,0.7366,0.2634,0.7366,22,liar,1
+"We had bipartisan legislation that got through the Senate that would have prevented bonuses like AIG's ""and then somehow",mostly-true,fake,0.8871,0.1129,0.8871,21,liar,0
+Im the only one whos fought against developers draining the Everglades!,false,fake,0.8857,0.1143,0.8857,11,liar,1
+"When I left the Senate, we were on a trajectory towards a balanced budget.",half-true,fake,0.6828,0.3172,0.6828,14,liar,0
+"Twitter, Google and Facebook are burying the FBI criminal investigation of Clinton. Very dishonest media!",false,fake,0.878,0.122,0.878,15,liar,1
+(Romney's) record was that he raised taxes by $730-million.,half-true,fake,0.5457,0.4543,0.5457,9,liar,0
+"President Obama ""doesn't ... want to admit we're at war.""",pants-fire,fake,0.9867,0.0133,0.9867,10,liar,1
+She stood by ground zero workers who sacrificed their health after so many sacrificed their lives and kept standing till,true,fake,0.9444,0.0556,0.9444,24,liar,0
+"In two terms in the Missouri General Assembly, Jason Kander passed ZERO bills that were signed into law.",barely-true,fake,0.8769,0.1231,0.8769,18,liar,1
+"Due to the war in Iraq, 4,400 Americans are dead, 30,000 severely wounded and more than 100,000 are suffering from serio",half-true,fake,0.9805,0.0195,0.9805,29,liar,0
+"The Pentagons survey about the Dont Ask, Dont Tell policy found that 92 percent of service members agree that they could",half-true,real,0.5152,0.5152,0.4848,32,liar,1
+Says President Barack Obamasown administration has done five environmental impact assessments of the Keystone XL pipelin,half-true,fake,0.591,0.409,0.591,30,liar,0
+The health care law reduces the number of uninsured in America by 3 percent for how much money? $2 trillion.,false,fake,0.9072,0.0928,0.9072,20,liar,1
+"When I was secretary of state, I had a very high approval rating.",true,fake,0.7694,0.2306,0.7694,13,liar,0
+Tuition at Rutgers has increased 10 percent since Gov. Chris Christie took office because he cut funding for higher educ,half-true,real,0.6269,0.6269,0.3731,20,liar,1
+"Says constitutional amendment would help to stop unfair, double taxation on real estate.",half-true,fake,0.9305,0.0695,0.9305,13,liar,0
+"Enacting the Right-to-Carry Act would amount to expanding the rights of sex offenders, terrorists, child predators, and ",half-true,fake,0.9134,0.0866,0.9134,25,liar,0
+"After (Jeb) Bushs two terms in office, Floridas graduation rate was dead last and remains near the bottom.",mostly-true,fake,0.7684,0.2316,0.7684,18,liar,0
+The federal health care law tells the American people precisely what type of coverage they have to have.,half-true,fake,0.9376,0.0624,0.9376,18,liar,0
+Women own just 1 percent of the worlds land.,pants-fire,fake,0.8236,0.1764,0.8236,9,liar,1
+"Obama ""has no experience or background at all in national security affairs.""",false,fake,0.9592,0.0408,0.9592,12,liar,1
+Gov. Crist's veto also clears the way for taxpayer funding of abortion in Florida.,false,fake,0.8667,0.1333,0.8667,14,liar,1
+"Says MarkKirk called for the mass arrest of 18,000 African Americans andwas apparently fine with Trumps #StillTooRacist ",false,fake,0.9095,0.0905,0.9095,21,liar,1
+Says the military accounts for about 10 percent of Floridas economy.,true,real,0.512,0.512,0.488,11,liar,1
+"Says Paul Workman voted in the Democrat primary, supporting Democrats with his vote.",true,fake,0.9577,0.0423,0.9577,13,liar,0
+Says the 3C Corridor train would have taken an hour and 15 minutes longer to carry passengers across Ohio than it would ,true,real,0.7172,0.7172,0.2828,32,liar,1
+"If the Trans-Pacific Partnership is fast-tracked through the Senate, it wont receive a committee assignment and the cons",false,fake,0.6876,0.3124,0.6876,22,liar,1
+"Says President Barack Obama has taken 92 days of vacation since he was sworn in, compared to 367 for President George W.",mostly-true,fake,0.6435,0.3565,0.6435,30,liar,0
+"Says to Hillary Clinton, You heard what I said about (the Trans-Pacific Partnership trade deal), and all of a sudden you",false,fake,0.7999,0.2001,0.7999,24,liar,1
+Ralph Hall has never voted to raise the debt ceiling.,false,fake,0.9365,0.0635,0.9365,10,liar,1
+Says Marco Rubio is proposing a new $1 trillion welfare program in tax credits and $1 trillion in new military spending.,mostly-true,fake,0.5661,0.4339,0.5661,21,liar,0
+David Cicilline was the state representative who opposed tough mandatory sentences for those convicted of domestic viole,true,fake,0.7436,0.2564,0.7436,20,liar,0
+[The state ethics commission] took absolutely the same percent of cuts as most other state agencies. They were somewhere,true,real,0.6203,0.6203,0.3797,29,liar,1
+The stock market has almost tripled since April of 2009.,mostly-true,fake,0.8604,0.1396,0.8604,10,liar,0
+"As weve seen that federal support for states diminish, youve seen the biggest job losses in the public sector -- teacher",mostly-true,fake,0.7228,0.2772,0.7228,27,liar,0
+State employees in Wisconsin earn about 8 percent less than if they worked in the private sector.,false,fake,0.6937,0.3063,0.6937,17,liar,1
+President Barack Obama has doubled the size of government since he took office.,pants-fire,fake,0.6595,0.3405,0.6595,13,liar,1
+"Says the stimulus bill sent tax credits overseas, such as $1.2 billion to a solar company thats building a plant in Mexi",pants-fire,fake,0.8068,0.1932,0.8068,22,liar,1
+"Says a federal judge in San Antonio issued a ruling that not only could the students not pray at their graduation, if th",half-true,fake,0.8033,0.1967,0.8033,52,liar,0
+"Tim Kaine doubled down in his support of devastating defense cuts, saying the the deal was the right thing to do.",half-true,fake,0.8341,0.1659,0.8341,21,liar,0
+"Before Congress, (Tom) Cotton got paid handsomely working for insurance companies and corporate interests.",false,fake,0.949,0.051,0.949,14,liar,1
+Georgia is one of only five states where breweries cant sell you a pint of beer to drink on premise or sell you a six-pa,mostly-true,fake,0.7332,0.2668,0.7332,27,liar,0
+"In our community college system (state) cuts have reduced funding per student by $1,908.",mostly-true,fake,0.8777,0.1223,0.8777,14,liar,0
+The financial regulatory bill will kill jobs.,barely-true,fake,0.8859,0.1141,0.8859,7,liar,1
+"An audit shows there are 6.5 million people who have active Social Security numbers who are 112 years of age or older,",true,fake,0.7165,0.2835,0.7165,22,liar,0
+"American Hustleshows the FBI making real-life bribes to Washington politicians. I know, because as your U.S. senator, I ",true,fake,0.9705,0.0295,0.9705,21,liar,0
+Wisconsin is not walking away from a dime in federal funds by rejecting the Obamacare Medicaid expansion.,barely-true,fake,0.9361,0.0639,0.9361,17,liar,1
+"The years that I was speaker, the Florida House consistently offered leaner budgets than the governor offered.",mostly-true,fake,0.5398,0.4602,0.5398,17,liar,0
+The Wisconsin school voucher program has no research that shows that its going to improve student learning.,mostly-true,fake,0.9252,0.0748,0.9252,17,liar,0
+"Says as of November, we were ranked 45th in the nation in terms of job creation, according to the U.S. Bureau of Labor S",barely-true,fake,0.9599,0.0401,0.9599,24,liar,1
+"A lot of what (Cubas) survival depends on is Venezuelan oil money, which is drying up.",mostly-true,fake,0.8691,0.1309,0.8691,16,liar,0
+Eighty-seven percent of private insurance plans currently include (abortion) coverage.,mostly-true,fake,0.5504,0.4496,0.5504,10,liar,0
+It is against the law for the NSA to record or monitor Americans phone calls without getting a specific FISA warrant to ,true,fake,0.9378,0.0622,0.9378,24,liar,0
+President Obama came to Ohio 12 times to try to defeat me and guess what? He didnt win.,barely-true,fake,0.7951,0.2049,0.7951,18,liar,1
+Says Russ Feingold broke his 1992 promise to always get the majority of funding from Wisconsin residents.,true,fake,0.8937,0.1063,0.8937,17,liar,0
+Greg Abbott defended more than $5 billion in public school funding cuts in fighting hundreds of school districts in cour,half-true,fake,0.7882,0.2118,0.7882,20,liar,0
+On abortion,false,fake,0.903,0.097,0.903,2,liar,1
+Says President Barack Obama is absolutely a Muslim.,pants-fire,fake,0.9705,0.0295,0.9705,8,liar,1
+"Three years after getting the $100 million (from Mark Zuckerberg), less than two-thirds of students in Cory Bookers Newa",barely-true,fake,0.8452,0.1548,0.8452,20,liar,1
+"Since 1978, college tuition nationwide has gone up something like four times the rate of inflation.",true,fake,0.8098,0.1902,0.8098,16,liar,0
+"Marijuana is a Schedule I drug, which you understand means that you cant do any research about it.",barely-true,fake,0.896,0.104,0.896,18,liar,1
+"On support for Trade Promotion Authority, calledfast-track",false,fake,0.7919,0.2081,0.7919,7,liar,1
+There are more poor people today as a percentage of our population than the 1970s.,mostly-true,fake,0.9248,0.0752,0.9248,15,liar,0
+About half the people who would qualify for Medicaid expansion in Florida can buy a health care plan for $30 a month on ,half-true,fake,0.7797,0.2203,0.7797,28,liar,0
+Says Rick Scott gave a deposition in which he invoked the Fifth Amendment 75 times about his dealings as head of Columbi,mostly-true,fake,0.7572,0.2428,0.7572,24,liar,0
+"The average federal employee makes $120,000 a year. The average private employee makes $60,000 a year.",false,fake,0.9264,0.0736,0.9264,16,liar,1
+Says President Obama has doubled the deficit.,false,fake,0.9409,0.0591,0.9409,7,liar,1
+On reauthorization of Export-Import Bank.,false,fake,0.8764,0.1236,0.8764,5,liar,1
+"In the 2014 elections, the American people overwhelmingly said we dont want Obamacare and we dont want amnesty.",false,fake,0.7642,0.2358,0.7642,18,liar,1
+"Marijuana today is genetically modified, with THC levels that far surpass the marijuana of the 1970s.",mostly-true,fake,0.9799,0.0201,0.9799,16,liar,0
+"One in every five families in the state of New Jersey has a loved one with a mental illness, a serious mental illness, a",true,fake,0.7619,0.2381,0.7619,28,liar,0
+"There are nearly 500,000 registered sex offenders across the country and at any one time about 100,000 are unaccounted f",barely-true,fake,0.9095,0.0905,0.9095,20,liar,1
+Virginia is home to more veterans per capita than any state in America.,false,fake,0.9637,0.0363,0.9637,13,liar,1
+"Scott Maddox has run ""losing campaigns for 3 of Florida's 4 available cabinet positions.""",false,fake,0.6978,0.3022,0.6978,14,liar,1
+"Since Corey Stewart became chairman in November 2006, unemployment is up 150% and average home price sales are down $150",half-true,fake,0.8693,0.1307,0.8693,20,liar,0
+"In Wisconsin, only half of all the adults with serious psychological distress received mental health treatment or medica",mostly-true,fake,0.9123,0.0877,0.9123,18,liar,0
+Today Russia holds many of our most precious national security satellites at risk before they ever get off the ground.,mostly-true,fake,0.9638,0.0362,0.9638,20,liar,0
+"Obamacare is a massive, massive income redistribution with $250 billion a year in Medicaid expansion (and) in the subsid",half-true,fake,0.92,0.08,0.92,38,liar,0
+"After President Barack Obamas health care law takes full effect, 100 percent of Americans will depend on some form of fe",false,fake,0.5627,0.4373,0.5627,32,liar,1
+"Says Connie Mack takes two homestead exemptions, directly contrary to Floridas Constitution.",barely-true,fake,0.8998,0.1002,0.8998,12,liar,1
+"It costs about $40,000 a year for a homeless person to be on the streets.",mostly-true,fake,0.771,0.229,0.771,15,liar,0
+Barack Obama ended up getting re-elected by the largest gender gap in the history of American elections.,half-true,fake,0.9741,0.0259,0.9741,17,liar,0
+"Under Obamacare, The IRS will have access to the American peoples protected health care information.",pants-fire,fake,0.9644,0.0356,0.9644,15,liar,1
+"In the past year, more than 20 percent of Americans have changed their mind about the war in Afghanistan. They conclude ",barely-true,fake,0.542,0.458,0.542,25,liar,1
+"Says that in 2009, Jon Huntsman said that the Recovery Act wasnt large enough and as governor he asked for $14.4 billion",half-true,real,0.6357,0.6357,0.3643,34,liar,1
+Says Donald Trumps proposed tax treatment of hedge fund managers makes the current loophole even worse.,true,fake,0.8448,0.1552,0.8448,16,liar,0
+You know how many children in the history of the United States have died in a fire (at school)? Zero.,false,fake,0.885,0.115,0.885,20,liar,1
+We could cut unemployment in half simply by reclaiming the jobs taken by illegal workers.,false,fake,0.8488,0.1512,0.8488,15,liar,1
+Social Security and Medicare are a Ponzi scheme.,false,fake,0.814,0.186,0.814,8,liar,1
+The Senate proposal to restore emergency unemployment benefits for five months was fully paid for.,barely-true,fake,0.8317,0.1683,0.8317,15,liar,1
+Were the worst state in the country at moving people from welfare to work.,false,fake,0.9289,0.0711,0.9289,14,liar,1
+"Under the House health care bill, the government ""will have to penalize citizens if we choose not to buy a plan that wil",barely-true,fake,0.8189,0.1811,0.8189,33,liar,1
+Scott Walker has a plan to privatize state lands and wants to sell our deer to the highest bidder.,pants-fire,fake,0.6623,0.3377,0.6623,19,liar,1
+"In the last 29 months, our economy has produced about 4.5 million private-sector jobs.",mostly-true,fake,0.7839,0.2161,0.7839,14,liar,0
+"Says Jeff Wentworth, bending the rules, has used $211,743.96 in campaign contributions to lease luxury cars.",barely-true,fake,0.8144,0.1856,0.8144,16,liar,1
+"Mike Pence voted against expanding the Childrens Health Insurance program, which Hillary helped to start.",mostly-true,fake,0.9514,0.0486,0.9514,15,liar,0
+Jim Renacci voted repeatedly to end Medicare.,false,fake,0.8699,0.1301,0.8699,7,liar,1
+Wisconsin is one of the highest taxed states in the nation.,half-true,fake,0.9479,0.0521,0.9479,11,liar,0
+"In 1928 school boards sent home letters with children saying that if Al Smith is elected president, you will not be allo",half-true,fake,0.9897,0.0103,0.9897,28,liar,0
+An account of attacks in Benghazi written by former White House press secretary Dee Dee Myers shows that the body of U.S,pants-fire,fake,0.8579,0.1421,0.8579,34,liar,1
+"In the past three years, we have prosecuted or brought more cases on access to public records than in the previous 12 ye",true,fake,0.8588,0.1412,0.8588,24,liar,0
+John Cornyn voted twice in 2013 to back Obamas amnesty plan.,pants-fire,fake,0.9746,0.0254,0.9746,11,liar,1
+The Red Sox waited 87 long years to win the World Series.,false,fake,0.8365,0.1635,0.8365,12,liar,1
+You look at defense were spending more than the rest of the world combined.,barely-true,fake,0.8321,0.1679,0.8321,14,liar,1
+On repeal of Wisconsins smoking ban,false,fake,0.8054,0.1946,0.8054,6,liar,1
+Ohio currently ranks 50th out of all states in income growth.,mostly-true,fake,0.8444,0.1556,0.8444,11,liar,0
+Torture is illegal by our laws. Its illegal by international laws.,true,fake,0.925,0.075,0.925,11,liar,0
+"Every month, we get the reports from the Bureau of Labor Statistics that say even more people have given up looking for ",barely-true,fake,0.7187,0.2813,0.7187,23,liar,1
+Ninety-five percent of the money used for union-operated worker training centers comes from employers.,barely-true,fake,0.6363,0.3637,0.6363,14,liar,1
+Youth unemployment in minority communities is about 40 to 45 percent.,mostly-true,real,0.5498,0.5498,0.4502,11,liar,1
+Harry Reid says he does more for Nevada. Hes done more for unemployment. We were at 4.4 percent. Now were at 14 percent.,half-true,fake,0.8074,0.1926,0.8074,53,liar,0
+"Says President Barack Obama said when we got bin Laden, terrorism problem solved.",false,fake,0.5518,0.4482,0.5518,13,liar,1
+"In renewable and advanced energy manufacturing projects, Ohio now ranks first among the 50 states.",half-true,fake,0.7596,0.2404,0.7596,15,liar,0
+Texas is one of only a handful of states that does not have an equal pay law.,false,fake,0.7943,0.2057,0.7943,17,liar,1
+"Last year, Exxon pocketed nearly $4.7 million every hour.",true,fake,0.5799,0.4201,0.5799,9,liar,0
+"While the sequester is in effect, the federal government is still funding a study on duck penises.",mostly-true,fake,0.8592,0.1408,0.8592,17,liar,0
+"Hillary Clinton ""agreed with (John McCain) on voting for the war in Iraq.""",true,fake,0.9944,0.0056,0.9944,13,liar,0
+Sen. Hutchison abandoned Republicans and stood with Democrats to ensure health care legislation would pass quickly.,pants-fire,fake,0.7726,0.2274,0.7726,16,liar,1
+Were within 600 miles of 60 percent of America. Were in a perfect location.,true,fake,0.6822,0.3178,0.6822,14,liar,0
+Forty percent of the country is going to be in states that are tolerant of gay marriage or at least civil unions.,true,real,0.7283,0.7283,0.2717,22,liar,1
+"The Iranian parliament will get to say yes or no on this deal, and I think the United States Congress should have the ex",barely-true,fake,0.6369,0.3631,0.6369,29,liar,1
+"Rubio's ""got more experience than Obama had.""",barely-true,fake,0.9162,0.0838,0.9162,7,liar,1
+Says Houston National Cemetery is preventing Christian prayers from being said at military funerals.,false,fake,0.5887,0.4113,0.5887,14,liar,1
+Says Donald Trumps polling numbers show that hes the highest with Hispanics that any Republican has ever been.,false,fake,0.8486,0.1514,0.8486,18,liar,1
+ ... following World War II war crime trials were convened. The Japanese were tried and convicted and hung for war crime,true,fake,0.7963,0.2037,0.7963,35,liar,0
+Congress and President Obama have accumulated more debt since he took office than the total amount of debt accumulated d,barely-true,fake,0.8466,0.1534,0.8466,29,liar,1
+On adoption by gay couples,false,fake,0.9016,0.0984,0.9016,5,liar,1
+Says North Carolina Republican Senate candidate Thom Tillis called Obamacare a great idea.,barely-true,fake,0.8915,0.1085,0.8915,13,liar,1
+"Says of Mitch McConnell,What can happen in 30 years? A senator can become a multi-millionaire in public office.",barely-true,fake,0.8923,0.1077,0.8923,18,liar,1
+"In recent years, menhaden numbers along our coast have plummeted by 90 percent.",barely-true,real,0.6668,0.6668,0.3332,13,liar,0
+U.S. Rep. John Barrows plan puts the IRS in charge of your health care.,barely-true,fake,0.9639,0.0361,0.9639,14,liar,1
+"In one year, (President Obama) provided $90 billion in breaks to the green energy world into solar and wind, to Solyndra",false,fake,0.9782,0.0218,0.9782,27,liar,1
+Oregon schools receive millions of dollars per year in federal school lunch assistance and yet they are required to spen,true,fake,0.9544,0.0456,0.9544,26,liar,0
+It still had not gotten terrible on the roads by 2 to 3 p.m. Tuesday.,false,real,0.6312,0.6312,0.3688,15,liar,0
+"Says Rick Scott changed his promise from700,000 jobs created on top of what normal growth would be to just 700,000 jobs.",true,fake,0.9052,0.0948,0.9052,21,liar,0
+Says he got lobbied by a woman with late-stage cancer about vaccinating Texas girls against a virus that can cause cervi,false,fake,0.8201,0.1799,0.8201,22,liar,1
+Says there were only about eight or 10 inflammatory sentences in his newsletters.,false,fake,0.8859,0.1141,0.8859,13,liar,1
+One year today since #GOP took control of the House and no new jobs.,false,fake,0.8151,0.1849,0.8151,14,liar,1
+I supported tort reform with regard to securities...product liability...interstate commerce.,mostly-true,fake,0.7942,0.2058,0.7942,10,liar,0
+"The military has spent $500 million enforcing the Dont Ask, Dont Tell policy regarding gays and lesbians in the military",mostly-true,fake,0.8676,0.1324,0.8676,20,liar,0
+Says Obama has failed to pass a budget.,barely-true,fake,0.9024,0.0976,0.9024,8,liar,1
+The United states is borrowing more than 40 cents of every dollar we spend.,true,fake,0.8986,0.1014,0.8986,14,liar,0
+Says its estimated that 300 babies a year are sent home from the hospital with an unrecognized congenital heart defect; ,mostly-true,fake,0.896,0.104,0.896,29,liar,0
+Says Donald Trump brings in hundreds of foreign workers to replace Americans.,half-true,fake,0.9659,0.0341,0.9659,12,liar,0
+Says he got twice as much money from the sale of County Grounds land than Milwaukee County Executive Scott Walker was wi,barely-true,fake,0.808,0.192,0.808,24,liar,1
+The Greenlight Pinellas transportation plan involves a 300% tax increase.,false,fake,0.5978,0.4022,0.5978,10,liar,1
+Republicans made it easier to buy a gun in states they won in 2010.,barely-true,fake,0.6669,0.3331,0.6669,14,liar,1
+Says only 25 percent of Texas high school students graduate prepared for college or careers.,barely-true,fake,0.8882,0.1118,0.8882,15,liar,1
+Were 48th in K-12 funding and 50th in higher education.,half-true,fake,0.6718,0.3282,0.6718,10,liar,0
+"Because of union rules, cooks helpers moved into DMV jobs they were not trained for",half-true,fake,0.5231,0.4769,0.5231,15,liar,0
+You see 34 people (are) murdered every single day by gunfire in America.,mostly-true,fake,0.9765,0.0235,0.9765,13,liar,0
+"Says that except for Donald Trump, every other major party nominee for the past 40 years has released their tax returns.",mostly-true,fake,0.7503,0.2497,0.7503,21,liar,0
+We flood communities with so many guns that it is easier for a teenager to buy a Glock than get his hands on a computer ,barely-true,real,0.5385,0.5385,0.4615,29,liar,0
+Says Marco Rubio wrote and passed bipartisan legislation allowing the VA to fire negligent workers.,mostly-true,fake,0.5206,0.4794,0.5206,15,liar,0
+We came out against Deepwater and everybody is now paying for [the project] in their electric bills.,barely-true,fake,0.7801,0.2199,0.7801,17,liar,1
+"If an Iranian woman shows too much hair in public, she risks being beaten or killed.",false,fake,0.8207,0.1793,0.8207,16,liar,1
+Not even Tim Kaine is willing to say he trusts Hillary Clinton.,pants-fire,fake,0.9794,0.0206,0.9794,12,liar,1
+"@realDonaldTrump is coming to San Antonio, which is 60% Mexican-AMERICAN.",mostly-true,fake,0.9653,0.0347,0.9653,10,liar,0
+President Obama has spent over $2 million in legal fees defending lawsuits about his birth certificate.,false,fake,0.7164,0.2836,0.7164,16,liar,1
+The labor force participation rate -- the share of the potential workforce that is actually working or looking for work-,true,fake,0.9232,0.0768,0.9232,30,liar,0
+There is no state in the U.S. where a 40-hour minimum wage work week is enough to afford a two-bedroom apartment.,mostly-true,real,0.51,0.51,0.49,21,liar,1
+Says 11 soccer players on the U.S. Mens National Team are immigrants.,false,fake,0.7081,0.2919,0.7081,12,liar,1
+I opposed TPP (Trans-Pacific Partnership) and have always opposed TPP.,mostly-true,fake,0.9657,0.0343,0.9657,10,liar,0
+"Under the new and little known 'global justice' initiative, the Obama administration has ordered FBI agents to ""read Mir",half-true,fake,0.9942,0.0058,0.9942,28,liar,0
+"Barack Obama ""rejects everyone white, including his mother and his grandparents.""",pants-fire,fake,0.8528,0.1472,0.8528,11,liar,1
+Donald Trump says all Mexicans are rapists.,false,fake,0.7908,0.2092,0.7908,7,liar,1
+"Rubio's tax swap proposal ""would have been a massive tax increase.""",false,fake,0.7334,0.2666,0.7334,11,liar,1
+Was Martha Kanter dispatched to Corvallis with $17 million in stimulus money to save Craig Robinsons job?,pants-fire,fake,0.9412,0.0588,0.9412,17,liar,1
+Says Mitt Romney would deny gay people the right to adopt children.,false,fake,0.7658,0.2342,0.7658,12,liar,1
+"In 2010, 2,694 young people were killed by gunfire. 1,773 were victims of homicide; 67 were elementary school-age childr",mostly-true,fake,0.6558,0.3442,0.6558,19,liar,0
+My opponent promises to bring back old jobs by wishing away the global economy.,false,fake,0.9382,0.0618,0.9382,14,liar,1
+Says Oregon ranks 30th in the nation with regard to its incarceration rate.,true,fake,0.9604,0.0396,0.9604,13,liar,0
+Obamacare was the Republican plan in the early 90s.,half-true,real,0.54,0.54,0.46,9,liar,1
+"Marco Rubio's ""income skyrocketed while his power increased.""",true,fake,0.6753,0.3247,0.6753,8,liar,0
+We know this now. The banks no longer loan (Donald Trump) money because hes a terrible risk. So he goes to these (Russia,barely-true,fake,0.9762,0.0238,0.9762,27,liar,1
+On returning Republican campaign contributions.,false,fake,0.808,0.192,0.808,5,liar,1
+"The Iraq war has been ""our longest war.""",false,fake,0.8315,0.1685,0.8315,8,liar,1
+Gov. Scott Walkers plan to freeze pay for state employees includes a 5.4 percent raise for himself.,false,fake,0.5914,0.4086,0.5914,17,liar,1
+Rhode Island Treasurer Gina Raimondo raised the mortality rate from 65 to 87 and used a 1994 annuity chart to create the,barely-true,fake,0.665,0.335,0.665,24,liar,1
+"Says Charlie Crist stood there, over 3 African-American prisoners inchains, on their knees, on the side of the road. Say",half-true,fake,0.9602,0.0398,0.9602,57,liar,0
+"Classified material has a header which says top-secret, secret, confidential. Nothing, and I will repeat this and this i",mostly-true,fake,0.8931,0.1069,0.8931,41,liar,0
+I never lobbied under any circumstance for Freddie Mac.,half-true,fake,0.9447,0.0553,0.9447,9,liar,0
+We did not seek an impeachment of President Bush.,barely-true,fake,0.8582,0.1418,0.8582,9,liar,1
+Theres a mosque inside of the Pentagon.,false,fake,0.9469,0.0531,0.9469,7,liar,1
+Says Ted Kennedy sent a letter to then Soviet leader Yuri Andropov apologizing for Ronald Reagan and begging the Soviets,false,fake,0.8375,0.1625,0.8375,23,liar,1
+"The United States has more of our people in prison than Russia, China, and North Korea combined.",barely-true,fake,0.701,0.299,0.701,17,liar,1
+"When we lower tax rates, we generate more in revenues. That happened in 86 with the Reagan plan, happened in 2001, follo",half-true,fake,0.7076,0.2924,0.7076,25,liar,0
+Says Debbie Wasserman Schultz has voted for huge subsidies for the sugar industry ... as well as for delays in cleanups.,mostly-true,fake,0.9102,0.0898,0.9102,21,liar,0
+"Says 10 days after Hurricane Katrina, this chamber passed two separate bills amounting to $60 billion. It has been nearl",true,fake,0.6571,0.3429,0.6571,31,liar,0
+The UK has an unarmed police force and a firearm fatality rate that is 40 times lower per capita than in the U.S.,mostly-true,fake,0.9303,0.0697,0.9303,23,liar,0
+"Since John F. Kennedy was assassinated in 1963, more Americans have died by gunfire within our own country than American",true,fake,0.8791,0.1209,0.8791,30,liar,0
+"By voting for Obamacare, Sen. Kay Hagan voted to kill the equivalent of 2.5 million jobs.",barely-true,fake,0.8784,0.1216,0.8784,16,liar,1
+We are imprisoning or giving jail sentences to young people who are smoking marijuana.,barely-true,fake,0.8372,0.1628,0.8372,14,liar,1
+"When the presidents spokesman was asked about (Anwar) al-Awlakis son, he said he should have chosen a more responsible f",half-true,fake,0.7251,0.2749,0.7251,20,liar,0
+Expanding Medicaid will worsen health care options for the most vulnerable among us in Texas.,false,fake,0.8302,0.1698,0.8302,15,liar,1
+Our debt is already bigger than our economy.,half-true,fake,0.9019,0.0981,0.9019,8,liar,0
+I never considered myself a maverick.,pants-fire,fake,0.8032,0.1968,0.8032,6,liar,1
+On which team hes rooting for in the World Series.,half-true,fake,0.7891,0.2109,0.7891,10,liar,0
+"The state of Georgia has lost 200,000 total jobs and 50,000 construction jobs since May 2007.",true,fake,0.7776,0.2224,0.7776,16,liar,0
+Says the director of NASA says its main mission is Muslim outreach.,half-true,fake,0.8846,0.1154,0.8846,12,liar,0
+Says he eliminated an EPA rule that treated spilled milk like it was oil.,true,fake,0.8299,0.1701,0.8299,14,liar,0
+"Throughout his time in elected office, Barack Obama has taken multiple positions on banning handguns and the D.C. handgu",half-true,fake,0.9467,0.0533,0.9467,20,liar,0
+"Mitt Romneys pledged to protect (oil companies) record profits and their billions in special tax breaks, too.",half-true,fake,0.8324,0.1676,0.8324,17,liar,0
+"Says there are probably 2 million, it could be even 3 million criminal immigrants in the country illegally.",half-true,fake,0.9154,0.0846,0.9154,18,liar,0
+In other states (where illegal immigrants have been allowed to get drivers licenses) their insurance premiums for everyb,mostly-true,fake,0.8368,0.1632,0.8368,21,liar,0
+The ocean is now much more acidic . . . than it has been for many millions of years.,half-true,fake,0.835,0.165,0.835,19,liar,0
+New Jersey taxpayers will now face the highest tolls in the country.,false,fake,0.9324,0.0676,0.9324,12,liar,1
+"An audit of the last census found that over 370,000 people living in Texas were not counted, and our state lost an estim",pants-fire,fake,0.8556,0.1444,0.8556,31,liar,1
+"Barbara Boxer voted to cut spending on Medicare benefits by $500 billion, cuts so costly to hospitals and nursing homes ",barely-true,fake,0.8954,0.1046,0.8954,27,liar,1
+"In the last 24 months, 10 rural Texas hospitals have been forced to shut their doors because state leaders chose not to ",barely-true,fake,0.8847,0.1153,0.8847,24,liar,1
+Says Gov. Chris Christie has now come up with a new agenda for ethics reform in September 2011.,barely-true,fake,0.785,0.215,0.785,18,liar,1
+Our tax rates are lower now than they were under Ronald Reagan. Theyre much lower than they were under Dwight Eisenhower,mostly-true,fake,0.5112,0.4888,0.5112,21,liar,0
+"Says his bill, HB 97, would prevent the use of taxpayer dollars on abortions.",false,fake,0.9539,0.0461,0.9539,14,liar,1
+On a single-payer health care system.,half-true,fake,0.9772,0.0228,0.9772,6,liar,0
+Ted Strickland stands in lockstep with Hillary Clinton and the abortion lobby in their desire to force Americans to pay ,barely-true,fake,0.9933,0.0067,0.9933,34,liar,1
+I have never lobbied for offshore oil drilling.,barely-true,fake,0.7856,0.2144,0.7856,8,liar,1
+The federal government now tells us which light bulbs to buy.,barely-true,fake,0.9416,0.0584,0.9416,11,liar,1
+Employers and schools have no right to conduct surveillance of a dorm room or a workers cubicle.,barely-true,fake,0.8331,0.1669,0.8331,17,liar,1
+I have something in common with my husband. He never carried caucuses either. He lost all of the ones that I've lost.,mostly-true,fake,0.5996,0.4004,0.5996,22,liar,0
+Governors proposed budget raids K-12 school funds to grow DHS again.,barely-true,fake,0.7828,0.2172,0.7828,11,liar,1
+Any Floridian who has ever requested an absentee ballot henceforth gets one automatically.,false,fake,0.9155,0.0845,0.9155,13,liar,1
+Clinton aides admit it (a gas tax holiday) won't do much for you but would help her politically.,barely-true,fake,0.6838,0.3162,0.6838,18,liar,1
+"There are about 350,000 people who succeed in crossing our borders illegally each year.",false,fake,0.8317,0.1683,0.8317,14,liar,1
+"A United Nations arms treaty would almost certainly force the U.S. to create an international gun registry, setting the ",false,fake,0.9294,0.0706,0.9294,24,liar,1
+Says stores will be barred from selling 100-watt light bulbs as of 2012.,barely-true,fake,0.8575,0.1425,0.8575,13,liar,1
+"Despite claims that you can keep the health care plan you like, the Obama Administration has predicted that as many as 7",false,fake,0.9239,0.0761,0.9239,36,liar,1
+"The Obama administration spent $205,075 in stimulus funds to relocate a shrub that sells for $16.",barely-true,fake,0.9769,0.0231,0.9769,16,liar,1
+"In the stimulus, ""$15 million dollars went to 'build a bigger, better airport' for the town of Ouzinkie, Alaska, populat",true,fake,0.9729,0.0271,0.9729,21,liar,0
+"Says CIA Director George Tenet told the Bush administration that the Sept. 11, 2001, terrorist attack was coming. So the",false,fake,0.8103,0.1897,0.8103,24,liar,1
+Says Scott Walker runs a state government that bans employees from talking about climate change.,false,real,0.6406,0.6406,0.3594,15,liar,0
+We have the lowest per-capita spending of any state in the nation except for South Dakota.,mostly-true,fake,0.9142,0.0858,0.9142,16,liar,0
+Social Security is a Ponzi scheme.,false,fake,0.8633,0.1367,0.8633,6,liar,1
+Says the majority of Americans support gay marriage.,mostly-true,fake,0.7915,0.2085,0.7915,8,liar,0
+Insurance companies have seen their profits soar by more than 400 percent since 2001.,half-true,fake,0.6246,0.3754,0.6246,14,liar,0
+380 Americans have been killed in 294 mass shootings in 2015 alone.,half-true,fake,0.8185,0.1815,0.8185,12,liar,0
+We spend twice as much per capita on health care as any other nation on Earth.,false,fake,0.8906,0.1094,0.8906,16,liar,1
+"There have been literally hundreds of new tax preferences and loopholes added to the code since 1986, last time we did t",true,fake,0.7384,0.2616,0.7384,22,liar,0
+"We dont know anything about Hillary in terms of religion. Now, shes been in the public eye for years and years, and yet ",pants-fire,fake,0.9599,0.0401,0.9599,29,liar,1
+"1/3 of our kids drop out (of high school), cannot go to college or start a career.",barely-true,fake,0.9356,0.0644,0.9356,17,liar,1
+On whether a U.S. Supreme Court nominee should be forthcoming at confirmation hearings.,false,fake,0.5962,0.4038,0.5962,13,liar,1
+Due to a flaw in the 1995 Outer Continental Shelf Deep Water Royalty Relief Act numerous oil companies are now drilling ,half-true,fake,0.7478,0.2522,0.7478,37,liar,0
+Very little of (the defense) budget less than 10 percent actually goes into fighting ISIS and international terrorism.,barely-true,fake,0.7683,0.2317,0.7683,18,liar,1
+Elizabeth Townsend runs the elections office that omitted a school board race on a ballot and gave a School Board candid,barely-true,fake,0.8992,0.1008,0.8992,23,liar,1
+Says Austin Mayor Lee Leffingwell voted for a toll lane on MoPac.,true,fake,0.8802,0.1198,0.8802,12,liar,0
+Ch Guevara wrote extensively about the superiority of white Europeans over people of African descent.,barely-true,fake,0.9194,0.0806,0.9194,15,liar,1
+"Republican leaders said ""no"" to ""tax cuts for 95% of working Americans.""",barely-true,fake,0.5194,0.4806,0.5194,12,liar,1
+Obamas Environmental Protection Agency sent emails for Hispanic Heritage Month with a photo of Che Guevara.,half-true,fake,0.9486,0.0514,0.9486,16,liar,0
+There is a growing body of evidence that radiation in excess of what the government says are the minimum amounts you sho,barely-true,fake,0.8078,0.1922,0.8078,35,liar,1
+Says that Tennessee law requires that schools receive half of proceeds -- $31 million per year -- from a half-cent incre,true,fake,0.7229,0.2771,0.7229,27,liar,0
+Says Democratic recall opponent Shelly Moore opposes any limit on taxes.,barely-true,fake,0.7074,0.2926,0.7074,11,liar,1
+Says the 2014-15 state budget cut border security and funding to fight criminal gangs.,barely-true,real,0.661,0.661,0.339,14,liar,0
+Says One-third of our healthcare dollars go to wasteful insurance billing and bureaucracy.,mostly-true,fake,0.9322,0.0678,0.9322,13,liar,0
+Theres a 1.5 percent to 2 percent overhead in Medicare. The insurance companies have a 20 percent to 30 percent overhead,half-true,real,0.6497,0.6497,0.3503,21,liar,1
+The climate hasnt warmed in quite a few years. That is proven scientifically.,false,fake,0.9124,0.0876,0.9124,13,liar,1
+"McCain ""hasn't held executive responsibility.""",false,real,0.6795,0.6795,0.3205,5,liar,0
+Says Tom Perriello voted to give tax breaks to foreign companies creating jobs in China.,false,fake,0.8265,0.1735,0.8265,15,liar,1
+"Since 1904, the Ohio victor has won the presidency 25 out of 27 times",true,fake,0.8315,0.1685,0.8315,14,liar,0
+"Says Sen. Rob Portman said, It would be irresponsible not to cut Medicare.",half-true,fake,0.6139,0.3861,0.6139,13,liar,0
+Two million more Latinos are in poverty today than when President Obamatook his oath of office less than eight years ago,half-true,fake,0.8301,0.1699,0.8301,21,liar,0
+Says the media distortedwhat happened with a baby at his rally.,true,fake,0.9352,0.0648,0.9352,11,liar,0
+The American people spoke pretty loudly. They said stop all the looming tax hikes....,false,fake,0.8888,0.1112,0.8888,14,liar,1
+We have billions in surplus.,barely-true,fake,0.9429,0.0571,0.9429,5,liar,1
+Maggie Hassan missed nearly every university system board meeting.,mostly-true,fake,0.5847,0.4153,0.5847,9,liar,0
+People think AIDS is done --its not done.,mostly-true,fake,0.8561,0.1439,0.8561,8,liar,0
+Barack Obama opposed a bill that would have saved Gianna Jessen's life.,false,fake,0.9757,0.0243,0.9757,12,liar,1
+Todd Staples recently tried to woo his supporters and right-wing base by suggesting the Agriculture Commission cut progr,barely-true,fake,0.8231,0.1769,0.8231,30,liar,1
+"In the weekend after the terrorist attacks in Paris, the White House said this couldnt happen in the United States. ISIS",false,real,0.8528,0.8528,0.1472,25,liar,0
+Says Michigan U.S. Senate candidateTerri Lynn Land said guaranteeing equal pay for women who do the same job as men is n,barely-true,fake,0.7753,0.2247,0.7753,25,liar,1
+On supporting right to work legislation in 2015,false,fake,0.8915,0.1085,0.8915,8,liar,1
+"Palin had ""executive experience"" in the PTA.",false,fake,0.7488,0.2512,0.7488,7,liar,1
+You don't even have to go outside Obama's campaign to find advisers who are anti-Israel.,false,fake,0.9679,0.0321,0.9679,15,liar,1
+"A ""massive"" federal computer network will make your medical records available to ""millions of people"" with a ""complete l",barely-true,fake,0.9142,0.0858,0.9142,34,liar,1
+"Says Travis County Commissioner Gerald Daugherty claims to have taken a pay cut, but for 2016, he voted to raise his sal",barely-true,fake,0.9551,0.0449,0.9551,25,liar,1
+Ive shut down pill mills.,barely-true,fake,0.9718,0.0282,0.9718,5,liar,1
+We didnt have a development director for over seven months.,false,fake,0.6553,0.3447,0.6553,10,liar,1
+"We have a goal of 10 percent of [City of Providence] contracts going to women and minority businesses. In reality, less ",barely-true,real,0.5327,0.5327,0.4673,32,liar,0
+Says the Simpson-Bowles deficit reduction proposal urged raising $2 trillion in new revenue.,barely-true,fake,0.6352,0.3648,0.6352,13,liar,1
+President Barack Obama is ending Medicare as we know it.,pants-fire,fake,0.8627,0.1373,0.8627,10,liar,1
+Firearms homicides are down about 40 percent since Texas passed concealed-gun permit law.,mostly-true,fake,0.8229,0.1771,0.8229,13,liar,0
+The GOP platform that seeks further limits on abortion and is silent on an exception for rape has been there for more th,true,fake,0.7684,0.2316,0.7684,25,liar,0
+"After Fahrenheit 9/11 came out, ""Bush's approval rating never was better, it only got worse.""",barely-true,fake,0.8818,0.1182,0.8818,15,liar,1
+"New Mexico was 46th in teacher pay (when he was elected), now we're 29th.",mostly-true,fake,0.8811,0.1189,0.8811,14,liar,0
+We are accepting more legal immigrants than we ever have in the history (of the United States.),barely-true,fake,0.8799,0.1201,0.8799,17,liar,1
+Says Rick Perry supported a guest worker program to help people who would otherwise be illegal aliens.,mostly-true,fake,0.9603,0.0397,0.9603,17,liar,0
+"This is the same (farm) bill we voted on a few weeks ago, with the exception of one or two sentences.",barely-true,fake,0.9392,0.0608,0.9392,21,liar,1
+Cobb is one of the largest school systems (in the nation) that is debt free.,true,fake,0.9803,0.0197,0.9803,15,liar,0
+"You know what Truman said, You want a friend in Washington, buy a dog.",false,real,0.6066,0.6066,0.3934,14,liar,0
+Says Wisconsin Gov. Scott Walker turned a $1 billion surplus into a $2.2 billion budget deficit.,barely-true,fake,0.5551,0.4449,0.5551,16,liar,1
+"Says Romney wrote in the first edition of his book that his health care plan should be expanded nationwide and then, You",barely-true,real,0.529,0.529,0.471,28,liar,0
+We know there are more Democrats in Georgia than Republicans. We know that for a fact.,barely-true,fake,0.9798,0.0202,0.9798,16,liar,1
+Veterans can now download their electronic medical records with a click of the mouse.,barely-true,fake,0.9429,0.0571,0.9429,14,liar,1
+Gov. Chris Christie owes the state money for amenities like extra Gorgonzola cheese for his staff on these trips.,false,fake,0.861,0.139,0.861,19,liar,1
+Floridas high school graduation rate falls well below the national average.,true,fake,0.8949,0.1051,0.8949,11,liar,0
+"Says Mary Burkes 2007-09 state budget had a tax hike of $1.8 billion -- costing every man, woman and child in the state ",false,fake,0.7291,0.2709,0.7291,26,liar,1
+"Legal prescription drugs statistically kill 100,000 people a year, (but) there are no documented deaths due to marijuana",half-true,fake,0.9129,0.0871,0.9129,18,liar,0
+"In 1992, Barack Obama directed ""Project Vote - an arm of ACORN that also encouraged voter registration.""",false,fake,0.9694,0.0306,0.9694,17,liar,1
+Annexation would lead to overcrowding at Decaturs city schools.,false,fake,0.6133,0.3867,0.6133,9,liar,1
+On Iran sanctions,false,fake,0.806,0.194,0.806,3,liar,1
+"According to the most recent jobs report, weve got more Americans leaving the workforce than we have finding jobs.",half-true,fake,0.9481,0.0519,0.9481,19,liar,0
+Neighborhoods have become more violentunder President Barack Obamas watch.,barely-true,fake,0.9403,0.0597,0.9403,9,liar,1
+The Earth is not warming.,pants-fire,fake,0.9235,0.0765,0.9235,5,liar,1
+"If you take into account all the people who are struggling for work, or have just stopped looking, the real unemployment",true,fake,0.6279,0.3721,0.6279,26,liar,0
+"Says Scott Walker wants to ban common forms of birth control, including the pill.",half-true,fake,0.6783,0.3217,0.6783,14,liar,0
+Rhode Island is one of the worst states for income equality.,barely-true,fake,0.6904,0.3096,0.6904,11,liar,1
+The pope and Donald Trump and Tammy Baldwin all agree on eliminating the carried-interest tax break.,half-true,fake,0.8236,0.1764,0.8236,16,liar,0
+"During his 18-year Senate career, (Russ Feingold) supported judges who voted to deny your individual Second Amendment ri",barely-true,fake,0.9351,0.0649,0.9351,31,liar,1
+Says Hillary Clinton laid the groundwork for getting chemical weapons out of Syria.,barely-true,fake,0.9615,0.0385,0.9615,13,liar,1
+Says American polling shows Russian President Vladimir Putin has an 80 percent approval rating.,true,fake,0.7696,0.2304,0.7696,14,liar,0
+"From 1980 to 1990, the top 1 percent saw their income go up by roughly 80 percent while the median wage in the country o",mostly-true,real,0.6285,0.6285,0.3715,33,liar,1
+Says HB2 hasnt moved the needle one iota on North Carolinas economy.,barely-true,fake,0.7914,0.2086,0.7914,12,liar,1
+The projected revenue from the Mayweather/Pacquiao fight is larger than the annual GDP of 29 different countries.,pants-fire,fake,0.9013,0.0987,0.9013,17,liar,1
+We get practically nothing compared to the cost of keeping U.S. military forces in South Korea.,barely-true,fake,0.8399,0.1601,0.8399,16,liar,1
+The Georgia Lottery Corp. has only once in the past 16 years paid out the agreed upon 35 percent of proceeds to the acco,false,fake,0.8131,0.1869,0.8131,29,liar,1
+Repealing Obamacare saves our nation more than $2 trillion.,false,fake,0.8738,0.1262,0.8738,9,liar,1
+"The Obama administration ""was successful in rushing a massive spending bill through Congress in just two days after whic",false,fake,0.9572,0.0428,0.9572,34,liar,1
+"We have 93 million people out of work. They look for jobs, they give up, and all of a sudden, statistically, theyre cons",false,fake,0.6451,0.3549,0.6451,24,liar,1
+Taxpayers subsidize 80 percent of each MARTA trip,barely-true,fake,0.8153,0.1847,0.8153,8,liar,1
+"Under economic sanctions, now Iran is suffering 30 percent inflation, 20 percent unemployment.",mostly-true,real,0.6754,0.6754,0.3246,13,liar,1
+"If they made no changes whatsoever, the [state employees pension] plan still had enough money to go forward for approxim",false,fake,0.9111,0.0889,0.9111,24,liar,1
+Every one of the 67 supervisors of elections in Florida refused to carry out the effort to remove noncitizens from the v,false,fake,0.9753,0.0247,0.9753,23,liar,1
+"The White House has ""refused"" international help in dealing with the oil spill.",barely-true,fake,0.8889,0.1111,0.8889,13,liar,1
+"House Speaker Dean Cannon says that freshmen lawmakers account for one-third of the 120-member House, and that two-third",true,fake,0.6665,0.3335,0.6665,27,liar,0
+"3,000 teachers lost their jobs when (Crist) was governor.",barely-true,fake,0.7448,0.2552,0.7448,9,liar,1
+Says his opponent Dorman Grace brags on his Facebook page about receiving illegal campaign contributions.,half-true,fake,0.9537,0.0463,0.9537,15,liar,0
+Surveys show that many of our citizens think we devote a full quarter or even a third of our federal budget to foreign a,true,fake,0.7969,0.2031,0.7969,24,liar,0
+Says U.S. Rep. Ted Yoho said African Americans should only be given three-fifths of a vote.,pants-fire,fake,0.9023,0.0977,0.9023,16,liar,1
+One estimate says there may be three times as much oil in the United States as there is in Saudi Arabia.,barely-true,real,0.718,0.718,0.282,21,liar,0
+"Low-flow toilets can cost homeowners up to $1,000 each.",half-true,fake,0.9263,0.0737,0.9263,9,liar,0
+Says Chris Christie created this new category where you could get laid off and just be totally denied unemployment benef,mostly-true,fake,0.7007,0.2993,0.7007,21,liar,0
+"Nearly 180,000 illegal immigrants with criminal records, ordered deported from our country, are tonight roaming free to ",mostly-true,fake,0.9657,0.0343,0.9657,20,liar,0
+Says Rick Perry recently said he wanted another (Texas) business tax.,pants-fire,fake,0.5342,0.4658,0.5342,11,liar,1
+The Obama administration increased the deportation of illegal immigrants convicted of crimes by 70 percent.,true,fake,0.7869,0.2131,0.7869,15,liar,0
+More preschoolers are shot dead each year than police officers are in the line of duty.,mostly-true,fake,0.7989,0.2011,0.7989,16,liar,0
+Estimates say individuals who escaped these high tax states have taken with them around $2 trillion in adjusted gross in,barely-true,fake,0.7062,0.2938,0.7062,20,liar,1
+"Says the federal government could save $175,587 by eliminating a study of the connection between cocaine and risky sex h",mostly-true,fake,0.7151,0.2849,0.7151,24,liar,0
+"When the NECAP proficiency test is re-given to the kids the second and third time, harder questions are taken out.",half-true,fake,0.5775,0.4225,0.5775,20,liar,0
+The poorest counties in the U.S. are in Appalachia and happen to be more than 90 percent white.,half-true,fake,0.6062,0.3938,0.6062,18,liar,0
+"Regarding sexual assault against women, Its actually safer not to be in college than it is to be in college.",barely-true,fake,0.9634,0.0366,0.9634,20,liar,1
+40 percent of U.S. gun sales are occurring outside of licensed gun dealers.,half-true,fake,0.823,0.177,0.823,13,liar,0
+"Prior to Obamacare here in Wisconsin, 95 percent of Wisconsinites were covered by insurance. After Obamacare, 95 percent",false,fake,0.7693,0.2307,0.7693,29,liar,1
+Expanding Medicaid would create 63k jobs.,half-true,fake,0.9202,0.0798,0.9202,6,liar,0
+Initial efforts to strip airport contractors of their special diversity status has no effect on the contracts or the cit,true,fake,0.8964,0.1036,0.8964,22,liar,0
+$16 trillion (the national debt) in $1 bills would cover the entire state of Ohio nearly 1.5 times.,true,fake,0.8947,0.1053,0.8947,18,liar,0
+"Since the time of the Civil War, weve made a distinction in this country between the availability and the ability to acc",half-true,fake,0.798,0.202,0.798,36,liar,0
+"Under Floridas voting law, a requirement to turn in voter registrations within 48 hours makes it impossible to meet the ",false,fake,0.9326,0.0674,0.9326,31,liar,1
+"A lawyer demanded several Houston pastors hand over to the city government many of their private papers, including their",true,fake,0.8588,0.1412,0.8588,20,liar,0
+Lincoln was fervently making plans to send all freed slaves to the jungles of Central America once the (Civil War) was o,false,fake,0.9384,0.0616,0.9384,33,liar,1
+A precinct in the Allen West-Patrick Murphy recount has 7 registered voters in Guatemalan community and the tally showed,false,fake,0.8265,0.1735,0.8265,21,liar,1
+Ive been outspent by my opponents every time Ive run for U.S. Senate.,pants-fire,fake,0.5143,0.4857,0.5143,13,liar,1
+Toomey and Trump will ban abortion and punish women who have them.,false,fake,0.8803,0.1197,0.8803,12,liar,1
+"Says Patrick Murphy supports a gun ban on commonly owned semi-automatic firearms used for hunting, recreational shooting",mostly-true,fake,0.9572,0.0428,0.9572,20,liar,0
+"According to a recent Congressional Budget Office report, under Obamacare, 7 million people will lose their employer-spo",barely-true,fake,0.6769,0.3231,0.6769,18,liar,1
+Says hewas one of the chief architects of balancing the federalbudget.,mostly-true,fake,0.8601,0.1399,0.8601,11,liar,0
+Claims Ohio Gov. John Kasich says climate change is a problem.,true,fake,0.7879,0.2121,0.7879,11,liar,0
+Says the pension and health benefits reform eliminated collective bargaining for health benefits.,half-true,fake,0.9327,0.0673,0.9327,13,liar,0
+Says Donald Trump started his career back in 1973 being sued by the Justice Department for racial discrimination because,true,fake,0.8577,0.1423,0.8577,31,liar,0
+New Castle Countys unemployment rate has not almost doubled in the last two years.,true,fake,0.548,0.452,0.548,14,liar,0
+Says he passed a bill to stop a military requirement that wounded soldiers pay for meals and phone calls.,half-true,fake,0.9351,0.0649,0.9351,19,liar,0
+How is a misogynist bigot of epic proportions (like U.S. Rep. Steven Smith) allowed to serve?,pants-fire,fake,0.971,0.029,0.971,16,liar,1
+"Since the governor took office, Oregons unemployment rate has dropped to its lowest point in three years.",half-true,real,0.5262,0.5262,0.4738,17,liar,1
+FCAT tests account for less than 1 percent of the instructional time provided during the year.,false,real,0.606,0.606,0.394,16,liar,0
+Says Charlie Crist rode on a jet that belongs to a serial polluter with a history of environmental violations fined near,true,fake,0.8845,0.1155,0.8845,26,liar,0
+Rhode Islands unemployment insurance system is the most expensive such system in the country.,false,fake,0.7616,0.2384,0.7616,14,liar,1
+The U.S. doesnt make television sets anymore.,true,fake,0.6734,0.3266,0.6734,7,liar,0
+Says Rob Portman even voted to allow people on the terrorism watch list to buy guns.,false,fake,0.9247,0.0753,0.9247,16,liar,1
+"Says U.S. Rep. Tammy Baldwin, a candidate for Senate, supports raising taxes by $858 billion.",barely-true,fake,0.8511,0.1489,0.8511,15,liar,1
+"The Germans, the French, countries that opposed us in the (Iraq) war, all believed (Saddam Hussein) had weapons of mass ",barely-true,fake,0.7846,0.2154,0.7846,21,liar,1
+Forty percent of illegal immigrants are people coming legally on visas and overstaying their visas.,mostly-true,fake,0.9191,0.0809,0.9191,15,liar,0
+Says he could be the first president in modern history to be outspent.,barely-true,fake,0.8723,0.1277,0.8723,13,liar,1
+The right-to-work states have much lower level of unemployment than the union states do.,mostly-true,fake,0.7776,0.2224,0.7776,14,liar,0
+"Cancer and matters to do with kidney failure kill more people in Kenya today than malaria, tuberculosis and AIDS combine",false,fake,0.8865,0.1135,0.8865,20,liar,1
+Forty-seven percent of Americans pay no income tax.,true,fake,0.5356,0.4644,0.5356,8,liar,0
+"Currently, we're at 36 percent of our children born out of wedlock.",true,fake,0.9064,0.0936,0.9064,12,liar,0
+Says the unemployment rate for African-American youths is 59 percent.,barely-true,fake,0.6398,0.3602,0.6398,10,liar,1
+Did you know that in 2013 over 50 percent of all babies born in Oregon were Hispanic?,false,fake,0.9086,0.0914,0.9086,17,liar,1
+Six institutions in our country now control two thirds of the capital.,false,fake,0.7882,0.2118,0.7882,12,liar,1
+Wisconsins rainy day fund is 165 times bigger than when we first took office.,true,fake,0.6969,0.3031,0.6969,14,liar,0
+I belong to the AFL-CIO.,true,fake,0.8557,0.1443,0.8557,5,liar,0
+Foreign aid is less than 1 percent of our federal budget.,true,real,0.511,0.511,0.489,11,liar,1
+Back door gun control is in full effect in the United States due to Obamas Environmental Protection Agency.,pants-fire,fake,0.9261,0.0739,0.9261,18,liar,1
+Poll after poll after poll shows me beating Hillary.,barely-true,fake,0.9826,0.0174,0.9826,9,liar,1
+"In Georgia, women earn 82 cents for every dollar earned by men.",half-true,fake,0.9781,0.0219,0.9781,12,liar,0
+Every person on death row was a foster kid.,false,fake,0.789,0.211,0.789,9,liar,1
+It has been 269 days since (Hillary) Clinton has held a press conference.,mostly-true,fake,0.9823,0.0177,0.9823,13,liar,0
+The Senate version of the health care reform bill allows taxpayer money to pay directly for abortion in federal communit,barely-true,fake,0.9034,0.0966,0.9034,26,liar,1
+"Ann Kuster supports the government takeover of healthcare, which robs Medicare of over $700 billion.",false,fake,0.7578,0.2422,0.7578,15,liar,1
+Im also the only lieutenant governor to not take a security detail.,mostly-true,fake,0.8213,0.1787,0.8213,12,liar,0
+Says Miami Congressman Carlos Curbelo supports drilling offshore and repeatedly voted against President Obamas ability t,barely-true,fake,0.8124,0.1876,0.8124,22,liar,1
+Says five Democratic state senators were for her bicycle tailgating bill before they were against it.,true,fake,0.7282,0.2718,0.7282,16,liar,0
+"When Social Security started, age expectancy for the average man was 58. It was 62 -- 62 for women.",true,fake,0.7604,0.2396,0.7604,19,liar,0
+A provision in the health care reform bill for end-of-life counseling for seniors is not entirely voluntary.,false,fake,0.8512,0.1488,0.8512,17,liar,1
+"Says under his budget-repair bill, collective bargaining is fully intact.",pants-fire,fake,0.7509,0.2491,0.7509,10,liar,1
+"Says Sen. John McCain spent the July 4 weekend in Islamabad, Pakistan, selling F-16s and advanced weapons to the folks w",false,fake,0.8236,0.1764,0.8236,25,liar,1
+A cap-and-trade plan promoted by Barack Obama would hit hardest those already struggling to make ends meet.,half-true,fake,0.7455,0.2545,0.7455,17,liar,0
+"In Libya, America spent $2 billion total and didnt lose a single life.",mostly-true,fake,0.9459,0.0541,0.9459,13,liar,0
+Says Rep. Renee Ellmers voted for the government shutdown 21 times.,half-true,fake,0.8282,0.1718,0.8282,11,liar,0
+People who wash cars at home will use approximately 80 percent more water than they do in a car wash.,pants-fire,fake,0.8249,0.1751,0.8249,20,liar,1
+Says Democratic opponent is too Republican to stand up for us.,barely-true,real,0.6528,0.6528,0.3472,11,liar,0
+"We passed without, frankly, the help of the Republican caucus, we passed 25 tax cuts last year, mostly aimed at the midd",true,fake,0.5869,0.4131,0.5869,26,liar,0
+The Affordable Care Act is making families pay double-digit premium increases.,half-true,fake,0.9521,0.0479,0.9521,11,liar,0
+SaysHillary (Clinton) wants to increase the number (of Syrian refugees) by 500 percent.,mostly-true,fake,0.8247,0.1753,0.8247,13,liar,0
+Dan Patrick got caught not paying his taxes and pocketed his employees payroll taxes.,half-true,fake,0.9584,0.0416,0.9584,14,liar,0
+"98 percent of American families make under $250,000 a year.",true,fake,0.8227,0.1773,0.8227,10,liar,0
+"Says potential Democratic opponent Mary Burke implemented the policies of Jim Doyle. Those are the policies that, in his",barely-true,fake,0.6778,0.3222,0.6778,29,liar,1
+More than 50 percent of those people getting minimum wage in this state are high school students.,barely-true,fake,0.6716,0.3284,0.6716,17,liar,1
+"In total, we have added nearly 75,000 private sector jobs in New Jersey since we took office in January 2010.",true,real,0.698,0.698,0.302,20,liar,1
+Gina Raimondo paid 70 million in taxpayer dollars to millionaire hedge fund managers.,barely-true,fake,0.9657,0.0343,0.9657,13,liar,1
+"In Florida, its not illegal for an immediate family member of state officials to prosper from legislation supported by a",true,fake,0.8748,0.1252,0.8748,21,liar,0
+"Between 2000 and 2006, health insurance company profits quadrupled.",mostly-true,fake,0.9565,0.0435,0.9565,9,liar,0
+"Under Gov. Kasich, Ohio wages have increased by $10.3 billion.",true,fake,0.8355,0.1645,0.8355,10,liar,0
+"Barack Obama wants to ""unilaterally disarm our nation.""",false,fake,0.9739,0.0261,0.9739,8,liar,1
+"A year ago, in March 2007, I called for immediate action to address abuses in the subprime market, and I laid out detail",true,real,0.6585,0.6585,0.3415,30,liar,1
+Barack Obama refuses to acknowledge Jerusalem as the capital of Israel.,mostly-true,fake,0.8932,0.1068,0.8932,11,liar,0
+Texas spends more per day to house an inmate than we do on a student.,true,fake,0.9086,0.0914,0.9086,15,liar,0
+Says Ron Johnson voted five times for tax breaks that help companies ship Wisconsin jobs overseas.,false,fake,0.7273,0.2727,0.7273,16,liar,1
+"In the first year of the Obama administration, more jobs were created in the private sector than in the eight years of t",false,fake,0.8566,0.1434,0.8566,25,liar,1
+"When Jim Doyle was governor and Mary Burke was commerce secretary, Wisconsin saw billions in middle-class tax hikes on n",false,fake,0.7012,0.2988,0.7012,26,liar,1
+The Obama White House recognizes a baby that has not been born for security purposes.,barely-true,fake,0.9499,0.0501,0.9499,15,liar,1
+Says Austin has the lowest property tax rate by far of the five major cities in Texas.,half-true,fake,0.7812,0.2188,0.7812,17,liar,0
+"The CBOs latest report confirms what Republicans have been saying for years now. Under Obamacare, millions of hardworkin",barely-true,fake,0.9131,0.0869,0.9131,23,liar,1
+"Says in 2003 Texas cut $10 billion out of the entire budget, yet we put $1.8 billion more into public education. We put ",barely-true,fake,0.7868,0.2132,0.7868,31,liar,1
+"Every time you buy an airline ticket, the federal government runs a background check on you.",barely-true,fake,0.8072,0.1928,0.8072,16,liar,1
+"In Miami-Dade County, we spend at our school system over $20 million every year educating recent immigrants.",mostly-true,fake,0.912,0.088,0.912,17,liar,0
+Says unsuccessful Texas abortion legislation was supported by a majority of Texans.,barely-true,fake,0.8005,0.1995,0.8005,12,liar,1
+Were only inches away from no longer being a free economy.,pants-fire,fake,0.969,0.031,0.969,11,liar,1
+Says library district would come at no direct cost to the city budget.,false,fake,0.78,0.22,0.78,13,liar,1
+"In Wisconsin, teachers make $89,000 in salary and benefits, compared to $48,000 for all other workers in the United Stat",barely-true,fake,0.7743,0.2257,0.7743,20,liar,1
+"The religious liberty bill proposed in the Georgia House of Representatives does not specifically exclude corporations, ",true,fake,0.9298,0.0702,0.9298,25,liar,0
+Youre supposed to throw away your shoes ifmercury from a broken CFL light bulb gets on them.,false,fake,0.9796,0.0204,0.9796,17,liar,1
+Says President Barack Obama attacked potential terrorist targets in Syria in the middle of the night to minimize terrori,barely-true,fake,0.8455,0.1545,0.8455,20,liar,1
+"Obama came into office ""with a $1.3 trillion deficit before I had passed any law. ... We came in with $8 trillion worth ",mostly-true,fake,0.8278,0.1722,0.8278,29,liar,0
+Democrats are poised now to cause this largest tax increase in U.S. history.,pants-fire,fake,0.7995,0.2005,0.7995,13,liar,1
+This administration is slashing the Navy to pay for more Obamacare.,pants-fire,fake,0.7728,0.2272,0.7728,11,liar,1
+The federal government is spending 25 percent of our entire economy versus 100 years ago we spent only 2 percent.,true,fake,0.6296,0.3704,0.6296,20,liar,0
+"In 2008, 33.2 percent of those who voted early on the last Sunday before Election Day were African-American, while 23.6 ",true,fake,0.5242,0.4758,0.5242,23,liar,0
+Ed Gillespie would not mention (Donald Trumps) name unless he was condemning him.,false,fake,0.9457,0.0543,0.9457,13,liar,1
+"We will spend $100 billion in Afghanistan this year, fixing roads, building bridges, training police officers, and more,",false,fake,0.6805,0.3195,0.6805,27,liar,1
+"Faced with $1 million in campaign debt, Scott Walker is unloading his campaign security costs onto the backs of Wisconsi",barely-true,real,0.5974,0.5974,0.4026,21,liar,0
+The Redskins Training Camp deal generated $40 million in new private investment in the city.,half-true,fake,0.7843,0.2157,0.7843,15,liar,0
+Obamacare includes a $700 billion cut from Medicare for seniors.,half-true,fake,0.7632,0.2368,0.7632,10,liar,0
+The city of Houston now has more debt per capita than California.,half-true,fake,0.7759,0.2241,0.7759,12,liar,0
+Says the U.S. Supreme Court found that Social Security is not guaranteed.,true,fake,0.6127,0.3873,0.6127,12,liar,0
+"Nearly 100,000 people get shot every year. Thats 270 people a day and 87 dead.",mostly-true,fake,0.7649,0.2351,0.7649,15,liar,0
+"Says that Mitt Romneys response to the crisis in the auto industry was, Let Detroit go bankrupt.",half-true,fake,0.9181,0.0819,0.9181,17,liar,0
+"Citizens Property Insurance has over $500 billion worth of risk, with less than $10 billion worth of surplus.",barely-true,fake,0.9088,0.0912,0.9088,18,liar,1
+Women in Ohio earn on average 77 cents for every dollar earned by a man.,mostly-true,fake,0.9591,0.0409,0.9591,15,liar,0
+Mitt Romney drove to Canada with the family dog Seamus strapped to the roof of the car.,mostly-true,fake,0.5822,0.4178,0.5822,17,liar,0
+On the way the federal government should spend Floridas rejected high-speed rail money.,false,fake,0.9177,0.0823,0.9177,13,liar,1
+Says Marco Rubio voted against the bipartisan Violence Against Women Act.,true,fake,0.5844,0.4156,0.5844,11,liar,0
+A gay man who survived #orlando hate crime can STILL show up to work in FL tomorrow and have his boss fire him simply be,mostly-true,fake,0.8863,0.1137,0.8863,28,liar,0
+Says the main Central Texas food bank is delivering 50 percent more food to the poor than three years ago.,mostly-true,real,0.5645,0.5645,0.4355,20,liar,1
+"I just talked about guns. I told you what my position was, and what I did as governor, the fact that I received the endo",false,fake,0.978,0.022,0.978,28,liar,1
+Twenty-five states have lower unemployment than Texas which is tied with Mississippi for more minimum-wage jobs than any,true,real,0.6857,0.6857,0.3143,22,liar,1
+"Oregons three largest employers, and 13 of the top 25, are health care providers.",false,fake,0.8873,0.1127,0.8873,14,liar,1
+Saturday Night Live executive producer Lorne Michaels could be put in jail under this amendment for making fun of any po,half-true,fake,0.7625,0.2375,0.7625,21,liar,0
+There are no similar clips of Newt Gingrich talking about how ineffective President Bush was in trying to control North ,false,fake,0.753,0.247,0.753,21,liar,1
+"Under Greg Abbott, Texas four-year-olds would be forced to undergo standardized tests.",barely-true,fake,0.9463,0.0537,0.9463,12,liar,1
+There are at least twice as many licensed firearm dealers in California as there are McDonalds.,true,fake,0.9255,0.0745,0.9255,16,liar,0
+"President Obama has left the U.S. with the lowest number of active-duty troops since before World War II, putting the na",half-true,fake,0.9837,0.0163,0.9837,23,liar,0
+There are Justice Department policies against FBI Director James Comey discussing details of a federal investigation so ,mostly-true,fake,0.917,0.083,0.917,21,liar,0
+Were trailing every other state in the Midwest in terms of job creation since January of 2011.,half-true,fake,0.6779,0.3221,0.6779,17,liar,0
+"During the (housing) crisis, Catherine Cortez Masto gave a sweetheart contract worth millions to a D.C. law firm that th",half-true,fake,0.6845,0.3155,0.6845,26,liar,0
+Says Dick Cheney supported gay marriage soonerthan Hillary Clinton.,true,fake,0.8945,0.1055,0.8945,9,liar,0
+Says Essex County residents suffer the second highest property taxes in the nation.,half-true,fake,0.9436,0.0564,0.9436,13,liar,0
+"Says for the first time in the history of the United States, the government cut taxes during wartime",mostly-true,fake,0.7658,0.2342,0.7658,18,liar,0
+One. Thats the number of new drilling permits under the Obama administration since they came into office.,pants-fire,fake,0.8334,0.1666,0.8334,17,liar,1
+The dollar has fallen over 44% since Bernanke began pumping money into the system beginning back in 2002.,half-true,fake,0.933,0.067,0.933,18,liar,0
+"So that 2005 energy bill was a big step backwards on the path to clean, renewable energy. That's why I voted against it.",false,fake,0.8641,0.1359,0.8641,23,liar,1
+Some of these members of the House of Representatives get hundreds of thousands of dollars in farm subsidies but want to,true,fake,0.7991,0.2009,0.7991,24,liar,0
+"In the last 15 years, weve witnessed a dramatic expansion in the jailing of immigrants, from about 70,000 people detaine",true,fake,0.9338,0.0662,0.9338,24,liar,0
+"For Social Security, which is projected to remain solvent through 2033, Whitehouse has cosponsored [a bill that] . . . w",mostly-true,fake,0.6514,0.3486,0.6514,32,liar,0
+"Under current U.S. immigration policy, literally one person with a green card can, in the extreme, bring in more than 27",false,fake,0.9233,0.0767,0.9233,24,liar,1
+60 percent of Texas 8th graders are not proficient in math. Only 26% have a teacher with a undergraduate major in math.,mostly-true,fake,0.8888,0.1112,0.8888,22,liar,0
+We have lower family incomes in Illinois today than we had 17 years ago in Illinois ...because of the control of (House),half-true,fake,0.6692,0.3308,0.6692,28,liar,0

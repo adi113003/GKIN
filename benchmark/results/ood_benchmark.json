@@ -1,0 +1,105 @@
+{
+  "metadata": {
+    "run_at": "2026-05-25T03:02:01.704962+00:00",
+    "dataset": "liar",
+    "n_per_class": 500,
+    "n_total": 1000,
+    "seed": 42,
+    "model_kind": "joblib_baseline",
+    "model_label": "TF-IDF + LogisticRegression baseline (the model server.py actually serves)",
+    "inference_seconds": 0.02
+  },
+  "gkin": {
+    "accuracy": 0.509,
+    "precision_macro": 0.5418596863314171,
+    "recall_macro": 0.509,
+    "f1_macro": 0.38911429037102285,
+    "per_class": {
+      "real": {
+        "precision": 0.5789473684210527,
+        "recall": 0.066,
+        "f1": 0.118491921005386
+      },
+      "fake": {
+        "precision": 0.5047720042417816,
+        "recall": 0.952,
+        "f1": 0.6597366597366597
+      }
+    },
+    "confusion_matrix": {
+      "actual_real_pred_real": 33,
+      "actual_real_pred_fake": 467,
+      "actual_fake_pred_real": 24,
+      "actual_fake_pred_fake": 476
+    }
+  },
+  "baseline_random": {
+    "accuracy": 0.509,
+    "precision_macro": 0.5090029169450903,
+    "recall_macro": 0.509,
+    "f1_macro": 0.508960225778288,
+    "per_class": {
+      "real": {
+        "precision": 0.5091649694501018,
+        "recall": 0.5,
+        "f1": 0.5045408678102926
+      },
+      "fake": {
+        "precision": 0.5088408644400786,
+        "recall": 0.518,
+        "f1": 0.5133795837462835
+      }
+    },
+    "confusion_matrix": {
+      "actual_real_pred_real": 250,
+      "actual_real_pred_fake": 250,
+      "actual_fake_pred_real": 241,
+      "actual_fake_pred_fake": 259
+    }
+  },
+  "baseline_majority": {
+    "accuracy": 0.5,
+    "precision_macro": 0.25,
+    "recall_macro": 0.5,
+    "f1_macro": 0.3333333333333333,
+    "per_class": {
+      "real": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "fake": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "confusion_matrix": {
+      "actual_real_pred_real": 500,
+      "actual_real_pred_fake": 0,
+      "actual_fake_pred_real": 500,
+      "actual_fake_pred_fake": 0
+    },
+    "majority_class": "real"
+  },
+  "accuracy_by_length": {
+    "<100": {
+      "n": 1000,
+      "accuracy": 0.509
+    },
+    "100-300": {
+      "n": 0,
+      "accuracy": null
+    },
+    "300-500": {
+      "n": 0,
+      "accuracy": null
+    },
+    "500+": {
+      "n": 0,
+      "accuracy": null
+    }
+  },
+  "delta_vs_random": 0.0,
+  "delta_vs_majority": 0.009
+}
