@@ -513,6 +513,11 @@ TRUSTED_SOURCES: dict[str, dict] = {
     "healthfeedback.org": {"tier": 3, "name": "Health Feedback"},
     "sciencefeedback.co": {"tier": 3, "name": "Science Feedback"},
     "leadstories.com":   {"tier": 3, "name": "Lead Stories"},
+    # Tier 3 — Reference works (reliable secondary sources; community-edited
+    # Wikipedia is usable but, like fact-checkers, gets low-confidence treatment
+    # unless a Tier 1/2 primary source also corroborates).
+    "wikipedia.org":     {"tier": 3, "name": "Wikipedia"},
+    "britannica.com":    {"tier": 3, "name": "Encyclopædia Britannica"},
 }
 
 
