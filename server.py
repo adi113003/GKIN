@@ -142,6 +142,15 @@ Return ONLY valid JSON matching this schema exactly:
       "span": "exact quote from article", "explanation": "one sentence"}}
   ],
   "emotion_scores": {{"fear": 0, "anger": 0, "disgust": 0, "hope": 0, "guilt": 0, "ingroup_framing": 0}},
+  "manipulation_rubric": {{
+    "components": [
+      {{"name": "persuasion_techniques", "points": 0, "max": 40, "rationale": "which techniques, scored per the table"}},
+      {{"name": "emotional_intensity", "points": 0, "max": 25, "rationale": "based on the emotion_scores above"}},
+      {{"name": "missing_context", "points": 0, "max": 20, "rationale": "severity of one-sided omissions"}},
+      {{"name": "framing_language", "points": 0, "max": 15, "rationale": "headline/structure/attribution slant"}}
+    ],
+    "band": "straightforward | mild_framing | noticeable | heavy | propaganda"
+  }},
   "manipulation_index": 0,
   "missing_context": [
     {{"gap": "what is missing", "why_it_matters": "one sentence"}}
@@ -150,12 +159,35 @@ Return ONLY valid JSON matching this schema exactly:
 }}
 
 Rules:
-- All scores 0-100 integers. narrative_cluster must be one of: {clusters}.
+- All emotion scores are 0-100 integers. narrative_cluster must be one of: {clusters}.
 - Cap techniques at 8, claims at 12, missing_context at 5.
 - For each Verifiable claim, include a citation_ids array. Leave it empty here — the
   server populates it after evidence retrieval by matching the scraped sources used
   to verify that claim (indices into sources_used). Opinion/Unverifiable claims
   must keep citation_ids as an empty array.
+
+MANIPULATION SCORECARD — do not pick a vibe-based number. Score each of the four
+components below against its stated rules, put the points + a one-line rationale in
+manipulation_rubric.components, and set manipulation_index = the SUM of the four
+component point values (0-100). The number must equal the sum; a human will audit
+each component against these rules.
+
+1. persuasion_techniques (0-40): score every distinct technique you listed above,
+   then sum and cap at 40.
+   - High-impact (fear_appeal, false_urgency, loaded_language): 0 if absent,
+     ~5 for a single/mild instance, up to 10 if pervasive or intense — per technique.
+   - Medium-impact (bandwagon, authority_appeal, black_and_white, whataboutism):
+     0 if absent, ~3 mild, up to 6 if pervasive — per technique.
+2. emotional_intensity (0-25): driven by the emotion_scores. If the strongest
+   emotion is <30 -> 0-5; 30-60 -> 6-15; >60 -> 16-25. Add a few points when
+   multiple emotions are simultaneously high.
+3. missing_context (0-20): 0 if no material omissions; 5-10 for minor gaps;
+   11-20 when omissions are one-sided enough to change a reader's interpretation.
+4. framing_language (0-15): headline/lede slant, attribution framing, and loaded
+   structure not already captured above. 0 neutral; up to 15 heavily slanted.
+
+BANDS (set manipulation_rubric.band from the total): 0-20 straightforward,
+21-40 mild_framing, 41-60 noticeable, 61-80 heavy, 81-100 propaganda.
 """
 
 CLAIM_VERIFY_PROMPT = """You are a fact-checker. Evaluate this specific claim in one sentence.
@@ -1359,6 +1391,41 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
     }
 
 
+def _reconcile_manipulation_index(result: dict) -> None:
+    """Anchor manipulation_index to the rubric: it must equal the clamped sum of
+    the four component scores, not a free-floating number the model picked. If
+    the rubric is missing/malformed, leave the model's index untouched. Also
+    backfills the band from the total so it can't disagree with the score."""
+    rubric = result.get("manipulation_rubric")
+    if not isinstance(rubric, dict):
+        return
+    components = rubric.get("components")
+    if not isinstance(components, list) or not components:
+        return
+    total = 0
+    for comp in components:
+        if not isinstance(comp, dict):
+            continue
+        try:
+            pts = int(round(float(comp.get("points", 0) or 0)))
+        except (TypeError, ValueError):
+            pts = 0
+        try:
+            cap = int(comp.get("max", 100))
+        except (TypeError, ValueError):
+            cap = 100
+        total += max(0, min(pts, cap))
+    total = max(0, min(100, total))
+    result["manipulation_index"] = total
+    rubric["subtotal"] = total
+    if total <= 20:   band = "straightforward"
+    elif total <= 40: band = "mild_framing"
+    elif total <= 60: band = "noticeable"
+    elif total <= 80: band = "heavy"
+    else:             band = "propaganda"
+    rubric["band"] = band
+
+
 async def _verify_claim(client: AsyncGroq, claim_text: str) -> dict:
     async with _claim_sem:
         try:
@@ -1451,6 +1518,9 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
         result = json.loads(struct_resp.choices[0].message.content)
     except Exception as e:
         raise HTTPException(500, f"Analysis structuring failed: {e}")
+
+    # Anchor manipulation_index to the auditable rubric sum (additive field).
+    _reconcile_manipulation_index(result)
 
     claims = result.get("claims", [])
     if claims:
