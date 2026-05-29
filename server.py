@@ -1610,14 +1610,10 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
             claim["_pending_ids"] = ids
             referenced.update(ids)
 
-    # Prune sources_used to only sources at least one Verifiable claim cites.
-    # Drops "topic search" padding + any scraped page no claim tied back to.
-    kept_sources: list[dict] = []
-    old_to_new: dict[int, int] = {}
-    for old_idx, s in enumerate(raw_sources):
-        if old_idx in referenced:
-            old_to_new[old_idx] = len(kept_sources)
-            kept_sources.append(s)
+    # Keep all scraped sources so the citations panel is always populated.
+    # citation_ids on each claim still point to the correct indices.
+    kept_sources: list[dict] = list(raw_sources)
+    old_to_new: dict[int, int] = {i: i for i in range(len(raw_sources))}
 
     if result.get("claims"):
         for claim in result["claims"]:

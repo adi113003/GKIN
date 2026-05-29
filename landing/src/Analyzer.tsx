@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Shield, Search, Network, Brain, BarChart3, ScrollText,
-  ArrowRight, Bell, Settings, Upload,
+  ArrowRight, Upload,
   Clock, Loader2, Lock, User, Mail,
   Eye, EyeOff, X, Radio, Zap, FileText, Mic,
   MessageSquare, RefreshCw, AlertTriangle,
@@ -52,6 +52,8 @@ interface SourceUsed {
   published_date: string | null;
   claim_supported: string;
   relevance_snippet: string;
+  tier?: number;
+  trusted?: boolean;
 }
 interface TimelineEntry { date: string; hostname: string; url: string; how_claim_changed: string; }
 interface ClaimTimeline { claim: string; first_reported: string; timeline_entries: TimelineEntry[]; }
@@ -136,6 +138,177 @@ function PersuasionNet({ techniques }: { techniques: PersuasionTechnique[] }) {
         ))}
       </svg>
     </div>
+  );
+}
+
+// ── Narrative source map modal ────────────────────────────────────────────────
+function NarrativeModal({ claimTimeline, timelineLoading, timelineError, onBuildTimeline, onClose }: {
+  claimTimeline: ClaimTimeline[] | null;
+  timelineLoading: boolean;
+  timelineError: string;
+  onBuildTimeline: () => void;
+  onClose: () => void;
+}) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const W = 720, H = 480, cx = W / 2, cy = H / 2;
+
+  // Flatten all timeline entries from all claims into one list of nodes
+  const nodes = useMemo(() => {
+    if (!claimTimeline) return [];
+    return claimTimeline.flatMap((ct, ci) =>
+      ct.timeline_entries.map((e, ei) => ({ ...e, claim: ct.claim, claimIdx: ci, entryIdx: ei }))
+    );
+  }, [claimTimeline]);
+
+  // Arrange nodes in a circle
+  const positioned = useMemo(() => {
+    const n = Math.max(nodes.length, 1);
+    return nodes.map((node, i) => {
+      const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+      const r = n <= 6 ? 175 : n <= 12 ? 195 : 210;
+      return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle), node };
+    });
+  }, [nodes]);
+
+  // Claim color palette
+  const claimColors = ["#9b7bff", "#5dd9ff", "#ff6b8b", "#4ade80", "#ffb547", "#a5b4fc"];
+
+  // Auto-trigger build if not loaded
+  useEffect(() => {
+    if (!claimTimeline && !timelineLoading && !timelineError) {
+      onBuildTimeline();
+    }
+  }, []);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <motion.div initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.88, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+        onClick={e => e.stopPropagation()}
+        style={{ background: "#0d0c1a", border: `1px solid ${P.border2}`, borderRadius: 14, overflow: "hidden", width: 820, maxWidth: "95vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+
+        {/* header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${P.border}` }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: P.text, letterSpacing: "0.1em" }}>CLAIM PROPAGATION TIMELINE</div>
+            <div style={{ fontSize: 9, color: P.muted, letterSpacing: "0.06em", marginTop: 3 }}>
+              {nodes.length > 0 ? `${nodes.length} source node${nodes.length !== 1 ? "s" : ""} across ${claimTimeline?.length ?? 0} claim${(claimTimeline?.length ?? 0) !== 1 ? "s" : ""} · click any node to open` : "Building timeline…"}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: P.muted, cursor: "pointer", padding: 4 }}><X size={15} /></button>
+        </div>
+
+        {/* loading */}
+        {timelineLoading && (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 40 }}>
+            <Loader2 size={28} style={{ animation: "spin 1s linear infinite", color: P.accent }} />
+            <div style={{ fontSize: 11, color: P.muted, letterSpacing: "0.08em" }}>TRACING CLAIM PROPAGATION…</div>
+            <div style={{ fontSize: 9, color: P.faint }}>Running deeper web scrape — usually 6–10 seconds</div>
+          </div>
+        )}
+
+        {/* error */}
+        {!timelineLoading && timelineError && (
+          <div style={{ padding: 32, textAlign: "center" }}>
+            <div style={{ fontSize: 11, color: P.red, marginBottom: 14 }}>{timelineError}</div>
+            <button onClick={onBuildTimeline} style={{ ...{ background: P.accent, border: "none", color: "#0a0a0f", fontFamily: "inherit", fontSize: 10, letterSpacing: "0.1em", fontWeight: 700, padding: "9px 18px", borderRadius: 4, cursor: "pointer" } }}>RETRY</button>
+          </div>
+        )}
+
+        {/* no data yet prompt */}
+        {!timelineLoading && !timelineError && claimTimeline === null && (
+          <div style={{ padding: 32, textAlign: "center" }}>
+            <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Starting timeline trace…</div>
+          </div>
+        )}
+
+        {/* graph */}
+        {!timelineLoading && nodes.length > 0 && (
+          <div style={{ padding: "16px 20px 0", flex: 1, overflow: "hidden" }}>
+            <svg width="100%" viewBox={`0 0 ${W} ${H}`}
+              style={{ background: "rgba(8,7,20,0.9)", borderRadius: 8, display: "block" }}>
+
+              {/* edges: center → each node */}
+              {positioned.map((p, i) => {
+                const col = claimColors[p.node.claimIdx % claimColors.length];
+                return (
+                  <line key={`e-${i}`} x1={cx} y1={cy} x2={p.x} y2={p.y}
+                    stroke={hovered === i ? col : `${col}22`}
+                    strokeWidth={hovered === i ? 1.8 : 0.8}
+                    strokeDasharray={hovered === i ? "none" : "4 3"} />
+                );
+              })}
+
+              {/* timeline nodes */}
+              {positioned.map((p, i) => {
+                const isHov = hovered === i;
+                const col = claimColors[p.node.claimIdx % claimColors.length];
+                const host = (p.node.hostname || "").replace(/^www\./, "").slice(0, 13);
+                return (
+                  <g key={`n-${i}`} style={{ cursor: "pointer" }}
+                    onClick={() => window.open(p.node.url, "_blank", "noopener")}
+                    onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
+                    {/* glow ring on hover */}
+                    {isHov && <circle cx={p.x} cy={p.y} r={32} fill="none" stroke={col} strokeWidth="1" opacity="0.3" />}
+                    <circle cx={p.x} cy={p.y} r={isHov ? 26 : 22}
+                      fill={isHov ? `${col}33` : `${col}14`}
+                      stroke={col} strokeWidth={isHov ? 1.8 : 1} />
+                    {/* hostname */}
+                    <text x={p.x} y={p.y - 3} textAnchor="middle" dominantBaseline="middle"
+                      fill={isHov ? "#fff" : P.text2} fontSize={isHov ? "8.5" : "7.5"}
+                      fontWeight={isHov ? "bold" : "normal"}
+                      style={{ pointerEvents: "none" }}>
+                      {host}
+                    </text>
+                    {/* date */}
+                    {p.node.date && (
+                      <text x={p.x} y={p.y + 9} textAnchor="middle"
+                        fill={P.faint} fontSize="6"
+                        style={{ pointerEvents: "none" }}>
+                        {p.node.date.slice(0, 10)}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+
+              {/* center node */}
+              <circle cx={cx} cy={cy} r={30}
+                fill="rgba(155,123,255,0.25)" stroke={P.accent} strokeWidth="2.5" />
+              <text x={cx} y={cy - 6} textAnchor="middle" fill={P.text} fontSize="10" fontWeight="bold" style={{ pointerEvents: "none" }}>ARTICLE</text>
+              <text x={cx} y={cy + 8} textAnchor="middle" fill={P.muted} fontSize="7" style={{ pointerEvents: "none" }}>ORIGIN</text>
+            </svg>
+          </div>
+        )}
+
+        {/* empty state */}
+        {!timelineLoading && !timelineError && claimTimeline !== null && nodes.length === 0 && (
+          <div style={{ padding: 32, textAlign: "center", fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>
+            NO TIMELINE ENTRIES FOUND FOR THIS ARTICLE
+          </div>
+        )}
+
+        {/* link list at bottom */}
+        {nodes.length > 0 && (
+          <div style={{ borderTop: `1px solid ${P.border}`, padding: "10px 20px", display: "flex", flexWrap: "wrap", gap: 6, overflowY: "auto", maxHeight: 110 }}>
+            {positioned.map((p, i) => {
+              const col = claimColors[p.node.claimIdx % claimColors.length];
+              return (
+                <a key={i} href={p.node.url} target="_blank" rel="noopener noreferrer"
+                  onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
+                  style={{ fontSize: 9, color: hovered === i ? "#fff" : P.muted, background: hovered === i ? `${col}22` : P.panel, border: `1px solid ${hovered === i ? col : P.border}`, borderRadius: 4, padding: "4px 9px", textDecoration: "none", display: "flex", alignItems: "center", gap: 5, transition: "all 0.12s" }}>
+                  <span style={{ color: col, fontWeight: 700 }}>●</span>
+                  {(p.node.hostname || p.node.url).replace(/^www\./, "").slice(0, 25)}
+                  {p.node.date && <span style={{ color: P.faint, fontSize: 8 }}>{p.node.date.slice(0, 7)}</span>}
+                </a>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -241,7 +414,8 @@ export default function Analyzer() {
   const [showLogin, setShowLogin]     = useState(false);
   const [activeNav, setActiveNav]     = useState("neural");
   const [activeTab, setActiveTab]     = useState<"TEXT" | "URL" | "MEDIA">("TEXT");
-  const [showArchives, setShowArchives] = useState(false);
+  const [showArchives, setShowArchives]         = useState(false);
+  const [showNarrativeModal, setShowNarrativeModal] = useState(false);
   const [input, setInput]             = useState("");
   const [loading, setLoading]         = useState(false);
   const [loadingMsg, setLoadingMsg]   = useState("INITIALIZING");
@@ -251,7 +425,6 @@ export default function Analyzer() {
   const [investigations, setInvestigations] = useState<Investigation[]>(() => {
     try { return JSON.parse(localStorage.getItem(invKey(getUser())) || "[]"); } catch { return []; }
   });
-  const [sessionId] = useState(() => `VX-${Math.floor(Math.random() * 9000) + 1000}-OMEGA`);
 
   // Chat
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
@@ -561,6 +734,15 @@ export default function Analyzer() {
   return (
     <>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} onAuth={handleAuth} />}
+      {showNarrativeModal && (
+        <NarrativeModal
+          claimTimeline={claimTimeline}
+          timelineLoading={timelineLoading}
+          timelineError={timelineError}
+          onBuildTimeline={buildClaimTimeline}
+          onClose={() => setShowNarrativeModal(false)}
+        />
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 300px", gridTemplateRows: "52px 1fr", minHeight: "100vh" }}>
 
@@ -586,8 +768,6 @@ export default function Analyzer() {
                 <button style={S.btnFilled} onClick={handleLogout}>LOGOUT</button></>
             : <button style={{ ...S.btnFilled, boxShadow: `0 0 20px ${P.accentGlow}` }} onClick={() => setShowLogin(true)}>Log in</button>
           }
-          <Bell size={16} style={{ color: P.muted, cursor: "pointer" }} />
-          <Settings size={16} style={{ color: P.muted, cursor: "pointer" }} />
         </nav>
 
         {/* ── Left Sidebar ── */}
@@ -666,16 +846,12 @@ export default function Analyzer() {
           {/* ── Normal Workspace (hidden when archives open) ── */}
           {!showArchives && <>
 
-          {/* Status bar */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "8px 14px", background: P.panel, borderRadius: 6, border: `1px solid ${P.border}`, fontSize: 9, letterSpacing: "0.08em", color: P.muted, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <div style={{ width: 7, height: 7, background: P.green, borderRadius: "50%", boxShadow: `0 0 6px ${P.green}`, animation: "pulse 2s infinite" }} />
-              <span style={{ color: P.green, fontWeight: 700 }}>SYSTEM: ACTIVE</span>
+          {/* Translation badge */}
+          {langBadge && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "6px 12px", background: P.panel, borderRadius: 6, border: `1px solid ${P.border}`, fontSize: 9, letterSpacing: "0.08em", width: "fit-content" }}>
+              <span style={{ color: P.yellow, fontWeight: 700 }}>TRANSLATED FROM: {langBadge.toUpperCase()}</span>
             </div>
-            <span>SESSION: {sessionId}</span>
-            <span>NODE: CLUSTER_09</span>
-            {langBadge && <span style={{ color: P.yellow, fontWeight: 700 }}>TRANSLATED FROM: {langBadge.toUpperCase()}</span>}
-          </div>
+          )}
 
           <div style={{ marginBottom: 28 }}>
             <h1 className="text-balance" style={{ fontSize: 56, fontWeight: 600, letterSpacing: "-0.038em", lineHeight: 0.98, marginBottom: 14 }}>
@@ -1237,7 +1413,9 @@ export default function Analyzer() {
           </div>
 
           <div style={{ ...S.card, flex: 1 }}>
-            <div style={S.cardHd}>PERSUASION MAPPING</div>
+            <div style={S.cardHd}>
+              PERSUASION MAPPING
+            </div>
             <div style={{ padding: 14 }}>
               <PersuasionNet techniques={techniques} />
               <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1254,6 +1432,13 @@ export default function Analyzer() {
                   </div>
                 ))}
               </div>
+              {result && (
+                <button
+                  onClick={() => { setShowNarrativeModal(true); }}
+                  style={{ marginTop: 14, width: "100%", padding: "10px", background: P.accentDim, border: `1px solid ${P.accent}`, color: P.accent, fontSize: 10, letterSpacing: "0.08em", fontWeight: 700, borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>
+                  ↗ OPEN NARRATIVE MAP
+                </button>
+              )}
             </div>
           </div>
 
@@ -1273,15 +1458,6 @@ export default function Analyzer() {
         </aside>
       </div>
 
-      <footer style={{ background: P.nav, borderTop: `1px solid ${P.border}`, padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 11, color: P.muted, fontWeight: 700, letterSpacing: "0.06em" }}>GKIN // TRUTH_NAV</span>
-        <div style={{ display: "flex", gap: 20 }}>
-          {["Terminal","API Docs","Privacy","Support"].map(l => (
-            <a key={l} href="#" style={{ fontSize: 9, color: P.faint, textDecoration: "none", letterSpacing: "0.06em" }}>{l}</a>
-          ))}
-        </div>
-        <span style={{ fontSize: 9, color: P.faint, letterSpacing: "0.06em" }}>© {new Date().getFullYear()} FORENSIC_OS v4.2</span>
-      </footer>
 
       <style>{`
         @keyframes pulse  { 0%,100%{opacity:1}50%{opacity:0.4} }
