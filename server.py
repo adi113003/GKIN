@@ -70,7 +70,14 @@ from groq import AsyncGroq
 import pandas as pd
 import trafilatura
 
-from gkin.agentic import Deps as AgenticDeps, VerdictCache, configure_tracing, verify_claims
+from gkin.agentic import (
+    Deps as AgenticDeps,
+    VerdictCache,
+    configure_tracing,
+    resolve_backend,
+    search_available,
+    verify_claims,
+)
 
 try:
     from jose import JWTError, jwt
@@ -783,6 +790,9 @@ class VerifyClaimsRequest(BaseModel):
     claims: list[str]
     max_claims: int = 5      # per-article cap on claims that run the loop
     force_refresh: bool = False
+    # Search backend: 'auto' (default; prefer Brave, then Google, then DDG),
+    # or force 'brave' | 'google' | 'ddg'. Keyed backends require env keys.
+    search_backend: Optional[str] = None
 
 
 # ── Auth endpoints ─────────────────────────────────────────────────────────────
@@ -1615,12 +1625,13 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     return result
 
 
-def _build_agentic_deps() -> AgenticDeps:
-    """Wire the agentic loop to this server's existing DuckDuckGo + trafilatura
-    + source-tier path. Injected so gkin.agentic never imports server."""
+def _build_agentic_deps(search_backend: Optional[str] = None) -> AgenticDeps:
+    """Wire the agentic loop to this server's existing trafilatura + source-tier
+    path. The search backend is resolvable (Brave/Google/DDG); DuckDuckGo is the
+    always-present fallback. Injected so gkin.agentic never imports server."""
     return AgenticDeps(
         client=get_client(),
-        ddg_search=_ddg_search,
+        ddg_search=resolve_backend(search_backend, _ddg_search),
         scrape_pages=_scrape_pages_with_meta,
         source_tier=_source_tier,
     )
@@ -1640,7 +1651,7 @@ async def verify_claims_endpoint(req: VerifyClaimsRequest, _user: dict = Depends
     """
     if not req.claims:
         raise HTTPException(400, "claims is required and must be non-empty")
-    deps = _build_agentic_deps()
+    deps = _build_agentic_deps(req.search_backend)
     verdicts = await verify_claims(
         req.claims,
         deps,
@@ -1648,7 +1659,12 @@ async def verify_claims_endpoint(req: VerifyClaimsRequest, _user: dict = Depends
         max_claims=req.max_claims,
         force_refresh=req.force_refresh,
     )
-    return {"count": len(verdicts), "verdicts": verdicts}
+    return {
+        "count": len(verdicts),
+        "verdicts": verdicts,
+        "search_backend": req.search_backend or "auto",
+        "keyed_backends_available": search_available(),
+    }
 
 
 # ── Agentic streaming chat ─────────────────────────────────────────────────────

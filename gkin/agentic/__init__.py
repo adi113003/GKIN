@@ -9,6 +9,7 @@ verdict carrying the exact source URLs and sentences that justify it.
 from .cache import VerdictCache
 from .controller import run_claim
 from .nodes import Deps
+from .search import available as search_available, resolve_backend
 from .service import verify_claims
 from .trace import configure_tracing, record_usage, trace
 
@@ -17,7 +18,9 @@ __all__ = [
     "VerdictCache",
     "configure_tracing",
     "record_usage",
+    "resolve_backend",
     "run_claim",
+    "search_available",
     "trace",
     "verify_claims",
 ]
