@@ -456,14 +456,33 @@ fake_confidence is an integer 0-100. 0 = definitely real, 100 = definitely fake.
 TRUSTED_SOURCES: dict[str, dict] = {
     # Tier 1 — Primary / Official
     ".gov":              {"tier": 1, "name": "Government (.gov)"},
+    ".edu":              {"tier": 1, "name": "Academic (.edu)"},
+    ".ac.uk":            {"tier": 1, "name": "UK Academic (.ac.uk)"},
     "pubmed.ncbi.nlm.nih.gov": {"tier": 1, "name": "PubMed"},
     "arxiv.org":         {"tier": 1, "name": "arXiv"},
     "jstor.org":         {"tier": 1, "name": "JSTOR"},
     "who.int":           {"tier": 1, "name": "WHO"},
     "un.org":            {"tier": 1, "name": "United Nations"},
     "europa.eu":         {"tier": 1, "name": "European Union"},
+    "ncbi.nlm.nih.gov":  {"tier": 1, "name": "NIH / PubMed Central"},
+    # Tier 1 — Medical institutions & peer-reviewed science
+    "mayoclinic.org":    {"tier": 1, "name": "Mayo Clinic"},
+    "clevelandclinic.org": {"tier": 1, "name": "Cleveland Clinic"},
+    "hopkinsmedicine.org": {"tier": 1, "name": "Johns Hopkins Medicine"},
+    "nature.com":        {"tier": 1, "name": "Nature"},
+    "science.org":       {"tier": 1, "name": "Science (AAAS)"},
+    "nejm.org":          {"tier": 1, "name": "New England Journal of Medicine"},
+    "thelancet.com":     {"tier": 1, "name": "The Lancet"},
+    "bmj.com":           {"tier": 1, "name": "The BMJ"},
+    "cochrane.org":      {"tier": 1, "name": "Cochrane"},
     # Tier 2 — Established journalism
     "reuters.com":       {"tier": 2, "name": "Reuters"},
+    "abcnews.go.com":    {"tier": 2, "name": "ABC News"},
+    "cbsnews.com":       {"tier": 2, "name": "CBS News"},
+    "nbcnews.com":       {"tier": 2, "name": "NBC News"},
+    "scientificamerican.com": {"tier": 2, "name": "Scientific American"},
+    "nationalgeographic.com": {"tier": 2, "name": "National Geographic"},
+    "smithsonianmag.com": {"tier": 2, "name": "Smithsonian Magazine"},
     "apnews.com":        {"tier": 2, "name": "Associated Press"},
     "afp.com":           {"tier": 2, "name": "AFP"},
     "bbc.com":           {"tier": 2, "name": "BBC News"},
@@ -484,6 +503,9 @@ TRUSTED_SOURCES: dict[str, dict] = {
     "snopes.com":        {"tier": 3, "name": "Snopes"},
     "factcheck.org":     {"tier": 3, "name": "FactCheck.org"},
     "fullfact.org":      {"tier": 3, "name": "Full Fact"},
+    "healthfeedback.org": {"tier": 3, "name": "Health Feedback"},
+    "sciencefeedback.co": {"tier": 3, "name": "Science Feedback"},
+    "leadstories.com":   {"tier": 3, "name": "Lead Stories"},
 }
 
 

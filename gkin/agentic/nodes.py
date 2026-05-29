@@ -19,6 +19,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, Optional
+from urllib.parse import urlparse
 
 from groq import AsyncGroq
 
@@ -41,6 +42,19 @@ MODEL_GROUND = "llama-3.3-70b-versatile"
 
 MIN_GROUNDING_CONFIDENCE = 0.5  # below this we treat grounding as weak/conflicting
 
+# User-generated / social / forum domains. Useless as auditable fact-check
+# evidence (and they're Tier 0, so they only ever get downgraded) — dropping
+# them frees the small evidence budget for credible sources.
+JUNK_DOMAINS = (
+    "reddit.com", "facebook.com", "instagram.com", "twitter.com", "x.com",
+    "tiktok.com", "pinterest.", "quora.com", "linkedin.com", "youtube.com",
+    "youtu.be", "tumblr.com", "threads.net",
+)
+
+# Appended to the query to surface dedicated fact-checks / debunks (Tier 3) and
+# explainers from established outlets — the sources a CONTRADICTED needs.
+FACTCHECK_SUFFIX = "fact check OR debunked OR explainer"
+
 
 @dataclass
 class Deps:
@@ -58,9 +72,14 @@ class Deps:
     model_query: str = MODEL_FAST
     model_ground: str = MODEL_GROUND
 
-    max_evidence: int = 5          # evidence items grounded per claim
-    search_results: int = 6        # raw DDG results pulled before tier-sort/scrape
+    max_evidence: int = 5          # evidence items grounded (scraped) per claim
+    # Raw results pulled per query. Larger than max_evidence on purpose: a bigger
+    # candidate pool means trusted sources are more likely to survive the
+    # tier-sort + cap. Search is one call; we still only scrape max_evidence.
+    search_results: int = 10
     max_assertions: int = 5
+    bias_factcheck: bool = True    # also run a fact-check-biased query
+    drop_junk_domains: bool = True # drop social/forum/UGC results
 
     # Marks this object so @trace doesn't dump the Groq client into log lines.
     _trace_skip: bool = field(default=True, repr=False)
@@ -170,18 +189,49 @@ async def build_query(state: dict, deps: Deps) -> dict:
     return state
 
 
+def _is_junk_domain(url: str) -> bool:
+    try:
+        host = (urlparse(url).hostname or "").lower()
+    except Exception:
+        return False
+    return any(j in host for j in JUNK_DOMAINS)
+
+
 @trace("retrieve_evidence")
 async def retrieve_evidence(state: dict, deps: Deps) -> dict:
     """Reuse the existing DuckDuckGo + trafilatura path, tier-tagging each hit.
 
-    Trusted sources are pulled to the front before scraping so the limited
-    evidence budget favours Tier 1/2/3 pages."""
+    Quality matters for reaching CONTRADICTED: a hard verdict needs Tier 1/2/3
+    backing (the tier policy downgrades Tier-0-only verdicts to INSUFFICIENT).
+    So we (1) also run a fact-check-biased query to surface debunks/fact-checkers,
+    (2) drop social/forum/UGC noise, and (3) tier-sort trusted sources to the
+    front before spending the scrape budget."""
     query = state["query"]
+    queries = [query]
+    if deps.bias_factcheck and "fact check" not in query.lower():
+        queries.append(f"{query} {FACTCHECK_SUFFIX}")
+
     try:
-        raw = await asyncio.to_thread(deps.ddg_search, query, deps.search_results)
+        result_lists = await asyncio.gather(
+            *[asyncio.to_thread(deps.ddg_search, q, deps.search_results) for q in queries]
+        )
     except Exception:
-        raw = []
-    raw = [r for r in raw if isinstance(r, dict) and not r.get("error") and r.get("url")]
+        result_lists = []
+
+    # Merge + dedupe by URL, dropping errors and junk domains.
+    raw: list[dict] = []
+    seen: set[str] = set()
+    for lst in result_lists:
+        for r in lst:
+            if not isinstance(r, dict) or r.get("error") or not r.get("url"):
+                continue
+            url = r["url"]
+            if url in seen:
+                continue
+            if deps.drop_junk_domains and _is_junk_domain(url):
+                continue
+            seen.add(url)
+            raw.append(r)
 
     # Tier-sort: trusted (lower tier number = stronger) first, unverified last.
     def _rank(r: dict) -> int:

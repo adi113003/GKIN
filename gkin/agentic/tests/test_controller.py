@@ -223,6 +223,65 @@ def test_retry_exhausted_emits_insufficient():
     assert v.retries == 1  # retried exactly once
 
 
+def test_is_junk_domain():
+    from gkin.agentic.nodes import _is_junk_domain
+    assert _is_junk_domain("https://www.reddit.com/r/x")
+    assert _is_junk_domain("https://m.facebook.com/y")
+    assert _is_junk_domain("https://youtu.be/abc")
+    assert not _is_junk_domain("https://nasa.gov/a")
+    assert not _is_junk_domain("https://snopes.com/x")
+
+
+def test_retrieve_filters_junk_and_runs_factcheck_query():
+    from gkin.agentic.nodes import retrieve_evidence
+    queries_seen = []
+
+    def search(q, n):
+        queries_seen.append(q)
+        return [
+            {"title": "reddit", "snippet": "s", "url": "https://reddit.com/r/x"},
+            {"title": "nasa", "snippet": "s", "url": "https://nasa.gov/a"},
+            {"title": "blog", "snippet": "s", "url": "https://randomblog.example/p"},
+        ]
+
+    async def scrape(urls):
+        return [{"url": u, "title": "t", "text": "a sufficiently long piece of evidence text here"} for u in urls]
+
+    deps = make_deps(FakeClient(), search=search, scrape=scrape)
+    state = new_state("claim text")
+    state["assertions"] = ["a"]
+    state["query"] = "did the thing happen"
+    state = asyncio.run(retrieve_evidence(state, deps))
+
+    # base query + one fact-check-biased query
+    assert len(queries_seen) == 2, queries_seen
+    assert any("fact check" in q.lower() for q in queries_seen)
+    urls = [e["url"] for e in state["evidence"]]
+    assert "https://nasa.gov/a" in urls          # trusted kept
+    assert all("reddit.com" not in u for u in urls)  # junk dropped
+    # trusted source sorted ahead of the unverified blog
+    assert state["evidence"][0]["url"] == "https://nasa.gov/a"
+
+
+def test_retrieve_flags_disable_behaviour():
+    from gkin.agentic.nodes import retrieve_evidence
+    queries_seen = []
+
+    def search(q, n):
+        queries_seen.append(q)
+        return [{"title": "reddit", "snippet": "s", "url": "https://reddit.com/r/x"}]
+
+    async def scrape(urls):
+        return [{"url": u, "title": "t", "text": "long enough evidence text body"} for u in urls]
+
+    deps = make_deps(FakeClient(), search=search, scrape=scrape,
+                     bias_factcheck=False, drop_junk_domains=False)
+    state = new_state("c"); state["query"] = "q"
+    state = asyncio.run(retrieve_evidence(state, deps))
+    assert len(queries_seen) == 1                 # no fact-check query
+    assert state["evidence"][0]["url"] == "https://reddit.com/r/x"  # junk kept
+
+
 def test_loop_terminates_under_cap():
     client = FakeClient(grounding_seq=[
         '{"verdict":"insufficient","confidence":0.1,"reasoning":"no","citations":[]}',
