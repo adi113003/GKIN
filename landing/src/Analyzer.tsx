@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Shield, Search, Network, Brain, BarChart3, ScrollText,
-  ArrowRight, Bell, Settings, Upload,
+  ArrowRight, Upload,
   Clock, Loader2, Lock, User, Mail,
   Eye, EyeOff, X, Radio, Zap, FileText, Mic,
   MessageSquare, RefreshCw, AlertTriangle,
@@ -768,8 +768,6 @@ export default function Analyzer() {
                 <button style={S.btnFilled} onClick={handleLogout}>LOGOUT</button></>
             : <button style={{ ...S.btnFilled, boxShadow: `0 0 20px ${P.accentGlow}` }} onClick={() => setShowLogin(true)}>Log in</button>
           }
-          <Bell size={16} style={{ color: P.muted, cursor: "pointer" }} />
-          <Settings size={16} style={{ color: P.muted, cursor: "pointer" }} />
         </nav>
 
         {/* ── Left Sidebar ── */}
