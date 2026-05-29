@@ -34,7 +34,10 @@ from .verdict import (
 
 # Default Groq model ids (mirror server.py). Overridable via Deps.
 MODEL_FAST = "llama-3.1-8b-instant"
-MODEL_REASON = "deepseek-r1-distill-llama-70b"
+# ground_verdict calls with response_format=json_object. Reasoning models
+# (gpt-oss, qwen3, the retired deepseek-r1) are unreliable in JSON mode on Groq,
+# so grounding uses the instruct model that the rest of the server uses for JSON.
+MODEL_GROUND = "llama-3.3-70b-versatile"
 
 MIN_GROUNDING_CONFIDENCE = 0.5  # below this we treat grounding as weak/conflicting
 
@@ -53,7 +56,7 @@ class Deps:
 
     model_extract: str = MODEL_FAST
     model_query: str = MODEL_FAST
-    model_ground: str = MODEL_REASON
+    model_ground: str = MODEL_GROUND
 
     max_evidence: int = 5          # evidence items grounded per claim
     search_results: int = 6        # raw DDG results pulled before tier-sort/scrape

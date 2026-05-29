@@ -22,7 +22,7 @@ Media-literacy analysis tool. Two parallel detection systems run side-by-side: a
 ## LLM model IDs (in `server.py`)
 
 ```
-MODEL_REASON  = "deepseek-r1-distill-llama-70b"   # chain-of-thought reasoning
+MODEL_REASON  = "openai/gpt-oss-120b"             # chain-of-thought reasoning (plain only; not JSON-safe)
 MODEL_STRUCT  = "llama-3.3-70b-versatile"          # JSON structuring & chat
 MODEL_FAST    = "llama-3.1-8b-instant"             # claim verification, suggestions
 MODEL_VISION  = "llama-3.2-90b-vision-preview"     # screenshot / image analysis

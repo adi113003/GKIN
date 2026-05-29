@@ -83,7 +83,11 @@ except ImportError:
     CryptContext = None  # type: ignore
 
 # ── Model IDs ─────────────────────────────────────────────────────────────────
-MODEL_REASON  = "deepseek-r1-distill-llama-70b"
+# Reasoning pass only (plain, non-JSON). deepseek-r1-distill-llama-70b was
+# decommissioned by Groq; gpt-oss-120b is a live chain-of-thought replacement.
+# NB: reasoning models are unreliable under response_format=json_object, so all
+# JSON calls below use MODEL_STRUCT, not MODEL_REASON.
+MODEL_REASON  = "openai/gpt-oss-120b"
 MODEL_STRUCT  = "llama-3.3-70b-versatile"
 MODEL_FAST    = "llama-3.1-8b-instant"
 MODEL_VISION  = "llama-3.2-90b-vision-preview"
