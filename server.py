@@ -871,6 +871,25 @@ async def _scrape_pages(urls: list[str]) -> list[dict]:
     return [r for r in results if r]
 
 
+# Domains that are never relevant news sources for citation purposes
+_CITATION_BLACKLIST = {
+    "merriam-webster.com", "dictionary.com", "grammarly.com", "thesaurus.com",
+    "en.wiktionary.org", "vocabulary.com", "dictionary.cambridge.org",
+    "englishstudyonline.com", "lexico.com", "collinsdictionary.com",
+    "etymonline.com", "wordreference.com", "britannica.com",
+    "youtube.com", "youtu.be", "reddit.com", "twitter.com", "facebook.com",
+    "instagram.com", "tiktok.com", "pinterest.com", "amazon.com", "ebay.com",
+    "imdb.com", "yelp.com", "tripadvisor.com", "linkedin.com",
+}
+
+def _is_citation_blacklisted(url: str) -> bool:
+    try:
+        host = urllib.parse.urlparse(url).netloc.lower().lstrip("www.")
+        return any(host == b or host.endswith("." + b) for b in _CITATION_BLACKLIST)
+    except Exception:
+        return False
+
+
 async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -> dict:
     claims = structured.get("claims", [])
     verifiable = [c for c in claims if c.get("type") == "Verifiable"][:3]
@@ -882,51 +901,53 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
     if _fake_model is not None:
         try:
             proba = _fake_model.predict_proba([article_text])[0]
-            ml_fc = int(proba[1] * 100)  # proba[1] = P(fake)
+            ml_fc = int(proba[1] * 100)
         except Exception:
             pass
 
-    # ── Step 2: Search DDG for each verifiable claim, collect real URLs ────────
+    # ── Step 2: Search DDG for each verifiable claim ──────────────────────────
+    # Do NOT use quoted exact-phrase search — DDG fails on long phrases and
+    # returns grammar/dictionary sites. Search the claim text directly + "news".
     sources_checked: list[dict] = []
     all_urls: list[str] = []
-    url_to_claim: dict[str, str] = {}  # which Verifiable claim each URL was retrieved for
+    url_to_claim: dict[str, str] = {}
 
-    for claim_obj in verifiable:
-        claim_text = claim_obj.get("text", "")[:150]
-        results = await asyncio.to_thread(_ddg_search, f'"{claim_text}"', 4)
+    def _add_results(results, label):
         for r in results:
-            if r.get("error") or not r.get("url") or not r.get("title"):
+            url = r.get("url", "")
+            if not url or not r.get("title") or r.get("error"):
                 continue
-            sources_checked.append({
-                "claim": claim_text,
-                "url": r["url"],
-                "title": r["title"],
-                "supports": None,
-            })
-            all_urls.append(r["url"])
-            url_to_claim.setdefault(r["url"], claim_text)
-
-    # Broader topic search to pad up to 10 pages
-    if len(all_urls) < 10:
-        topic_query = article_text[:120].replace('"', '')
-        extra = await asyncio.to_thread(_ddg_search, topic_query + " news", 6)
-        for r in extra:
-            if r.get("error") or not r.get("url") or not r.get("title"):
+            if url in all_urls or _is_citation_blacklisted(url):
                 continue
-            if r["url"] not in all_urls:
-                sources_checked.append({
-                    "claim": "topic search",
-                    "url": r["url"],
-                    "title": r["title"],
-                    "supports": None,
-                })
-                all_urls.append(r["url"])
-                url_to_claim.setdefault(r["url"], "topic search")
+            all_urls.append(url)
+            url_to_claim.setdefault(url, label)
+            sources_checked.append({"claim": label, "url": url, "title": r["title"], "supports": None})
 
-    # Prioritise trusted sources: sort so Tier 1/2/3 URLs come first
+    # Search each claim without quotes so DDG finds actual news coverage
+    for claim_obj in verifiable:
+        claim_text = claim_obj.get("text", "")[:120]
+        if len(claim_text) < 10:
+            continue
+        results = await asyncio.to_thread(_ddg_search, claim_text + " news", 5)
+        _add_results(results, claim_text)
+
+    # Topic-level fallback using the article summary or first claim — NOT raw article text
+    if len(all_urls) < 8:
+        topic = (
+            structured.get("summary", "")[:150]
+            or (verifiable[0].get("text", "")[:120] if verifiable else "")
+            or article_text[:120]
+        ).strip()
+        # Strip leading "The " to avoid grammar site results
+        topic = re.sub(r'^(the|a|an)\s+', '', topic, flags=re.IGNORECASE).strip()
+        if topic:
+            extra = await asyncio.to_thread(_ddg_search, topic + " news report", 6)
+            _add_results(extra, "topic search")
+
+    # Prioritise trusted tiers
     all_urls.sort(key=lambda u: _source_tier(u)["tier"] if _source_tier(u)["trusted"] else 99)
 
-    # ── Step 3: Scrape up to 10 pages (with metadata for citations) ───────────
+    # ── Step 3: Scrape up to 10 pages ─────────────────────────────────────────
     scraped = await _scrape_pages_with_meta(all_urls[:10])
     scraped_block = ""
     for i, page in enumerate(scraped):
