@@ -302,25 +302,29 @@ Return ONLY valid JSON:
 ai_confidence: integer 0-100. 0 = definitely human-written, 100 = definitely AI-generated.
 Base your assessment on specific textual evidence, not just the statistics."""
 
-TIMELINE_EXTRACT_PROMPT = """Extract the core topic and diverse search queries from this article for comprehensive narrative timeline research.
+TIMELINE_EXTRACT_PROMPT = """You are a research assistant. Read this article and generate 10 highly specific search queries to find OTHER news articles covering the SAME story or event. The queries must be concrete and directly about this article's topic — not generic.
 
 Article (first 1000 chars):
 \"\"\"
 {article}
 \"\"\"
 
-Return ONLY valid JSON:
+Return ONLY valid JSON. Each search_query must be a real search string (not a description of what to search):
 {{
-  "topic": "3-6 word topic phrase for searching (e.g. 'Iran nuclear talks deadline')",
+  "topic": "3-6 word topic phrase (e.g. 'Iran nuclear deal deadline 2024')",
   "search_queries": [
-    "query focused on the core event or main claim",
-    "query focused on the key actors or people involved",
-    "query focused on the latest development or outcome",
-    "query focused on background or historical context",
-    "query for fact-check, verification, or debunking angle",
-    "query for opposing perspectives, criticism, or counter-narrative"
+    "exact or near-exact headline of the article",
+    "main event + key people or organizations involved",
+    "main event + location or country",
+    "main event + outcome or consequence",
+    "main people/organizations + what they did",
+    "fact check or debunk + main claim of the article",
+    "counter narrative or opposition view on the same event",
+    "background or history of the main event",
+    "international or regional reaction to the event",
+    "official statement or government response to the event"
   ],
-  "core_claim": "the single most central factual claim in one sentence"
+  "core_claim": "the single most important factual claim in one sentence"
 }}"""
 
 TIMELINE_ANALYZE_PROMPT = """You are a narrative forensics analyst. Deeply analyze how this news story evolved across different sources and dates.
@@ -346,7 +350,7 @@ Return ONLY valid JSON:
   "article_assessments": [
     {{
       "index": 1,
-      "corroboration": "one of exactly: CORROBORATES | CONTRADICTS | INDEPENDENT | PARTIAL | UNRELATED",
+      "corroboration": "one of exactly: CORROBORATES | CONTRADICTS | INDEPENDENT | PARTIAL | UNRELATED. Use CORROBORATES if the article confirms the core claim. Use CONTRADICTS if it refutes it. Use PARTIAL if it partly agrees. Use INDEPENDENT if it covers the same story/event from a different angle (this is the most common label for related news). Use UNRELATED ONLY if the article is about a completely different topic with zero connection to this story.",
       "key_quote": "the single most relevant sentence from this article (max 120 chars)",
       "bias_note": "3-5 word description e.g. 'neutral wire report', 'left-leaning op-ed', 'sensationalist headline', 'pro-government framing'"
     }}
@@ -1180,19 +1184,27 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
         )
         ext = json.loads(ext_resp.choices[0].message.content)
         topic = ext.get("topic", "")
-        queries = ext.get("search_queries", [topic])[:6]
+        queries = ext.get("search_queries", [topic])[:10]
         core_claim = ext.get("core_claim", "")
     except Exception:
         topic = article_text[:80]
         queries = [topic]
         core_claim = topic
 
-    # Step 2: run all 6 queries, 6 results each = up to 36 candidates
+    # Step 2: run all queries in parallel, 8 results each = up to 80 candidates
+    async def _one_search(q: str) -> list[dict]:
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(_ddg_search, q, 8), timeout=12.0
+            )
+        except Exception:
+            return []
+    search_batches = await asyncio.gather(*[_one_search(q) for q in queries])
+
     all_urls: list[str] = []
     seen: set[str] = set()
-    for q in queries:
-        results = await asyncio.to_thread(_ddg_search, q, 6)
-        for r in results:
+    for batch in search_batches:
+        for r in batch:
             url = r.get("url", "")
             if url and url not in seen and not r.get("error"):
                 seen.add(url)
@@ -1277,20 +1289,42 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
     # Step 7: build sources_used + claim_timeline for the citations UI.
     # /timeline currently focuses on a single core_claim, so claim_timeline is
     # a one-entry array. pages is already sorted oldest→newest above.
-    sources_used = []
-    for p in pages:
+    diff_map = {
+        "CORROBORATES": "Corroborates the original claim.",
+        "CONTRADICTS":  "Contradicts the original claim.",
+        "PARTIAL":      "Partially agrees; some details differ.",
+        "INDEPENDENT":  "Independent coverage of the same story.",
+        "UNRELATED":    "Loosely related topic.",
+    }
+
+    def _build_snippet(p):
         snippet = (p.get("text") or "")[:240].strip()
         cut = max(snippet.rfind(". "), snippet.rfind("! "), snippet.rfind("? "))
-        if cut > 80:
-            snippet = snippet[: cut + 1]
+        return snippet[: cut + 1] if cut > 80 else snippet
+
+    # Build sources_used — skip UNRELATED unless it's all we have
+    sources_used = []
+    for i, p in enumerate(pages):
+        a = assessments.get(i + 1, {})
+        if (a.get("corroboration") or "INDEPENDENT").upper() == "UNRELATED":
+            continue
         sources_used.append({
             "url": p.get("url", ""),
             "hostname": p.get("hostname", "") or "",
             "title": p.get("title", "") or p.get("hostname", "") or p.get("url", ""),
             "published_date": p.get("date") or None,
             "claim_supported": core_claim or topic,
-            "relevance_snippet": snippet,
+            "relevance_snippet": _build_snippet(p),
         })
+    if not sources_used:  # fallback: keep everything
+        sources_used = [{
+            "url": p.get("url", ""),
+            "hostname": p.get("hostname", "") or "",
+            "title": p.get("title", "") or p.get("hostname", "") or p.get("url", ""),
+            "published_date": p.get("date") or None,
+            "claim_supported": core_claim or topic,
+            "relevance_snippet": _build_snippet(p),
+        } for p in pages]
 
     dated = [p for p in pages if p.get("date")]
     first_reported = ""
@@ -1298,30 +1332,39 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
         d0 = dated[0]
         first_reported = f"{d0.get('hostname', '')} · {d0.get('date', '')}".strip(" ·")
 
+    # Build timeline_entries — skip UNRELATED, fall back to all if empty
     timeline_entries = []
     for i, p in enumerate(pages):
         a = assessments.get(i + 1, {})
         corro = (a.get("corroboration") or "INDEPENDENT").upper()
-        diff_map = {
-            "CORROBORATES": "Restates the original claim.",
-            "CONTRADICTS":  "Contradicts the original claim.",
-            "PARTIAL":      "Partial agreement; some details differ.",
-            "INDEPENDENT":  "Independent report on the same topic.",
-            "UNRELATED":    "Adjacent topic; does not address the claim.",
-        }
+        if corro == "UNRELATED":
+            continue
         how = a.get("key_quote") or diff_map.get(corro, "Coverage of the same topic.")
         timeline_entries.append({
             "date": p.get("date") or "",
             "hostname": p.get("hostname", "") or "",
             "url": p.get("url", ""),
             "how_claim_changed": how[:200],
+            "corroboration": corro,
         })
+    if not timeline_entries:  # fallback: include everything
+        for i, p in enumerate(pages):
+            a = assessments.get(i + 1, {})
+            corro = (a.get("corroboration") or "INDEPENDENT").upper()
+            how = a.get("key_quote") or diff_map.get(corro, "Coverage of the same topic.")
+            timeline_entries.append({
+                "date": p.get("date") or "",
+                "hostname": p.get("hostname", "") or "",
+                "url": p.get("url", ""),
+                "how_claim_changed": how[:200],
+                "corroboration": corro,
+            })
 
     claim_timeline = [{
         "claim": core_claim or topic,
         "first_reported": first_reported,
         "timeline_entries": timeline_entries,
-    }] if timeline_entries else []
+    }]
 
     return {
         "topic": topic,
@@ -1452,40 +1495,31 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     result["ai_detection"] = ai_result
     result["source_language"] = source_language
 
-    # Attach citation_ids to each Verifiable claim by matching against the
-    # claim text used at DDG-search time (preserved in sources_used.claim_supported).
-    # Deterministic — same scrape data the LLM already saw, no extra API call.
+    # Attach citation_ids to Verifiable claims using keyword overlap matching.
+    # Exact text match fails because claim_supported stores the original search
+    # query, not the LLM's rephrased claim text.
     raw_sources = fake_result.get("sources_used", []) if isinstance(fake_result, dict) else []
-    claim_to_indices: dict[str, list[int]] = {}
-    if raw_sources:
-        for i, s in enumerate(raw_sources):
-            key = s.get("claim_supported", "")
-            claim_to_indices.setdefault(key, []).append(i)
+    all_source_ids = list(range(len(raw_sources)))
 
-    referenced: set[int] = set()
-    if result.get("claims"):
+    if result.get("claims") and raw_sources:
         for claim in result["claims"]:
             if claim.get("type") != "Verifiable":
                 claim["citation_ids"] = []
                 continue
-            needle = (claim.get("text", "") or "")[:150]
-            ids = claim_to_indices.get(needle, [])
-            claim["_pending_ids"] = ids
-            referenced.update(ids)
+            claim_text = (claim.get("text", "") or "").lower()
+            # Keywords: words longer than 4 chars from the claim
+            keywords = [w for w in claim_text.split() if len(w) > 4][:10]
+            matched = []
+            for i, s in enumerate(raw_sources):
+                supported = (s.get("claim_supported", "") or "").lower()
+                snippet = (s.get("relevance_snippet", "") or "").lower()
+                haystack = supported + " " + snippet
+                if any(kw in haystack for kw in keywords):
+                    matched.append(i)
+            # If no keyword match, attach all sources rather than leaving empty
+            claim["citation_ids"] = matched if matched else all_source_ids
 
-    # Keep all scraped sources so the citations panel is always populated.
-    # citation_ids on each claim still point to the correct indices.
-    kept_sources: list[dict] = list(raw_sources)
-    old_to_new: dict[int, int] = {i: i for i in range(len(raw_sources))}
-
-    if result.get("claims"):
-        for claim in result["claims"]:
-            pending = claim.pop("_pending_ids", None)
-            if pending is None:
-                continue
-            claim["citation_ids"] = [old_to_new[i] for i in pending if i in old_to_new]
-
-    result["sources_used"] = kept_sources
+    result["sources_used"] = list(raw_sources)
 
     return result
 
