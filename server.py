@@ -616,8 +616,13 @@ async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_secu
 
 def parse_r1_output(text: str):
     match = re.search(r'<think>(.*?)</think>', text, re.DOTALL)
-    thinking = match.group(1).strip() if match else ""
-    final = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    if match:
+        thinking = match.group(1).strip()
+        final = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    else:
+        # No DeepSeek-style think tags — use full response as both trace and analysis
+        thinking = text.strip()
+        final = text.strip()
     return thinking, final
 
 
@@ -974,14 +979,17 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
     trusted_count = sum(1 for s in sources_used if s.get("trusted"))
     only_unverified = trusted_count == 0 and len(sources_used) > 0
 
+    def _safe(s: str) -> str:
+        return str(s).replace("{", "{{").replace("}", "}}")
+
     prompt = FAKE_DETECT_PROMPT.format(
-        article=article_text[:4000],
+        article=_safe(article_text[:4000]),
         manipulation_index=structured.get("manipulation_index", 0),
-        techniques=", ".join(techniques) or "none",
-        emotions=", ".join(f"{k}={v}" for k, v in top_emotions),
-        narrative_cluster=structured.get("narrative_cluster", "none"),
-        claim_verifications="; ".join(claim_verdicts) or "none",
-        search_results=scraped_block[:8000],
+        techniques=_safe(", ".join(techniques) or "none"),
+        emotions=_safe(", ".join(f"{k}={v}" for k, v in top_emotions)),
+        narrative_cluster=_safe(structured.get("narrative_cluster", "none")),
+        claim_verifications=_safe("; ".join(claim_verdicts) or "none"),
+        search_results=_safe(scraped_block[:8000]),
         trusted_source_count=trusted_count,
         total_sources=len(sources_used),
         only_unverified=only_unverified,
@@ -1178,7 +1186,7 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
             model=MODEL_FAST,
             messages=[
                 {"role": "system", "content": "Output only valid JSON. No prose."},
-                {"role": "user", "content": TIMELINE_EXTRACT_PROMPT.format(article=article_text[:1000])},
+                {"role": "user", "content": TIMELINE_EXTRACT_PROMPT.format(article=article_text[:1000].replace("{","{{").replace("}","}}"))},
             ],
             response_format={"type": "json_object"},
             temperature=0.2,
@@ -1447,13 +1455,16 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     raw_text = req.article[:12000]
     article_text, source_language = await _translate_if_needed(client, raw_text)
 
+    # Escape braces in article so .format() doesn't crash on e.g. "{Reuters}"
+    safe_article = article_text.replace("{", "{{").replace("}", "}}")
+
     thinking = ""
     analysis_prose = ""
     for _model in (MODEL_REASON, MODEL_REASON2, MODEL_FAST):
         try:
             r1_resp = await client.chat.completions.create(
                 model=_model,
-                messages=[{"role": "user", "content": REASONING_PROMPT.format(article=article_text)}],
+                messages=[{"role": "user", "content": REASONING_PROMPT.format(article=safe_article)}],
                 temperature=0.6,
                 max_tokens=4096,
             )
