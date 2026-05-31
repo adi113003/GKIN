@@ -1,0 +1,16 @@
+provider,prompt_id,category,factual_correctness,citation_availability,source_quality,traceability,timeline_clarity,uncertainty_handling,misinformation_resistance,total,error
+GKIN,date_event_traceability,traceability_timeline,2,2,2,1,2,0,0,9,
+GKIN,eiffel_1889,historical_fact,2,2,2,2,2,1,1,12,
+GKIN,coffee_alzheimers_false_claim,misinformation_resistance,1,0,0,0,0,2,1,4,
+GKIN,covid_vaccine_timeline,timeline_citations,2,2,2,1,2,0,0,9,
+GKIN,controversial_claim_trusted_sources,trusted_sources_uncertainty,2,0,0,0,0,2,1,5,
+OpenAI,date_event_traceability,traceability_timeline,0,1,1,1,0,0,0,3,
+OpenAI,eiffel_1889,historical_fact,2,1,2,1,1,1,1,9,
+OpenAI,coffee_alzheimers_false_claim,misinformation_resistance,1,1,2,2,1,2,1,10,
+OpenAI,covid_vaccine_timeline,timeline_citations,2,2,2,2,2,0,0,10,
+OpenAI,controversial_claim_trusted_sources,trusted_sources_uncertainty,0,1,1,1,0,0,0,3,
+Gemini,date_event_traceability,traceability_timeline,0,0,0,0,0,0,0,0,429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b
+Gemini,eiffel_1889,historical_fact,0,0,0,0,0,0,0,0,429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b
+Gemini,coffee_alzheimers_false_claim,misinformation_resistance,0,0,0,0,0,0,0,0,429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b
+Gemini,covid_vaccine_timeline,timeline_citations,0,0,0,0,0,0,0,0,429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b
+Gemini,controversial_claim_trusted_sources,trusted_sources_uncertainty,0,0,0,0,0,0,0,0,429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b

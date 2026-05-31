@@ -1336,24 +1336,32 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
             "hostname": p.get("hostname", ""),
         })
 
-    # Step 5: deep LLM narrative forensics analysis
-    try:
-        ana_resp = await client.chat.completions.create(
-            model=MODEL_STRUCT,
-            messages=[
-                {"role": "system", "content": "Output only valid JSON. No prose."},
-                {"role": "user", "content": TIMELINE_ANALYZE_PROMPT.format(
-                    topic=topic,
-                    core_claim=core_claim,
-                    articles_text=articles_text[:9000],
-                )},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.3,
-            max_tokens=1800,
-        )
-        ana = json.loads(ana_resp.choices[0].message.content)
-    except Exception:
+    # Step 5: deep LLM narrative forensics analysis.
+    # Try the 70B structuring model, then fall back to the 8B instant model so a
+    # rate-limited 70B (e.g. Groq's per-day token cap) degrades to a thinner but
+    # real narrative instead of "analysis failed". Both are JSON-safe.
+    ana = None
+    for _model in (MODEL_STRUCT, MODEL_FAST):
+        try:
+            ana_resp = await client.chat.completions.create(
+                model=_model,
+                messages=[
+                    {"role": "system", "content": "Output only valid JSON. No prose."},
+                    {"role": "user", "content": TIMELINE_ANALYZE_PROMPT.format(
+                        topic=topic,
+                        core_claim=core_claim,
+                        articles_text=articles_text[:9000],
+                    )},
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.3,
+                max_tokens=1800,
+            )
+            ana = json.loads(ana_resp.choices[0].message.content)
+            break
+        except Exception:
+            continue
+    if ana is None:
         ana = {
             "origin_assessment": "Analysis unavailable.",
             "narrative_shifts": [],

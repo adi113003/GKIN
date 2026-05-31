@@ -1,0 +1,70 @@
+{
+  "_README": {
+    "purpose": "Prompt set for the automated competitor benchmark (run_competitor_benchmark.py). The same `prompt` text is sent to every external provider (OpenAI / Gemini / Perplexity); GKIN is queried via its own endpoints (see gkin_endpoint / gkin_claim).",
+    "scoring_fields": {
+      "expected_facts": "Substrings that a factually-correct answer should contain (case-insensitive). Empty list => factual_correctness is scored structurally (dates + citations present).",
+      "expected_stance": "supported | rejected | timeline | uncertain — what a good answer should conclude.",
+      "expects_timeline": "true if the prompt asks for a chronology; drives the timeline_clarity weighting.",
+      "misinfo_trap": "true if the prompt asserts a false/overstated claim a good answer must push back on.",
+      "gkin_endpoint": "verify (=> POST /verify-claims) | timeline (=> POST /timeline). How the GKIN adapter answers this prompt.",
+      "gkin_claim": "the concrete claim/topic the GKIN adapter sends to its endpoint."
+    }
+  },
+  "prompts": [
+    {
+      "id": "date_event_traceability",
+      "prompt": "What evidence supports the claim that a major public event happened on a specific date? Provide sources and a timeline.",
+      "category": "traceability_timeline",
+      "expected_facts": [],
+      "expected_stance": "timeline",
+      "expects_timeline": true,
+      "misinfo_trap": false,
+      "gkin_endpoint": "timeline",
+      "gkin_claim": "The Apollo 11 Moon landing occurred on July 20, 1969."
+    },
+    {
+      "id": "eiffel_1889",
+      "prompt": "Verify this claim: The Eiffel Tower was originally built for the 1889 World's Fair.",
+      "category": "historical_fact",
+      "expected_facts": ["1889", "Paris"],
+      "expected_stance": "supported",
+      "expects_timeline": false,
+      "misinfo_trap": false,
+      "gkin_endpoint": "verify",
+      "gkin_claim": "The Eiffel Tower was originally built for the 1889 World's Fair."
+    },
+    {
+      "id": "coffee_alzheimers_false_claim",
+      "prompt": "Verify this claim: A new medical study proves that drinking coffee cures Alzheimer's disease.",
+      "category": "misinformation_resistance",
+      "expected_facts": [],
+      "expected_stance": "rejected",
+      "expects_timeline": false,
+      "misinfo_trap": true,
+      "gkin_endpoint": "verify",
+      "gkin_claim": "A new medical study proves that drinking coffee cures Alzheimer's disease."
+    },
+    {
+      "id": "covid_vaccine_timeline",
+      "prompt": "Give a timeline of major events in the development of COVID-19 vaccines and cite evidence for each event.",
+      "category": "timeline_citations",
+      "expected_facts": ["2020", "2021"],
+      "expected_stance": "timeline",
+      "expects_timeline": true,
+      "misinfo_trap": false,
+      "gkin_endpoint": "timeline",
+      "gkin_claim": "Timeline of major events in the development of COVID-19 vaccines, 2020 to 2021."
+    },
+    {
+      "id": "controversial_claim_trusted_sources",
+      "prompt": "Verify a controversial current-event claim using only trusted sources. Clearly state what is verified, what is uncertain, and what evidence supports the conclusion.",
+      "category": "trusted_sources_uncertainty",
+      "expected_facts": [],
+      "expected_stance": "uncertain",
+      "expects_timeline": false,
+      "misinfo_trap": false,
+      "gkin_endpoint": "verify",
+      "gkin_claim": "Artificial intelligence will eliminate the majority of human jobs within the next five years."
+    }
+  ]
+}

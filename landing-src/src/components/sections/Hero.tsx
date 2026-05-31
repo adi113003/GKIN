@@ -25,13 +25,13 @@ export function Hero() {
           <motion.a
             {...fadeUp}
             transition={{ duration: 0.7, ease: [0.2, 0.7, 0.3, 1] }}
-            href="#proof"
+            href="#since-midterm"
             className="inline-flex items-center gap-2 pl-1.5 pr-3 py-1 mb-8 border border-white/[0.14] bg-white/[0.03] rounded-full text-[12.5px] text-ink-2 hover:border-white/[0.24] hover:bg-white/[0.05] transition-all"
           >
             <span className="font-mono text-[10px] font-semibold tracking-wider px-1.5 py-[3px] rounded-full bg-gradient-to-r from-brand-blue to-brand-violet text-white">
               NEW
             </span>
-            <span>DistilBERT classifier hits 99.4% accuracy.</span>
+            <span>Every verdict now cites its source — see what changed.</span>
             <span className="text-ink-3">→</span>
           </motion.a>
 
@@ -52,10 +52,11 @@ export function Hero() {
             className="text-ink-3 mb-10 max-w-[50ch] leading-relaxed"
             style={{ fontSize: "clamp(16px, 1.5vw, 18px)" }}
           >
-            Paste an article, URL, screenshot, or podcast. GKIN scores manipulation,
-            names every persuasion technique, and verifies{" "}
-            <strong className="text-ink-2 font-medium">every factual claim</strong>{" "}
-            against the live web — in seconds.
+            Paste an article, URL, screenshot, or podcast. GKIN scores manipulation, names
+            every persuasion technique, and ties{" "}
+            <strong className="text-ink-2 font-medium">every verdict to the exact source
+            sentence</strong>{" "}
+            that backs it — or says it can’t verify it. Auditable, not a black box.
           </motion.p>
 
           <motion.div
@@ -67,7 +68,7 @@ export function Hero() {
               Launch GKIN
               <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.4} />
             </Button>
-            <Button variant="secondary" size="lg" href="#analyze">
+            <Button variant="secondary" size="lg" href="#how">
               See it work
               <ArrowDown className="w-3.5 h-3.5" strokeWidth={2.4} />
             </Button>

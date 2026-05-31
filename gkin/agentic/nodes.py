@@ -71,6 +71,11 @@ class Deps:
     model_extract: str = MODEL_FAST
     model_query: str = MODEL_FAST
     model_ground: str = MODEL_GROUND
+    # Grounding falls back to this model if the primary errors (e.g. the 70B
+    # model hitting Groq's per-day token limit). The 8B instruct model is also
+    # JSON-safe and has a much larger free-tier quota, so grounding degrades
+    # gracefully instead of silently returning INSUFFICIENT.
+    model_ground_fallback: str = MODEL_FAST
 
     max_evidence: int = 5          # evidence items grounded (scraped) per claim
     # Raw results pulled per query. Larger than max_evidence on purpose: a bigger
@@ -298,28 +303,36 @@ async def ground_verdict(state: dict, deps: Deps) -> dict:
         f"CLAIM: {state['claim_text']}\n\nEVIDENCE:\n{evidence_block}"
     )
     grounding: dict = {"verdict": "insufficient", "confidence": 0.0, "reasoning": "", "citations": []}
-    try:
-        resp = await deps.client.chat.completions.create(
-            model=deps.model_ground,
-            messages=[
-                {"role": "system", "content": "You are a fact-checker. Output only valid JSON."},
-                {"role": "user", "content": prompt},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.1,
-            max_tokens=800,
-        )
-        record_usage(getattr(resp, "usage", None))
-        parsed = _parse_json(resp.choices[0].message.content)
-        if parsed:
-            grounding = {
-                "verdict": str(parsed.get("verdict", "insufficient")).strip().lower(),
-                "confidence": float(parsed.get("confidence", 0.0) or 0.0),
-                "reasoning": str(parsed.get("reasoning", "")).strip(),
-                "citations": parsed.get("citations", []) or [],
-            }
-    except Exception:
-        pass
+    # Try the primary grounding model, then the fallback (dedup if identical), so
+    # a rate-limited 70B model degrades to the 8B model rather than silently
+    # producing an ungrounded INSUFFICIENT.
+    models = [deps.model_ground]
+    if deps.model_ground_fallback and deps.model_ground_fallback != deps.model_ground:
+        models.append(deps.model_ground_fallback)
+    for model in models:
+        try:
+            resp = await deps.client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "You are a fact-checker. Output only valid JSON."},
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.1,
+                max_tokens=800,
+            )
+            record_usage(getattr(resp, "usage", None))
+            parsed = _parse_json(resp.choices[0].message.content)
+            if parsed:
+                grounding = {
+                    "verdict": str(parsed.get("verdict", "insufficient")).strip().lower(),
+                    "confidence": float(parsed.get("confidence", 0.0) or 0.0),
+                    "reasoning": str(parsed.get("reasoning", "")).strip(),
+                    "citations": parsed.get("citations", []) or [],
+                }
+                break  # got a usable grounding; don't burn the fallback
+        except Exception:
+            continue  # try the fallback model
     state["grounding"] = grounding
     return state
 

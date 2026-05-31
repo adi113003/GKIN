@@ -7,6 +7,7 @@ import {
   Eye, EyeOff, X, Radio, Zap, FileText, Mic,
   MessageSquare, RefreshCw, AlertTriangle,
   Link as LinkIcon, GitBranch, ChevronDown, ChevronRight,
+  CheckCircle2, XCircle, HelpCircle, ShieldCheck,
 } from "lucide-react";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 
@@ -55,6 +56,19 @@ interface SourceUsed {
   tier?: number;
   trusted?: boolean;
 }
+// Grounded /verify-claims output (gkin.agentic.verdict). A SUPPORTED/CONTRADICTED
+// verdict is impossible to construct without >=1 evidence span (URL + verbatim
+// sentence). INSUFFICIENT is the honest default.
+interface EvidenceSpan {
+  url: string; sentence: string; title?: string;
+  tier?: number; tier_name?: string; trusted?: boolean; relevance?: number;
+}
+interface GroundedVerdict {
+  claim_id: string; claim_text: string;
+  label: "SUPPORTED" | "CONTRADICTED" | "INSUFFICIENT" | string;
+  confidence: number; evidence: EvidenceSpan[];
+  reasoning?: string; low_confidence?: boolean; flags?: string[]; cached?: boolean;
+}
 interface TimelineEntry { date: string; hostname: string; url: string; how_claim_changed: string; }
 interface ClaimTimeline { claim: string; first_reported: string; timeline_entries: TimelineEntry[]; }
 interface AnalysisResult {
@@ -89,6 +103,68 @@ const clearAuth = () => { localStorage.removeItem("gkin_token"); localStorage.re
 const invKey    = (u: string) => `gkin_inv_${u || "guest"}`;
 async function apiFetch(path: string, opts: RequestInit = {}) {
   return fetch(path, { ...opts, headers: { "Content-Type": "application/json", ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}), ...opts.headers } });
+}
+
+// ── Verification + source-reliability badges ───────────────────────────────────
+// Surfaces the grounded verdict + trusted-source-tier work in the UI. Handles both
+// the /analyze verdict vocabulary (accurate/false/unverifiable) and the grounded
+// /verify-claims vocabulary (supported/contradicted/insufficient).
+function verdictMeta(raw?: string) {
+  const v = (raw || "").toLowerCase().trim();
+  // Grounded /verify-claims labels keep their canonical names; the /analyze
+  // quick-pass synonyms map onto the same colors/icons.
+  if (v === "supported") return { label: "SUPPORTED", color: P.green, Icon: CheckCircle2 };
+  if (v === "contradicted") return { label: "CONTRADICTED", color: P.red, Icon: XCircle };
+  if (v === "insufficient") return { label: "INSUFFICIENT", color: P.muted, Icon: HelpCircle };
+  if (["accurate", "true", "verified", "correct"].includes(v))
+    return { label: "VERIFIED", color: P.green, Icon: CheckCircle2 };
+  if (["false", "inaccurate", "debunked", "incorrect"].includes(v))
+    return { label: "CONTRADICTED", color: P.red, Icon: XCircle };
+  if (["misleading", "partially true", "partial", "disputed", "mixed", "conflicting"].includes(v))
+    return { label: "DISPUTED", color: P.yellow, Icon: AlertTriangle };
+  return { label: "UNVERIFIED", color: P.muted, Icon: HelpCircle };
+}
+
+function VerdictBadge({ verdict }: { verdict?: string }) {
+  const { label, color, Icon } = verdictMeta(verdict);
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5, fontSize: 9.5, fontWeight: 700,
+      letterSpacing: "0.08em", color, background: `${color}1a`, border: `1px solid ${color}40`,
+      borderRadius: 4, padding: "2px 8px", textTransform: "uppercase",
+    }}>
+      <Icon size={11} strokeWidth={2.4} /> {label}
+    </span>
+  );
+}
+
+// Trusted-source tiers mirror server.py TRUSTED_SOURCES: 1 primary/official,
+// 2 established journalism, 3 fact-checkers/reference, 0 unverified.
+function tierMeta(tier?: number, trusted?: boolean) {
+  const t = tier ?? 0;
+  if (t === 1) return { label: "PRIMARY · OFFICIAL", color: P.green, trusted: true };
+  if (t === 2) return { label: "JOURNALISM", color: P.accentCyan, trusted: true };
+  if (t === 3) return { label: "FACT-CHECK · REF", color: P.accent, trusted: true };
+  return { label: "UNVERIFIED", color: P.faint, trusted: !!trusted && t > 0 };
+}
+
+function TierBadge({ tier, trusted }: { tier?: number; trusted?: boolean }) {
+  const m = tierMeta(tier, trusted);
+  const isTrusted = (tier ?? 0) > 0;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 4, fontSize: 8.5, fontWeight: 700,
+      letterSpacing: "0.08em", color: m.color, background: `${m.color}1a`,
+      border: `1px solid ${m.color}55`, borderRadius: 3, padding: "1px 6px",
+    }}>
+      {isTrusted ? <ShieldCheck size={9} strokeWidth={2.6} /> : <Shield size={9} strokeWidth={2.2} />}
+      {m.label}
+    </span>
+  );
+}
+
+function hostOf(url: string) {
+  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
 }
 
 // ── Gauge ─────────────────────────────────────────────────────────────────────
@@ -420,6 +496,10 @@ export default function Analyzer() {
   const [loading, setLoading]         = useState(false);
   const [loadingMsg, setLoadingMsg]   = useState("INITIALIZING");
   const [result, setResult]           = useState<AnalysisResult | null>(null);
+  const [scanError, setScanError]     = useState("");
+  const [groundedVerdicts, setGroundedVerdicts] = useState<GroundedVerdict[] | null>(null);
+  const [verifying, setVerifying]     = useState(false);
+  const [verifyError, setVerifyError] = useState("");
   const [fetchedTitle, setFetchedTitle] = useState("");
   const [langBadge, setLangBadge]     = useState("");
   const [investigations, setInvestigations] = useState<Investigation[]>(() => {
@@ -498,12 +578,32 @@ export default function Analyzer() {
     } finally { setTimelineLoading(false); }
   }, [result, timelineLoading]);
 
+  // Grounded fact-check: run each extracted claim through the agentic
+  // /verify-claims loop, which returns SUPPORTED/CONTRADICTED/INSUFFICIENT
+  // verdicts carrying verbatim, credibility-tiered evidence spans.
+  const runGroundedVerification = useCallback(async () => {
+    if (!result || verifying) return;
+    const claims = (result.claims || []).map(c => c.text).filter(Boolean).slice(0, 5);
+    if (claims.length === 0) { setVerifyError("No verifiable claims were extracted to fact-check."); return; }
+    setVerifying(true); setVerifyError("");
+    try {
+      const r = await apiFetch("/verify-claims", { method: "POST", body: JSON.stringify({ claims, max_claims: 5 }) });
+      if (r.status === 401) { setShowLogin(true); return; }
+      if (!r.ok) throw new Error(await r.text());
+      const d = await r.json();
+      setGroundedVerdicts(d.verdicts || []);
+    } catch (e) {
+      setVerifyError(e instanceof Error ? e.message : String(e));
+    } finally { setVerifying(false); }
+  }, [result, verifying]);
+
   const executeScan = async (overrideText?: string) => {
     if (!token) { setShowLogin(true); return; }
     const sourceText = overrideText ?? input;
     if (!sourceText.trim()) return;
-    setLoading(true); setResult(null); setFetchedTitle(""); setLangBadge("");
+    setLoading(true); setResult(null); setScanError(""); setFetchedTitle(""); setLangBadge("");
     setChatMessages([]); setSuggestions([]);
+    setGroundedVerdicts(null); setVerifyError(""); setVerifying(false);
     setClaimTimeline(null); setTimelineError(""); setTimelineOpen(false); setExpandedSrc(null);
     try {
       let articleText = sourceText, displayTitle = "";
@@ -528,7 +628,7 @@ export default function Analyzer() {
       setActiveNav("neural");
       fetchSuggestions(analysis);
     } catch (e: unknown) {
-      alert("SCAN ERROR: " + (e instanceof Error ? e.message : String(e)));
+      setScanError(e instanceof Error ? e.message : String(e));
     } finally { setLoading(false); }
   };
 
@@ -945,7 +1045,56 @@ export default function Analyzer() {
           </div>
 
           {/* Results */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
+            {/* Error state */}
+            {scanError && !loading && (
+              <motion.div key="error" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <div style={{ ...S.card, borderColor: "rgba(248,113,113,0.3)" }}>
+                  <div style={{ ...S.cardHd, color: P.red }}><span>SCAN FAILED</span><AlertTriangle size={11} /></div>
+                  <div style={{ padding: 20, textAlign: "center" }}>
+                    <p style={{ fontSize: 11.5, color: P.text2, lineHeight: 1.6, marginBottom: 4 }}>
+                      GKIN couldn’t complete this scan.
+                    </p>
+                    <p style={{ fontSize: 10.5, color: P.muted, lineHeight: 1.6, marginBottom: 16, wordBreak: "break-word" }}>
+                      {scanError}
+                    </p>
+                    <button style={{ ...S.btnFilled, display: "inline-flex", alignItems: "center", gap: 6 }}
+                      onClick={() => executeScan()}>
+                      <RefreshCw size={11} /> RETRY SCAN
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Empty / initial state — also a legend for the demo */}
+            {!result && !loading && !scanError && (
+              <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <div style={S.card}>
+                  <div style={{ padding: "40px 24px", textAlign: "center" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: P.accentDim, border: `1px solid ${P.border3}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                      <Search size={20} style={{ color: P.accent }} />
+                    </div>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: P.text, margin: "0 0 8px" }}>Ready to analyze</h3>
+                    <p style={{ fontSize: 11.5, color: P.muted, lineHeight: 1.6, maxWidth: 420, margin: "0 auto 22px" }}>
+                      Paste an article, URL, screenshot, or audio clip and run a scan. GKIN scores manipulation,
+                      verifies each claim, and ties every verdict to a credibility-ranked source.
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", alignItems: "center", marginBottom: 10 }}>
+                      <span style={{ fontSize: 9, color: P.faint, letterSpacing: "0.1em", marginRight: 2 }}>VERDICTS</span>
+                      <VerdictBadge verdict="accurate" />
+                      <VerdictBadge verdict="false" />
+                      <VerdictBadge verdict="unverifiable" />
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", alignItems: "center" }}>
+                      <span style={{ fontSize: 9, color: P.faint, letterSpacing: "0.1em", marginRight: 2 }}>SOURCES</span>
+                      <TierBadge tier={1} /><TierBadge tier={2} /><TierBadge tier={3} /><TierBadge tier={0} />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {result && (
               <motion.div key="results" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
@@ -975,14 +1124,96 @@ export default function Analyzer() {
                 {/* Source Trace */}
                 {activeNav === "source" && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {/* Grounded fact-check — agentic /verify-claims loop */}
                     <div style={S.card}>
-                      <div style={S.cardHd}>CLAIM VERIFICATION</div>
+                      <div style={S.cardHd}>
+                        <span>GROUNDED FACT-CHECK{groundedVerdicts ? ` (${groundedVerdicts.length})` : ""}</span>
+                        <ShieldCheck size={11} />
+                      </div>
+                      <div style={{ padding: 16 }}>
+                        {!groundedVerdicts && !verifying && !verifyError && (
+                          <div style={{ textAlign: "center" }}>
+                            <p style={{ fontSize: 11, color: P.muted, lineHeight: 1.6, maxWidth: 460, margin: "0 auto 14px" }}>
+                              Run each extracted claim through GKIN’s retrieval-grounded loop. Every
+                              SUPPORTED or CONTRADICTED verdict is tied to the exact source sentence that
+                              backs it — or returns INSUFFICIENT. (~10–20s)
+                            </p>
+                            <button style={{ ...S.btnFilled, display: "inline-flex", alignItems: "center", gap: 6 }} onClick={runGroundedVerification}>
+                              <ShieldCheck size={11} /> VERIFY WITH SOURCES
+                            </button>
+                          </div>
+                        )}
+                        {verifying && (
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "16px 0", color: P.accent, fontSize: 11, letterSpacing: "0.08em" }}>
+                            <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> GROUNDING CLAIMS AGAINST LIVE SOURCES…
+                          </div>
+                        )}
+                        {!verifying && verifyError && (
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: 11, color: P.red, marginBottom: 12, lineHeight: 1.5, wordBreak: "break-word" }}>{verifyError}</div>
+                            <button style={{ ...S.btnFilled, display: "inline-flex", alignItems: "center", gap: 6 }} onClick={runGroundedVerification}>
+                              <RefreshCw size={11} /> RETRY
+                            </button>
+                          </div>
+                        )}
+                        {!verifying && groundedVerdicts && groundedVerdicts.length === 0 && (
+                          <p style={{ color: P.muted, fontSize: 11 }}>No claims were verified.</p>
+                        )}
+                        {!verifying && groundedVerdicts && groundedVerdicts.length > 0 && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            {groundedVerdicts.map((gv, i) => {
+                              const col = verdictMeta(gv.label).color;
+                              const conf = Math.round((gv.confidence || 0) * 100);
+                              const hard = gv.label === "SUPPORTED" || gv.label === "CONTRADICTED";
+                              return (
+                                <div key={i} style={{ borderLeft: `2px solid ${col}`, paddingLeft: 14 }}>
+                                  <p style={{ fontSize: 11, color: P.body, marginBottom: 8, lineHeight: 1.6 }}>{gv.claim_text}</p>
+                                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                                    <VerdictBadge verdict={gv.label} />
+                                    {hard && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", color: P.muted }}>{conf}% CONFIDENCE</span>}
+                                    {gv.low_confidence && (
+                                      <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.06em", color: P.yellow, background: `${P.yellow}1a`, border: `1px solid ${P.yellow}40`, borderRadius: 3, padding: "1px 6px" }}>
+                                        LOW CONFIDENCE
+                                      </span>
+                                    )}
+                                  </div>
+                                  {gv.reasoning && (
+                                    <p style={{ fontSize: 10, color: P.muted, lineHeight: 1.55, marginBottom: gv.evidence?.length ? 10 : 0 }}>{gv.reasoning}</p>
+                                  )}
+                                  {gv.evidence && gv.evidence.length > 0 && (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                      {gv.evidence.map((ev, j) => (
+                                        <div key={j} style={{ background: P.panel, border: `1px solid ${P.border}`, borderRadius: 4, padding: "8px 10px" }}>
+                                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 5 }}>
+                                            <TierBadge tier={ev.tier} trusted={ev.trusted} />
+                                            <a href={ev.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, color: P.accentCyan, textDecoration: "none", letterSpacing: "0.04em" }}>
+                                              {hostOf(ev.url)} ↗
+                                            </a>
+                                          </div>
+                                          <p style={{ fontSize: 10.5, color: P.text2, lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>“{ev.sentence}”</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            <button onClick={runGroundedVerification} style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", color: P.accent, fontSize: 9.5, letterSpacing: "0.06em", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+                              <RefreshCw size={10} /> RE-RUN
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={S.card}>
+                      <div style={S.cardHd}>CLAIM VERIFICATION (QUICK PASS)</div>
                       <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
                         {(result.claims || []).length === 0
                           ? <p style={{ color: P.muted, fontSize: 11 }}>No verifiable claims extracted.</p>
                           : (result.claims || []).map((c, i) => {
                               const v = c.verification?.verdict || "unverifiable";
-                              const col = v === "accurate" ? P.green : v === "false" ? P.red : P.yellow;
+                              const col = verdictMeta(v).color;
                               const citationIds = c.citation_ids || [];
                               const sources = result.sources_used || [];
                               return (
@@ -1007,7 +1238,7 @@ export default function Analyzer() {
                                       </span>
                                     )}
                                   </p>
-                                  <span style={{ fontSize: 10, color: col, letterSpacing: "0.06em", fontWeight: 700, textTransform: "uppercase" }}>{v}</span>
+                                  <VerdictBadge verdict={v} />
                                   {c.verification?.explanation && <p style={{ fontSize: 10, color: P.muted, marginTop: 4 }}>{c.verification.explanation}</p>}
                                 </div>
                               );
@@ -1134,12 +1365,17 @@ export default function Analyzer() {
                 {/* Citations & Claim Timeline */}
                 {activeNav === "citations" && (() => {
                   const sources = result.sources_used || [];
+                  const trustedCount = sources.filter(s => (s.tier ?? 0) > 0).length;
                   return (
                     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                       <div style={S.card}>
                         <div style={S.cardHd}>
                           <span>SOURCES &amp; CITATIONS{sources.length > 0 ? ` (${sources.length})` : ""}</span>
-                          <LinkIcon size={11} />
+                          {sources.length > 0
+                            ? <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", color: trustedCount > 0 ? P.green : P.faint }}>
+                                <ShieldCheck size={11} strokeWidth={2.4} /> {trustedCount} TRUSTED / {sources.length}
+                              </span>
+                            : <LinkIcon size={11} />}
                         </div>
                         {sources.length === 0 ? (
                           <div style={{ padding: 24, textAlign: "center", fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>
@@ -1149,8 +1385,10 @@ export default function Analyzer() {
                           <div style={{ display: "flex", flexDirection: "column" }}>
                             {sources.map((s, i) => {
                               const expanded = expandedSrc === i;
+                              const isTrusted = (s.tier ?? 0) > 0;
+                              const tColor = tierMeta(s.tier, s.trusted).color;
                               return (
-                                <div key={i} style={{ borderBottom: i < sources.length - 1 ? `1px solid ${P.border}` : "none", padding: "14px 16px" }}>
+                                <div key={i} style={{ borderBottom: i < sources.length - 1 ? `1px solid ${P.border}` : "none", padding: "14px 16px", borderLeft: isTrusted ? `2px solid ${tColor}` : "2px solid transparent", background: isTrusted ? `${tColor}08` : "transparent" }}>
                                   <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                                     <span style={{ fontSize: 10, fontWeight: 700, color: P.accent, background: P.accentDim, border: `1px solid ${P.border3}`, borderRadius: 4, padding: "2px 7px", minWidth: 28, textAlign: "center", flexShrink: 0 }}>
                                       [{i + 1}]
@@ -1171,6 +1409,7 @@ export default function Analyzer() {
                                         {s.title || s.hostname || s.url}
                                       </a>
                                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", fontSize: 9, color: P.muted, letterSpacing: "0.06em", marginBottom: 6 }}>
+                                        <TierBadge tier={s.tier} trusted={s.trusted} />
                                         <span style={{ color: P.accentCyan }}>{s.hostname || "unknown source"}</span>
                                         {s.published_date && (
                                           <span style={{ background: P.panel, border: `1px solid ${P.border}`, borderRadius: 3, padding: "2px 6px", color: P.text2 }}>

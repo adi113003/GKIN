@@ -3,25 +3,25 @@ import { useEffect, useRef } from "react";
 
 const STATS = [
   {
-    target: 99.4,
-    decimals: 1,
+    target: 100,
+    decimals: 0,
     unit: "%",
-    label: "Classifier accuracy",
-    detail: "DistilBERT · WELFake test",
+    label: "Confident verdicts cite a source",
+    detail: "grounding enforced by construction",
   },
   {
-    target: 72073,
+    target: 60,
     decimals: 0,
-    unit: "",
-    label: "Labelled articles",
-    detail: "Training corpus",
+    unit: "+",
+    label: "Trusted sources, tiered",
+    detail: "gov · academic · press · fact-check",
   },
   {
-    target: 14,
+    target: 3,
     decimals: 0,
     unit: "",
-    label: "Persuasion classes",
-    detail: "named & located",
+    label: "Verdict states",
+    detail: "supported · contradicted · insufficient",
   },
   {
     target: 5,

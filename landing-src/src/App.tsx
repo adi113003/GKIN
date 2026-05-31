@@ -5,6 +5,8 @@ import { HeadlineMarquee } from "@/components/sections/HeadlineMarquee";
 import { PipelineBeams } from "@/components/sections/PipelineBeams";
 import { BentoGrid } from "@/components/sections/BentoGrid";
 import { StickyHow } from "@/components/sections/StickyHow";
+import { Comparison } from "@/components/sections/Comparison";
+import { MidtermResponse } from "@/components/sections/MidtermResponse";
 import { Stats } from "@/components/sections/Stats";
 import { FAQ } from "@/components/sections/FAQ";
 import { FinalCTA } from "@/components/sections/FinalCTA";
@@ -20,6 +22,8 @@ export default function App() {
       <PipelineBeams />
       <BentoGrid />
       <StickyHow />
+      <Comparison />
+      <MidtermResponse />
       <Stats />
       <FAQ />
       <FinalCTA />

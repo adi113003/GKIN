@@ -3,9 +3,9 @@ import { ArrowRight, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { label: "Analyzer", href: "#analyze" },
-  { label: "Inputs", href: "#inputs" },
+  { label: "How it works", href: "#how" },
   { label: "Compare", href: "#compare" },
+  { label: "Since midterm", href: "#since-midterm" },
   { label: "Proof", href: "#proof" },
 ];
 

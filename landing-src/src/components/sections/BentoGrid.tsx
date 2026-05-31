@@ -36,7 +36,7 @@ export function BentoGrid() {
             </div>
             <h3 className="text-2xl font-semibold mb-2">Deepfake & Audio Spoof Detection</h3>
             <p className="text-ink-3 max-w-md">
-              Our multimodal models instantly flag AI-generated images, synthetic voice clones, and manipulated video frames with 99.4% accuracy.
+              Our multimodal models surface the tells of AI-generated images, synthetic voice clones, and manipulated video frames — flagging the signal for review, not stamping a black-box score.
             </p>
           </div>
           

@@ -269,7 +269,7 @@ export function StickyHow() {
   const progress = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section className="relative z-10 px-7 max-w-[1240px] mx-auto py-32">
+    <section id="how" className="relative z-10 px-7 max-w-[1240px] mx-auto py-32 scroll-mt-24">
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}

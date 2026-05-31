@@ -1,7 +1,18 @@
 # GKIN Benchmark Suite
 
-Three runnable scripts + one report generator that answer the midterm judges'
-question: **does GKIN do better than doing nothing?**
+Runnable scripts + report generators that answer the midterm judges'
+question: **does GKIN do better than doing nothing — and better than the alternatives?**
+
+> **Competitor benchmark:** `run_competitor_benchmark.py` compares GKIN vs ChatGPT / Gemini /
+> Perplexity on a shared 7-category rubric (prompts in `verification_prompts.json`, adapters in
+> `providers/`, scoring in `scoring.py`). Missing API keys are skipped; nothing is hardcoded.
+> Output → `results/latest_report.md`. Full docs: [`../docs/COMPETITIVE_COMPARISON.md`](../docs/COMPETITIVE_COMPARISON.md).
+>
+> ```bash
+> python server.py
+> python benchmark/run_competitor_benchmark.py            # heuristic, all available providers
+> python benchmark/run_competitor_benchmark.py --mode judge   # + LLM-as-judge (OPENAI_API_KEY)
+> ```
 
 ## Quick start
 

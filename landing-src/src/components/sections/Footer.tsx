@@ -8,8 +8,9 @@ export function Footer() {
         <div className="flex gap-5">
           {[
             { label: "Launch", href: loginUrl },
-            { label: "Analyzer", href: "#analyze" },
+            { label: "How it works", href: "#how" },
             { label: "Compare", href: "#compare" },
+            { label: "Since midterm", href: "#since-midterm" },
             { label: "Proof", href: "#proof" },
           ].map((l) => (
             <a
