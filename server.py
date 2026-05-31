@@ -1557,22 +1557,32 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     except Exception:
         analysis_prose = article_text
 
-    try:
-        struct_resp = await client.chat.completions.create(
-            model=MODEL_STRUCT,
-            messages=[
-                {"role": "system", "content": "You output only valid JSON. No prose."},
-                {"role": "user", "content": STRUCTURE_PROMPT.format(
-                    analysis=analysis_prose,
-                    clusters=", ".join(NARRATIVE_CLUSTERS)
-                )}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.2,
-        )
-        result = json.loads(struct_resp.choices[0].message.content)
-    except Exception as e:
-        raise HTTPException(500, f"Analysis structuring failed: {e}")
+    # Structure into JSON. Try the 70B model, then fall back to the 8B instant
+    # model so the core scan still works when the 70B daily token quota (TPD) is
+    # exhausted — otherwise /analyze hard-fails and the whole demo breaks.
+    result = None
+    struct_err = None
+    for _model in (MODEL_STRUCT, MODEL_FAST):
+        try:
+            struct_resp = await client.chat.completions.create(
+                model=_model,
+                messages=[
+                    {"role": "system", "content": "You output only valid JSON. No prose."},
+                    {"role": "user", "content": STRUCTURE_PROMPT.format(
+                        analysis=analysis_prose,
+                        clusters=", ".join(NARRATIVE_CLUSTERS)
+                    )}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.2,
+            )
+            result = json.loads(struct_resp.choices[0].message.content)
+            break
+        except Exception as e:  # try fallback model on rate-limit / transient error
+            struct_err = e
+            continue
+    if result is None:
+        raise HTTPException(503, f"Analysis structuring failed (all models): {struct_err}")
 
     # Anchor manipulation_index to the auditable rubric sum (additive field).
     _reconcile_manipulation_index(result)
