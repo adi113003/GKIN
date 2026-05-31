@@ -81,7 +81,8 @@ except ImportError:
     CryptContext = None  # type: ignore
 
 # ── Model IDs ─────────────────────────────────────────────────────────────────
-MODEL_REASON  = "deepseek-r1-distill-llama-70b"
+MODEL_REASON  = "llama-3.3-70b-versatile"        # primary reasoning model
+MODEL_REASON2 = "deepseek-r1-distill-llama-70b"  # fallback (may be rate-limited)
 MODEL_STRUCT  = "llama-3.3-70b-versatile"
 MODEL_FAST    = "llama-3.1-8b-instant"
 MODEL_VISION  = "llama-3.2-90b-vision-preview"
@@ -132,6 +133,8 @@ Analysis:
 
 Return ONLY valid JSON matching this schema exactly:
 {{
+  "summary": "2-3 sentence plain-English summary of what this article claims and how manipulative/credible it appears",
+  "bias_orientation": "left | center-left | center | center-right | right | unknown",
   "claims": [
     {{"text": "claim text", "type": "Verifiable | Opinion | Unverifiable", "confidence": 0.0, "citation_ids": []}}
   ],
@@ -149,11 +152,10 @@ Return ONLY valid JSON matching this schema exactly:
 
 Rules:
 - All scores 0-100 integers. narrative_cluster must be one of: {clusters}.
+- summary is REQUIRED — always provide it.
 - Cap techniques at 8, claims at 12, missing_context at 5.
-- For each Verifiable claim, include a citation_ids array. Leave it empty here — the
-  server populates it after evidence retrieval by matching the scraped sources used
-  to verify that claim (indices into sources_used). Opinion/Unverifiable claims
-  must keep citation_ids as an empty array.
+- For each Verifiable claim, include a citation_ids array (leave empty here).
+- Opinion/Unverifiable claims must keep citation_ids as an empty array.
 """
 
 CLAIM_VERIFY_PROMPT = """You are a fact-checker. Evaluate this specific claim in one sentence.
@@ -1446,34 +1448,47 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
     article_text, source_language = await _translate_if_needed(client, raw_text)
 
     thinking = ""
-    try:
-        r1_resp = await client.chat.completions.create(
-            model=MODEL_REASON,
-            messages=[{"role": "user", "content": REASONING_PROMPT.format(article=article_text)}],
-            temperature=0.6,
-            max_tokens=4096,
-        )
-        r1_raw = r1_resp.choices[0].message.content
-        thinking, analysis_prose = parse_r1_output(r1_raw)
-    except Exception:
+    analysis_prose = ""
+    for _model in (MODEL_REASON, MODEL_REASON2, MODEL_FAST):
+        try:
+            r1_resp = await client.chat.completions.create(
+                model=_model,
+                messages=[{"role": "user", "content": REASONING_PROMPT.format(article=article_text)}],
+                temperature=0.6,
+                max_tokens=4096,
+            )
+            r1_raw = r1_resp.choices[0].message.content
+            thinking, analysis_prose = parse_r1_output(r1_raw)
+            if analysis_prose.strip():
+                break
+        except Exception:
+            continue
+    if not analysis_prose.strip():
         analysis_prose = article_text
 
-    try:
-        struct_resp = await client.chat.completions.create(
-            model=MODEL_STRUCT,
-            messages=[
-                {"role": "system", "content": "You output only valid JSON. No prose."},
-                {"role": "user", "content": STRUCTURE_PROMPT.format(
-                    analysis=analysis_prose,
-                    clusters=", ".join(NARRATIVE_CLUSTERS)
-                )}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.2,
-        )
-        result = json.loads(struct_resp.choices[0].message.content)
-    except Exception as e:
-        raise HTTPException(500, f"Analysis structuring failed: {e}")
+    result = None
+    for _model in (MODEL_STRUCT, MODEL_FAST):
+        try:
+            struct_resp = await client.chat.completions.create(
+                model=_model,
+                messages=[
+                    {"role": "system", "content": "You output only valid JSON. No prose."},
+                    {"role": "user", "content": STRUCTURE_PROMPT.format(
+                        analysis=analysis_prose,
+                        clusters=", ".join(NARRATIVE_CLUSTERS)
+                    )}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.2,
+                max_tokens=3000,
+            )
+            result = json.loads(struct_resp.choices[0].message.content)
+            if result:
+                break
+        except Exception:
+            continue
+    if not result:
+        raise HTTPException(500, "Analysis failed — please try again.")
 
     claims = result.get("claims", [])
     if claims:
