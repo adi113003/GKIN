@@ -2107,6 +2107,34 @@ def benchmark():
     return payload
 
 
+@app.get("/health")
+async def health():
+    """Liveness + dependency status for monitoring and the production smoke test.
+    Reports booleans only — never exposes keys, URIs, or secrets."""
+    mongo_ok = None  # None = not configured / unknown
+    if _mongo_client is not None:
+        try:
+            await asyncio.wait_for(_mongo_client.admin.command("ping"), timeout=2.0)
+            mongo_ok = True
+        except Exception:
+            mongo_ok = False
+    return {
+        "status": "ok",
+        "version": os.environ.get("GKIN_VERSION", "1.0.0"),
+        "environment": os.environ.get("GKIN_ENV", "production"),
+        "dependencies": {
+            # groq powers /analyze, /verify-claims, /timeline, /chat
+            "groq_configured": _client is not None,
+            "auth_available": _AUTH_OK,
+            "mongo_connected": mongo_ok,
+            "classifier_loaded": _fake_model is not None,
+            # which search backends the agentic loop can use (keyless wikipedia/ddg
+            # always work; brave/google only if keys are set)
+            "search_backends": search_available(),
+        },
+    }
+
+
 @app.get("/")
 def landing():
     return FileResponse("static/landing/index.html")

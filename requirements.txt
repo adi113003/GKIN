@@ -1,0 +1,40 @@
+# GKIN server dependencies.
+# Install:  pip install -r requirements.txt
+# Note: the DigitalOcean deploy (.github/workflows/deploy.yml) does NOT pip-install,
+# so run this manually on the box after adding/upgrading a dependency.
+
+# ── Web framework / server ──
+fastapi
+uvicorn[standard]
+pydantic>=2
+python-multipart            # multipart uploads (/transcribe, /analyze-image)
+
+# ── LLM / AI ──
+groq                        # Groq-hosted Llama / DeepSeek / Whisper / Vision
+
+# ── Retrieval (agentic verification + timeline) ──
+ddgs                        # DuckDuckGo search (keyless); was renamed from duckduckgo-search
+trafilatura                 # article text extraction / scraping
+httpx                       # async HTTP (search backends)
+requests                    # sync HTTP (benchmarks, smoke test)
+
+# ── Classical ML classifier ──
+scikit-learn                # TF-IDF + LogisticRegression baseline (baseline_model.joblib)
+joblib
+pandas
+numpy
+
+# ── Auth + data ──
+python-jose[cryptography]   # JWT
+passlib[bcrypt]             # password hashing
+bcrypt
+motor                       # async MongoDB driver
+
+# ── Config ──
+python-dotenv               # loads .env
+
+# ── Optional features ──
+youtube-transcript-api      # only needed for YouTube-URL transcript ingestion
+
+# ── Optional: benchmarks / LLM-as-judge / competitor adapters ──
+# (requests above is sufficient; no extra packages required)
