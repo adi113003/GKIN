@@ -1093,7 +1093,7 @@ def _compute_ai_stats(text: str) -> dict:
 async def _ai_detect(client: AsyncGroq, article_text: str) -> dict:
     stats = _compute_ai_stats(article_text)
     prompt = AI_DETECT_PROMPT.format(
-        article=article_text[:5000],
+        article=article_text[:5000].replace("{","{{").replace("}","}}"),
         burstiness=stats["burstiness"],
         vocab_richness=stats["vocab_richness"],
         ai_phrase_hits=stats["ai_phrase_hits"],
@@ -1266,9 +1266,9 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
             messages=[
                 {"role": "system", "content": "Output only valid JSON. No prose."},
                 {"role": "user", "content": TIMELINE_ANALYZE_PROMPT.format(
-                    topic=topic,
-                    core_claim=core_claim,
-                    articles_text=articles_text[:9000],
+                    topic=str(topic).replace("{","{{").replace("}","}}"),
+                    core_claim=str(core_claim).replace("{","{{").replace("}","}}"),
+                    articles_text=articles_text[:9000].replace("{","{{").replace("}","}}"),
                 )},
             ],
             response_format={"type": "json_object"},
@@ -1399,7 +1399,7 @@ async def _verify_claim(client: AsyncGroq, claim_text: str) -> dict:
                 model=MODEL_FAST,
                 messages=[
                     {"role": "system", "content": "Output only valid JSON. No prose."},
-                    {"role": "user", "content": CLAIM_VERIFY_PROMPT.format(claim=claim_text[:400])}
+                    {"role": "user", "content": CLAIM_VERIFY_PROMPT.format(claim=claim_text[:400].replace("{","{{").replace("}","}}"))}
                 ],
                 response_format={"type": "json_object"},
                 temperature=0.2,
@@ -1624,15 +1624,20 @@ async def chat(req: ChatRequest, user: dict = Depends(require_auth)):
     else:
         template = CHAT_SYSTEM_CONTEXT
 
-    system = template.format(analysis=json.dumps(req.analysis, indent=2))
+    # Use replace() not .format() — analysis JSON contains {} which break .format()
+    analysis_json = json.dumps(req.analysis, indent=2)
+    system = template.replace("{analysis}", analysis_json)
     messages = [{"role": "system", "content": system}]
     for m in req.history:
         messages.append({"role": m.role, "content": m.content})
     messages.append({"role": "user", "content": req.message})
 
     async def generate():
-        async for chunk in _stream_agent(client, messages, req.mode):
-            yield chunk
+        try:
+            async for chunk in _stream_agent(client, messages, req.mode):
+                yield chunk
+        except Exception as e:
+            yield f"\n[Error: {str(e)}]"
 
     return StreamingResponse(generate(), media_type="text/plain")
 
@@ -1858,7 +1863,7 @@ async def compare_articles(req: CompareRequest, user: dict = Depends(require_aut
             model=MODEL_STRUCT,
             messages=[
                 {"role": "system", "content": "Output only valid JSON. No prose."},
-                {"role": "user", "content": COMPARISON_PROMPT.format(summaries="\n\n".join(summaries))}
+                {"role": "user", "content": COMPARISON_PROMPT.format(summaries="\n\n".join(summaries).replace("{","{{").replace("}","}}"))}
             ],
             response_format={"type": "json_object"},
             temperature=0.3,
@@ -1885,9 +1890,9 @@ async def get_suggestions(req: SuggestionsRequest, user: dict = Depends(require_
                 {"role": "user", "content": SUGGESTIONS_PROMPT.format(
                     mi=mi,
                     label=manipulation_label(mi),
-                    cluster=a.get("narrative_cluster", "none"),
-                    techniques=[t["technique"] for t in a.get("persuasion_techniques", [])[:3]],
-                    claims=[c["text"][:80] for c in a.get("claims", [])[:3]],
+                    cluster=str(a.get("narrative_cluster", "none")).replace("{","{{").replace("}","}}"),
+                    techniques=str([t["technique"] for t in a.get("persuasion_techniques", [])[:3]]).replace("{","{{").replace("}","}}"),
+                    claims=str([c["text"][:80] for c in a.get("claims", [])[:3]]).replace("{","{{").replace("}","}}"),
                 )}
             ],
             response_format={"type": "json_object"},
