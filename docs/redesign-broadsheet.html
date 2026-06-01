@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GKIN — Analysis Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF1E5;
+    --paper-edge:#F6E6D6;
+    --ink:#14110E;
+    --ink-soft:#403A33;
+    --ink-faint:#6B6359;
+    --rule:#14110E;
+    --hair:#C9B7A6;
+    --hair-soft:#DECDBC;
+    --oxblood:#9B1C2E;
+    --supported:#15633A;
+    --contradicted:#9B1C2E;
+    --caution:#8A5A12;
+    --insufficient:#5B5750;
+    --serif:"Spectral", Georgia, "Times New Roman", serif;
+    --grot:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0;
+    background:#E8D8C7;
+    color:var(--ink);
+    font-family:var(--grot);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    font-feature-settings:"kern" 1, "liga" 1, "calt" 1;
+  }
+
+  /* annotation label above each screen */
+  .annot{
+    font-family:var(--grot);
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:#7c6a58;
+    margin:34px auto 10px;
+    max-width:1180px;
+    padding:0 22px;
+  }
+  .annot span{ color:#9b8a78; font-weight:500; letter-spacing:.16em; }
+
+  .sheet{
+    max-width:1180px;
+    margin:0 auto 12px;
+    background:var(--paper);
+    color:var(--ink);
+    border:1px solid var(--hair);
+    padding:34px 44px 40px;
+    position:relative;
+  }
+  /* faint inner paper edge — a flat hairline, no offset/blur (not a drop shadow) */
+  .sheet::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    border:1px solid rgba(20,17,14,.05);
+  }
+
+  /* ===== MASTHEAD ===== */
+  .masthead{ margin-bottom:0; }
+  .hairtop{ border-top:1px solid var(--ink); height:0; }
+  .ear-row{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    padding:7px 0 8px;
+    font-family:var(--grot);
+    font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .ear-row .left,.ear-row .right{ flex:1; }
+  .ear-row .right{ text-align:right; }
+  .ear-row .mid{ flex:0 0 auto; }
+  .ear-vol{ color:var(--ink-faint); font-weight:500; }
+
+  .nameplate{
+    text-align:center;
+    border-top:1px solid var(--ink);
+    padding-top:14px;
+  }
+  .nameplate h1{
+    font-family:var(--grot);
+    font-weight:900;
+    font-size:clamp(64px,12vw,150px);
+    letter-spacing:-.02em;
+    line-height:.82;
+    margin:0;
+    text-transform:uppercase;
+    font-stretch:condensed;
+  }
+  .nameplate .descriptor{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:clamp(14px,2.1vw,19px);
+    color:var(--ink-soft);
+    margin-top:10px;
+    letter-spacing:.01em;
+  }
+  /* DOUBLE rule below nameplate */
+  .double-rule{
+    border-top:2.5px solid var(--ink);
+    border-bottom:1px solid var(--ink);
+    height:4px;
+    margin-top:14px;
+  }
+  .dateline{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:6px;
+    font-family:var(--grot);
+    font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600;
+    padding:8px 0 9px;
+    border-bottom:1px solid var(--ink);
+  }
+  .dateline .mid{ color:var(--ink-faint); font-weight:500; letter-spacing:.16em; font-style:normal; }
+
+  /* ===== NAV ===== */
+  nav.topnav{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px;
+    padding:9px 0;
+    border-bottom:2.5px solid var(--ink);
+    font-family:var(--grot);
+  }
+  nav.topnav .navlinks{ display:flex; gap:26px; flex-wrap:wrap; }
+  nav.topnav a{
+    color:var(--ink);
+    text-decoration:none;
+    font-size:12px; letter-spacing:.13em; text-transform:uppercase; font-weight:700;
+    padding:3px 0;
+    border-bottom:2px solid transparent;
+    cursor:pointer;
+  }
+  nav.topnav a:hover{ border-bottom-color:var(--oxblood); }
+  nav.topnav a:focus-visible{ outline:2px solid var(--oxblood); outline-offset:3px; }
+  nav.topnav .signin{
+    border:1px solid var(--ink); padding:6px 14px; letter-spacing:.13em;
+  }
+  nav.topnav .signin:hover{ background:var(--ink); color:var(--paper); border-bottom-color:var(--ink); }
+
+  /* ===== LEAD GRID ===== */
+  .lead-grid{
+    display:grid;
+    grid-template-columns: 1.95fr 1px 1fr;
+    gap:0;
+    padding-top:22px;
+  }
+  .vrule{ background:var(--hair); width:1px; }
+  .lead-main{ padding-right:34px; }
+  .lead-side{ padding-left:34px; }
+
+  .kicker{
+    font-family:var(--grot);
+    font-size:11px; letter-spacing:.24em; text-transform:uppercase; font-weight:700;
+    color:var(--oxblood);
+    display:inline-block;
+    border-bottom:1px solid var(--oxblood);
+    padding-bottom:3px;
+    margin-bottom:14px;
+  }
+  h2.headline{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:clamp(38px,5.6vw,64px);
+    line-height:1.02;
+    letter-spacing:-.01em;
+    margin:0 0 6px;
+  }
+  .subhead{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(17px,2.3vw,21px);
+    line-height:1.32;
+    color:var(--ink-soft);
+    margin:0 0 18px;
+    max-width:34ch;
+  }
+
+  .byline{
+    font-family:var(--grot);
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-weight:600;
+    color:var(--ink-faint);
+    border-top:1px solid var(--ink);
+    border-bottom:1px solid var(--hair-soft);
+    padding:7px 0;
+    margin-bottom:18px;
+    display:flex; gap:18px; flex-wrap:wrap;
+  }
+  .byline b{ color:var(--ink); font-weight:700; }
+
+  /* lede multi-column feel + drop cap */
+  .lede{
+    font-family:var(--serif);
+    font-size:17.5px;
+    line-height:1.56;
+    color:var(--ink);
+    column-count:2;
+    column-gap:34px;
+    column-rule:1px solid var(--hair-soft);
+    margin-bottom:6px;
+  }
+  .lede p{ margin:0 0 13px; text-align:justify; hyphens:auto; }
+  .lede p:first-of-type{ text-align:left; }
+  .dropcap::first-letter{
+    font-family:var(--serif);
+    font-weight:700;
+    float:left;
+    font-size:74px;
+    line-height:.74;
+    padding:6px 10px 0 0;
+    color:var(--oxblood);
+  }
+
+  .actions{
+    display:flex; gap:14px; flex-wrap:wrap; align-items:center;
+    margin-top:18px; padding-top:18px;
+    border-top:1px solid var(--ink);
+  }
+  .btn{
+    font-family:var(--grot);
+    font-weight:700; font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+    padding:13px 22px;
+    cursor:pointer;
+    border:1px solid var(--ink);
+    text-decoration:none;
+    display:inline-block;
+  }
+  .btn-primary{ background:var(--ink); color:var(--paper); }
+  .btn-primary:hover{ background:var(--oxblood); border-color:var(--oxblood); }
+  .btn-secondary{ background:transparent; color:var(--ink); }
+  .btn-secondary:hover{ background:var(--ink); color:var(--paper); }
+  .btn:focus-visible{ outline:2px solid var(--oxblood); outline-offset:3px; }
+
+  .stack-line{
+    margin-top:20px; padding-top:14px;
+    border-top:1px solid var(--hair-soft);
+    font-family:var(--grot);
+    font-size:11px; color:var(--ink-soft); line-height:1.7;
+  }
+  .stack-line .lab{
+    display:block;
+    font-size:10px; letter-spacing:.22em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint); margin-bottom:6px;
+  }
+  .stack-line .chips{ display:flex; flex-wrap:wrap; gap:0; }
+  .stack-line .chip{
+    font-weight:600; letter-spacing:.02em; font-size:11.5px; color:var(--ink);
+    padding:2px 12px;
+    border-right:1px solid var(--hair);
+  }
+  .stack-line .chip:first-child{ padding-left:0; }
+  .stack-line .chip:last-child{ border-right:0; }
+  .stack-line .chip b{ font-weight:700; }
+
+  /* ===== SIDE COLUMN: verdict preview ===== */
+  .side-head{
+    font-family:var(--grot);
+    font-size:11px; letter-spacing:.24em; text-transform:uppercase; font-weight:700;
+    color:var(--ink);
+    border-bottom:2.5px solid var(--ink);
+    padding-bottom:6px; margin-bottom:16px;
+  }
+
+  /* RULED, LABELLED verdict box — square corners, hairline rules, no pill */
+  .verdict-box{
+    border:1.5px solid var(--ink);
+    padding:0;
+    margin-bottom:22px;
+  }
+  .verdict-box .vlabel{
+    font-family:var(--grot);
+    font-size:10px; letter-spacing:.26em; text-transform:uppercase; font-weight:800;
+    color:var(--paper);
+    background:var(--ink);
+    padding:7px 12px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .verdict-box .vlabel .vtag{ color:var(--paper); opacity:.72; letter-spacing:.2em; font-weight:600; }
+  .verdict-box .vbody{ padding:14px 14px 16px; }
+  .verdict-tag{
+    font-family:var(--grot);
+    font-weight:800; font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    display:inline-flex; align-items:baseline; gap:8px;
+    padding-bottom:8px;
+  }
+  .verdict-tag .dot{ width:9px; height:9px; display:inline-block; }
+  .v-contradicted{ color:var(--contradicted); }
+  .v-contradicted .dot{ background:var(--contradicted); }
+  .v-supported{ color:var(--supported); }
+  .v-supported .dot{ background:var(--supported); }
+  .v-insufficient{ color:var(--insufficient); }
+  .v-insufficient .dot{ background:var(--insufficient); }
+  .v-caution{ color:var(--caution); }
+  .v-caution .dot{ background:var(--caution); }
+
+  .verdict-claim{
+    font-family:var(--serif);
+    font-weight:600; font-size:19px; line-height:1.24;
+    margin:2px 0 12px;
+  }
+  .cited{
+    border-left:2.5px solid var(--oxblood);
+    padding:2px 0 2px 13px;
+    margin:0 0 10px;
+  }
+  .cited .qlab{
+    font-family:var(--grot);
+    font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint); display:block; margin-bottom:5px;
+  }
+  .cited q{
+    font-family:var(--serif); font-style:italic; font-size:15px; line-height:1.42;
+    color:var(--ink); quotes:"\201C" "\201D";
+  }
+  .cited .attrib{
+    font-family:var(--grot);
+    font-size:11px; color:var(--ink-soft); margin-top:7px; font-weight:600;
+  }
+  .cited .attrib .src{ color:var(--ink); }
+  .cited .attrib .tier{ color:var(--ink-faint); font-weight:500; }
+  sup.fn{ font-size:.62em; font-weight:700; color:var(--oxblood); padding-left:1px; }
+
+  .side-note{
+    font-family:var(--serif);
+    font-size:14px; line-height:1.5; font-style:italic; color:var(--ink-soft);
+    border-top:1px solid var(--hair); padding-top:12px;
+  }
+
+  /* ===== HOW IT WORKS (3-step, not 3 identical cards — numbered editorial run-on) ===== */
+  .howit{
+    border-top:2.5px solid var(--ink);
+    margin-top:26px; padding-top:18px;
+  }
+  .howit .sec-kicker{
+    font-family:var(--grot);
+    font-size:11px; letter-spacing:.24em; text-transform:uppercase; font-weight:700;
+    color:var(--ink); margin-bottom:16px;
+  }
+  .steps{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:0;
+  }
+  .step{ padding:0 26px; border-right:1px solid var(--hair); }
+  .step:first-child{ padding-left:0; }
+  .step:last-child{ border-right:0; padding-right:0; }
+  .step .num{
+    font-family:var(--grot); font-weight:900; font-size:30px; letter-spacing:-.02em;
+    color:var(--oxblood); line-height:1;
+    border-bottom:1px solid var(--ink); padding-bottom:8px; margin-bottom:11px;
+    display:block; width:100%;
+  }
+  .step h4{
+    font-family:var(--serif); font-weight:700; font-size:21px; margin:0 0 6px; line-height:1.1;
+  }
+  .step p{
+    font-family:var(--grot); font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0;
+  }
+
+  /* ===== FOOTNOTES / SOURCES FOOTER ===== */
+  .sources{
+    margin-top:24px; padding-top:12px;
+    border-top:1px solid var(--ink);
+  }
+  .sources .slab{
+    font-family:var(--grot);
+    font-size:10px; letter-spacing:.24em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint); margin-bottom:8px;
+  }
+  .sources ol{
+    margin:0; padding:0; list-style:none;
+    columns:2; column-gap:36px;
+    font-family:var(--grot); font-size:11px; line-height:1.6; color:var(--ink-soft);
+  }
+  .sources li{ margin-bottom:5px; break-inside:avoid; }
+  .sources li .n{ font-weight:700; color:var(--oxblood); }
+
+  /* ================= SCREEN 2 — ANALYZER ================= */
+  .src-bar{
+    border-top:1px solid var(--ink);
+    border-bottom:1px solid var(--ink);
+    padding:11px 0;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+    margin-bottom:0;
+  }
+  .src-bar .lab{
+    font-family:var(--grot);
+    font-size:10px; letter-spacing:.22em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint);
+  }
+  .src-bar .title{
+    font-family:var(--serif); font-style:italic; font-weight:600; font-size:18px; color:var(--ink);
+  }
+  .src-bar .meta{
+    font-family:var(--grot); font-size:11px; color:var(--ink-soft); font-weight:600;
+    letter-spacing:.04em;
+  }
+
+  .layer{ padding:22px 0; border-bottom:1px solid var(--hair); }
+  .layer-label{
+    font-family:var(--grot);
+    font-size:11px; letter-spacing:.24em; text-transform:uppercase; font-weight:800;
+    color:var(--ink);
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:16px;
+  }
+  .layer-label .ln{ color:var(--oxblood); font-weight:900; }
+  .layer-label::after{
+    content:""; flex:1; height:0; border-top:1px solid var(--ink);
+  }
+
+  /* LAYER 1 verdict */
+  .verdict1{
+    display:grid;
+    grid-template-columns: 1.7fr 1px 1fr;
+    gap:0;
+    border:1.5px solid var(--ink);
+  }
+  .verdict1 .v1-main{ padding:18px 24px 20px; }
+  .verdict1 .v1-gauge{ padding:18px 24px 20px; }
+  .v1-toplab{
+    font-family:var(--grot);
+    font-size:10px; letter-spacing:.26em; text-transform:uppercase; font-weight:800;
+    color:var(--ink-faint); margin-bottom:6px;
+  }
+  .v1-headline{
+    font-family:var(--serif); font-weight:700; font-size:clamp(30px,4.4vw,46px);
+    line-height:1.02; letter-spacing:-.01em; margin:0 0 10px; color:var(--caution);
+  }
+  .v1-summary{
+    font-family:var(--serif); font-size:16px; line-height:1.5; color:var(--ink); max-width:46ch;
+  }
+  /* calm gauge — ruled, not a glowing meter */
+  .gauge-num{
+    font-family:var(--grot); font-weight:900; font-size:52px; line-height:.9; letter-spacing:-.03em;
+    color:var(--ink); display:flex; align-items:baseline; gap:4px;
+  }
+  .gauge-num small{ font-family:var(--grot); font-size:18px; font-weight:600; color:var(--ink-faint); letter-spacing:0; }
+  .gauge-cap{
+    font-family:var(--grot); font-size:10px; letter-spacing:.2em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint); margin:6px 0 14px;
+  }
+  .gauge-track{
+    position:relative; height:10px; border:1px solid var(--ink); background:var(--paper);
+  }
+  .gauge-fill{
+    position:absolute; top:0; left:0; bottom:0; width:62%;
+    background:var(--caution);
+    border-right:1px solid var(--ink);
+  }
+  .gauge-scale{
+    display:flex; justify-content:space-between;
+    font-family:var(--grot); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:600; margin-top:6px;
+  }
+
+  /* LAYER 2 evidence claims */
+  .claim{
+    border-top:1px solid var(--ink);
+    padding:16px 0;
+    display:grid;
+    grid-template-columns: 150px 1fr;
+    gap:0 28px;
+  }
+  .claim:last-child{ border-bottom:1px solid var(--ink); }
+  .claim-verdict{
+    font-family:var(--grot); font-weight:800; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .claim-verdict .vrow{ display:flex; align-items:center; gap:8px; }
+  .claim-verdict .bar{ width:26px; height:4px; display:inline-block; }
+  .claim-verdict .vidx{
+    font-family:var(--grot); font-size:9.5px; letter-spacing:.14em; color:var(--ink-faint); font-weight:700;
+  }
+  .vc-contradicted{ color:var(--contradicted); } .vc-contradicted .bar{ background:var(--contradicted); }
+  .vc-supported{ color:var(--supported); } .vc-supported .bar{ background:var(--supported); }
+  .vc-insufficient{ color:var(--insufficient); } .vc-insufficient .bar{ background:var(--insufficient); }
+
+  .claim-body .ctext{
+    font-family:var(--serif); font-weight:600; font-size:21px; line-height:1.22; margin:0 0 12px;
+  }
+  .claim-body .cited{ margin-bottom:6px; }
+  .claim-body .no-source{
+    font-family:var(--serif); font-style:italic; font-size:15px; color:var(--insufficient);
+    border-left:2.5px solid var(--insufficient); padding-left:13px; line-height:1.42;
+  }
+
+  /* LAYER 3 details */
+  .details-wrap{ }
+  details.row{
+    border-top:1px solid var(--ink);
+  }
+  details.row:last-of-type{ border-bottom:1px solid var(--ink); }
+  details.row summary{
+    list-style:none;
+    cursor:pointer;
+    padding:14px 4px 14px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    font-family:var(--grot);
+  }
+  details.row summary::-webkit-details-marker{ display:none; }
+  details.row summary:focus-visible{ outline:2px solid var(--oxblood); outline-offset:2px; }
+  .sum-left{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .sum-num{
+    font-family:var(--grot); font-weight:900; font-size:13px; color:var(--oxblood); letter-spacing:.04em;
+    width:24px; flex:0 0 auto;
+  }
+  .sum-title{
+    font-family:var(--grot); font-weight:700; font-size:15px; letter-spacing:.02em; color:var(--ink);
+    text-transform:uppercase; letter-spacing:.06em;
+  }
+  .sum-count{
+    font-family:var(--serif); font-style:italic; font-size:14px; color:var(--ink-faint);
+  }
+  .sum-toggle{
+    font-family:var(--grot); font-size:10px; letter-spacing:.16em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint); border:1px solid var(--hair); padding:4px 9px;
+  }
+  details.row[open] .sum-toggle::after{ content:"Close"; }
+  details.row:not([open]) .sum-toggle::after{ content:"Open"; }
+  details.row[open] summary .sum-title{ color:var(--oxblood); }
+  .detail-body{
+    padding:2px 0 18px 40px;
+    font-family:var(--grot);
+  }
+  .tech{
+    border-top:1px solid var(--hair-soft);
+    padding:13px 0;
+    display:grid; grid-template-columns: 200px 1fr; gap:0 24px;
+  }
+  .tech:first-child{ border-top:0; padding-top:4px; }
+  .tech .tname{
+    font-family:var(--grot); font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink);
+  }
+  .tech .tname small{
+    display:block; font-family:var(--serif); font-style:italic; font-size:13px; text-transform:none;
+    letter-spacing:0; color:var(--ink-faint); font-weight:400; margin-top:3px;
+  }
+  .tech .tdesc{ font-family:var(--serif); font-size:15px; line-height:1.45; color:var(--ink-soft); }
+  .tech .tdesc q{ font-style:italic; color:var(--ink); }
+
+  .footer-rule{ border-top:2.5px solid var(--ink); border-bottom:1px solid var(--ink); height:4px; margin-top:30px; }
+  .colophon{
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    padding-top:10px;
+    font-family:var(--grot); font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:600;
+  }
+
+  /* ===== responsive ===== */
+  @media (max-width:880px){
+    .sheet{ padding:26px 24px 32px; }
+    .lead-grid{ grid-template-columns:1fr; }
+    .vrule{ display:none; }
+    .lead-main{ padding-right:0; border-bottom:1px solid var(--ink); padding-bottom:24px; margin-bottom:4px; }
+    .lead-side{ padding-left:0; padding-top:22px; }
+    .lede{ column-count:1; }
+    .steps{ grid-template-columns:1fr; }
+    .step{ padding:16px 0; border-right:0; border-top:1px solid var(--hair); }
+    .step:first-child{ border-top:0; padding-top:0; }
+    .verdict1{ grid-template-columns:1fr; }
+    .verdict1 .vrule, .verdict1 .v1-gauge{ border-top:1px solid var(--ink); }
+    .claim{ grid-template-columns:1fr; gap:12px; }
+    .claim-verdict{ flex-direction:row; align-items:center; gap:14px; }
+    .sources ol{ columns:1; }
+  }
+  @media (max-width:420px){
+    .sheet{ padding:20px 16px 26px; }
+    .nameplate h1{ font-size:64px; }
+    .tech{ grid-template-columns:1fr; gap:6px; }
+    .detail-body{ padding-left:14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== SCREEN 1 ===================== -->
+<div class="annot">Screen 01 &nbsp;/&nbsp; <span>Landing — the front page</span></div>
+<section class="sheet" aria-label="GKIN landing front page">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="hairtop"></div>
+    <div class="ear-row">
+      <div class="left">No. 1 &nbsp;·&nbsp; <span class="ear-vol">Vol. III</span></div>
+      <div class="mid">Auditable Media Forensics</div>
+      <div class="right">Price: free to read</div>
+    </div>
+    <div class="nameplate">
+      <h1>GKIN</h1>
+      <div class="descriptor">A media-literacy &amp; media-forensics desk — claims checked against the record.</div>
+    </div>
+    <div class="double-rule"></div>
+    <div class="dateline">
+      <span>Analysis Edition</span>
+      <span class="mid">Auditable media forensics — for journalists &amp; IR analysts</span>
+      <span>Sunday, 1 June 2026</span>
+    </div>
+
+    <nav class="topnav" aria-label="Primary">
+      <div class="navlinks">
+        <a href="#how">How it works</a>
+        <a href="#method">Method</a>
+        <a href="#benchmarks">Benchmarks</a>
+      </div>
+      <a href="#signin" class="signin">Sign in</a>
+    </nav>
+  </header>
+
+  <!-- LEAD GRID -->
+  <div class="lead-grid">
+
+    <!-- MAIN COLUMN -->
+    <div class="lead-main">
+      <span class="kicker">The Lead &nbsp;·&nbsp; Media Forensics</span>
+      <h2 class="headline">Cut the spin. Keep the receipts.</h2>
+      <p class="subhead">A reading machine that won&rsquo;t let a claim pass without naming its source — or admitting there isn&rsquo;t one.</p>
+
+      <div class="byline">
+        <span><b>By the GKIN Desk</b></span>
+        <span>Grounded verification</span>
+        <span>Every verdict cited to a sentence</span>
+      </div>
+
+      <div class="lede">
+        <p class="dropcap">Paste an article, a URL, a screenshot, or a podcast. GKIN scores manipulation, names every persuasion technique, and ties every verdict to the exact source sentence that backs it — or tells you it can&rsquo;t. Auditable, not a black box.</p>
+        <p>It does not hand you a confidence number and ask for trust. Each claim is checked against primary reporting, graded supported, contradicted, or insufficient, and shown beside the sentence that earned the grade. Where the record is silent, GKIN says so plainly rather than guessing.<sup class="fn">1</sup></p>
+        <p>Built for desks that have to defend what they publish: the persuasion techniques are labelled, the missing context is itemised, and the manipulation index is a calm gauge, not a verdict in disguise.<sup class="fn">2</sup></p>
+      </div>
+
+      <div class="actions">
+        <a href="#analyze" class="btn btn-primary">Analyze an article</a>
+        <a href="#how" class="btn btn-secondary">See how it works</a>
+      </div>
+
+      <div class="stack-line">
+        <span class="lab">The reasoning stack</span>
+        <div class="chips">
+          <span class="chip"><b>DeepSeek R1</b> 70B</span>
+          <span class="chip"><b>Llama 3.3</b> 70B</span>
+          <span class="chip"><b>Llama Vision</b> 90B</span>
+          <span class="chip"><b>Whisper</b> v3</span>
+          <span class="chip"><b>DistilBERT</b> 99.4%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="vrule" aria-hidden="true"></div>
+
+    <!-- SIDE COLUMN -->
+    <aside class="lead-side">
+      <div class="side-head">Verdict, in brief</div>
+
+      <div class="verdict-box">
+        <div class="vlabel">The Verdict <span class="vtag">Sample check</span></div>
+        <div class="vbody">
+          <span class="verdict-tag v-contradicted"><span class="dot" aria-hidden="true"></span>Contradicted</span>
+          <p class="verdict-claim">&ldquo;Sanctions caused the energy crisis across Europe.&rdquo;</p>
+          <div class="cited">
+            <span class="qlab">Cited against the claim</span>
+            <q>Analysts attribute the price spike primarily to a colder-than-average winter and reduced pipeline flows, not to the sanctions package.</q>
+            <div class="attrib"><span class="src">Reuters</span> &middot; 12 Mar 2024 &middot; <span class="tier">tier-2 journalism</span><sup class="fn">3</sup></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="side-note">When the source contradicts the claim, GKIN shows you the contradicting sentence — not a score you have to take on faith.</p>
+    </aside>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="howit" id="how">
+    <div class="sec-kicker">How it works &nbsp;·&nbsp; Three steps</div>
+    <div class="steps">
+      <div class="step">
+        <span class="num">01</span>
+        <h4>Paste anything</h4>
+        <p>An article, a URL, a screenshot, or a podcast episode. Text, image, and audio all enter the same pipeline.</p>
+      </div>
+      <div class="step">
+        <span class="num">02</span>
+        <h4>It checks the record</h4>
+        <p>Claims are extracted and tested against primary reporting, then graded supported, contradicted, or insufficient.</p>
+      </div>
+      <div class="step">
+        <span class="num">03</span>
+        <h4>You see the receipts</h4>
+        <p>Every grade arrives with the exact source sentence behind it — or a plain note that the record can&rsquo;t confirm it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOURCES FOOTER -->
+  <section class="sources">
+    <div class="slab">Sources &amp; notes</div>
+    <ol>
+      <li><span class="n">1.</span> GKIN grading taxonomy: supported / contradicted / caution / insufficient. Verdicts abstain when no primary source is located.</li>
+      <li><span class="n">2.</span> Manipulation index is advisory; it summarises technique density and is not itself a truth verdict.</li>
+      <li><span class="n">3.</span> Reuters, &ldquo;European gas prices and the winter of 2024,&rdquo; 12 March 2024. Tier-2 journalism, secondary attribution.</li>
+    </ol>
+  </section>
+
+</section>
+
+
+<!-- ===================== SCREEN 2 ===================== -->
+<div class="annot">Screen 02 &nbsp;/&nbsp; <span>Analyzer result — read top to bottom, as a document</span></div>
+<section class="sheet" aria-label="GKIN analyzer result">
+
+  <!-- compact masthead echo -->
+  <header class="masthead">
+    <div class="hairtop"></div>
+    <div class="ear-row">
+      <div class="left">Analyzer</div>
+      <div class="mid">GKIN &middot; Report</div>
+      <div class="right">Run · 1 June 2026, 14:07</div>
+    </div>
+    <div class="double-rule"></div>
+  </header>
+
+  <!-- SOURCE BAR -->
+  <div class="src-bar">
+    <div>
+      <span class="lab">Analyzing — Opinion column</span><br>
+      <span class="title">&ldquo;Why the sanctions backfired&rdquo;</span>
+    </div>
+    <div class="meta">≈ 1,240 words &middot; Op-ed &middot; 6 claims extracted</div>
+  </div>
+
+  <!-- LAYER 1 -->
+  <section class="layer">
+    <div class="layer-label"><span class="ln">Layer I</span> The Verdict</div>
+    <div class="verdict1">
+      <div class="v1-main">
+        <div class="v1-toplab">Overall assessment</div>
+        <h3 class="v1-headline">Likely misleading.</h3>
+        <p class="v1-summary">The column leans on a contested causal claim, repeats an unsourced reversal as fact, and uses loaded framing — though its central historical date checks out.</p>
+      </div>
+      <div class="vrule" aria-hidden="true"></div>
+      <div class="v1-gauge">
+        <div class="v1-toplab">Manipulation index</div>
+        <div class="gauge-num">62<small>/100</small></div>
+        <div class="gauge-cap">Elevated — technique density above baseline</div>
+        <div class="gauge-track" role="img" aria-label="Manipulation index 62 of 100, elevated">
+          <div class="gauge-fill"></div>
+        </div>
+        <div class="gauge-scale"><span>0 · clean</span><span>50</span><span>100 · heavy</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAYER 2 -->
+  <section class="layer">
+    <div class="layer-label"><span class="ln">Layer II</span> The Evidence — claims, checked</div>
+
+    <div class="claim">
+      <div class="claim-verdict vc-contradicted">
+        <div class="vrow"><span class="bar" aria-hidden="true"></span>Contradicted</div>
+        <span class="vidx">Claim 1 of 3</span>
+      </div>
+      <div class="claim-body">
+        <p class="ctext">&ldquo;Sanctions caused the energy crisis across Europe.&rdquo;</p>
+        <div class="cited">
+          <span class="qlab">Source contradicts the claim</span>
+          <q>Analysts attribute the price spike primarily to a colder-than-average winter and reduced pipeline flows, not to the sanctions package.</q>
+          <div class="attrib"><span class="src">Reuters</span> &middot; 12 Mar 2024 &middot; <span class="tier">tier-2 journalism</span><sup class="fn">1</sup></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-verdict vc-insufficient">
+        <div class="vrow"><span class="bar" aria-hidden="true"></span>Insufficient</div>
+        <span class="vidx">Claim 2 of 3</span>
+      </div>
+      <div class="claim-body">
+        <p class="ctext">&ldquo;Officials have confirmed the policy will be reversed within weeks.&rdquo;</p>
+        <p class="no-source">No primary source found. The assertion appears only in opinion blogs; no official statement, transcript, or filing corroborates it. GKIN abstains rather than infer.<sup class="fn">2</sup></p>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-verdict vc-supported">
+        <div class="vrow"><span class="bar" aria-hidden="true"></span>Supported</div>
+        <span class="vidx">Claim 3 of 3</span>
+      </div>
+      <div class="claim-body">
+        <p class="ctext">&ldquo;The treaty was originally signed in 2014.&rdquo;</p>
+        <div class="cited" style="border-left-color:var(--supported)">
+          <span class="qlab">Source supports the claim</span>
+          <q>The agreement was concluded and signed by all parties in September 2014.</q>
+          <div class="attrib"><span class="src">Associated Press</span> &middot; <span class="tier">tier-1 primary</span><sup class="fn">3</sup></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAYER 3 -->
+  <section class="layer" style="border-bottom:0;">
+    <div class="layer-label"><span class="ln">Layer III</span> The Details — open to inspect</div>
+
+    <div class="details-wrap">
+
+      <details class="row" open>
+        <summary>
+          <span class="sum-left">
+            <span class="sum-num">01</span>
+            <span class="sum-title">Persuasion techniques</span>
+            <span class="sum-count">4 found · showing 2</span>
+          </span>
+          <span class="sum-toggle"></span>
+        </summary>
+        <div class="detail-body">
+          <div class="tech">
+            <div class="tname">Loaded language<small>emotive framing</small></div>
+            <div class="tdesc">The headline verb <q>backfired</q> and the phrase <q>energy crisis</q> presuppose a failure the body never establishes, steering the reader toward a conclusion ahead of the evidence.</div>
+          </div>
+          <div class="tech">
+            <div class="tname">False cause<small>post hoc reasoning</small></div>
+            <div class="tdesc">Sanctions and rising prices are presented as cause-and-effect because they coincide in time; the cited reporting attributes the spike to weather and pipeline flows instead.</div>
+          </div>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="sum-left">
+            <span class="sum-num">02</span>
+            <span class="sum-title">Missing context</span>
+            <span class="sum-count">2 gaps</span>
+          </span>
+          <span class="sum-toggle"></span>
+        </summary>
+        <div class="detail-body">
+          <div class="tech">
+            <div class="tname">Omitted variable<small>winter demand</small></div>
+            <div class="tdesc">The column never mentions the colder-than-average winter that primary reporting names as the leading driver of the price spike.</div>
+          </div>
+          <div class="tech">
+            <div class="tname">Absent baseline<small>pre-sanction prices</small></div>
+            <div class="tdesc">No pre-sanction price baseline is given, so readers cannot judge how much of the move predates the policy.</div>
+          </div>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="sum-left">
+            <span class="sum-num">03</span>
+            <span class="sum-title">Claim timeline</span>
+            <span class="sum-count">3 dated assertions</span>
+          </span>
+          <span class="sum-toggle"></span>
+        </summary>
+        <div class="detail-body">
+          <div class="tech">
+            <div class="tname">Sep 2014<small>treaty signed</small></div>
+            <div class="tdesc">Verified against AP primary reporting — <q>signed by all parties in September 2014.</q></div>
+          </div>
+          <div class="tech">
+            <div class="tname">Mar 2024<small>price spike</small></div>
+            <div class="tdesc">Reuters dates the spike and attributes it to winter demand and pipeline flows, not the sanctions package.</div>
+          </div>
+          <div class="tech">
+            <div class="tname">Undated<small>claimed reversal</small></div>
+            <div class="tdesc">The &ldquo;reversal within weeks&rdquo; has no date and no primary source; treated as insufficient.</div>
+          </div>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="sum-left">
+            <span class="sum-num">04</span>
+            <span class="sum-title">AI-generation &amp; source-reliability checks</span>
+            <span class="sum-count">2 checks run</span>
+          </span>
+          <span class="sum-toggle"></span>
+        </summary>
+        <div class="detail-body">
+          <div class="tech">
+            <div class="tname">AI-generation likelihood<small>DistilBERT screen</small></div>
+            <div class="tdesc">Stylometric screen returns <q>human-authored, opinion register</q>; no strong machine-generation signal. Reported as advisory, not dispositive.</div>
+          </div>
+          <div class="tech">
+            <div class="tname">Source reliability<small>tier ledger</small></div>
+            <div class="tdesc">Two cited outlets resolve to tier-1 (AP, primary) and tier-2 (Reuters, secondary attribution); the reversal claim resolves to no rated source.</div>
+          </div>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- SOURCES FOOTER -->
+  <section class="sources">
+    <div class="slab">Sources cited in this report</div>
+    <ol>
+      <li><span class="n">1.</span> Reuters, 12 Mar 2024 — gas-price attribution. Tier-2 journalism (secondary).</li>
+      <li><span class="n">2.</span> No primary source located for the claimed policy reversal; appears only in opinion blogs.</li>
+      <li><span class="n">3.</span> Associated Press — treaty signing, September 2014. Tier-1 primary.</li>
+    </ol>
+  </section>
+
+  <div class="footer-rule"></div>
+  <div class="colophon">
+    <span>GKIN — Analysis Edition</span>
+    <span>Grounded verification · auditable by design</span>
+    <span>End of report</span>
+  </div>
+
+</section>
+
+<script>
+  // Keep one details row open at a time inside Layer III (newspaper "one story at a time" feel),
+  // but never fight the user: only collapse siblings when a new one is opened.
+  (function(){
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.details-wrap details.row'));
+    rows.forEach(function(d){
+      d.addEventListener('toggle', function(){
+        if(d.open){
+          rows.forEach(function(o){ if(o!==d && o.open){ o.open=false; } });
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

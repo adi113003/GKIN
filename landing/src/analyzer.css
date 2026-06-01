@@ -5,103 +5,59 @@
 html { -webkit-text-size-adjust: 100%; }
 
 body {
-  background: #050505;
-  color: #fafafa;
+  background: #F2ECDD;
+  color: #1A1714;
   font-family:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-feature-settings: "ss01", "cv11";
+    "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-feature-settings: "liga" 1, "calt" 1, "onum" 1, "kern" 1;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
 .font-mono {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
 
-/* Landing-style mesh background — radial color blooms + faint grid with radial mask */
-body::before {
-  content: "";
-  position: fixed;
-  left: 50%;
-  top: -20%;
-  transform: translateX(-50%);
-  width: 1400px;
-  height: 900px;
-  filter: blur(60px);
-  opacity: 0.9;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(75,139,255,0.20), transparent 50%),
-    radial-gradient(circle at 70% 30%, rgba(155,123,255,0.18), transparent 55%),
-    radial-gradient(circle at 50% 80%, rgba(93,217,255,0.12), transparent 60%);
-  pointer-events: none;
-  z-index: 0;
+.font-slab {
+  font-family: "Zilla Slab", Georgia, serif;
 }
 
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.024) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.024) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, #000 0%, transparent 75%);
-  mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, #000 0%, transparent 75%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-body > * { position: relative; z-index: 1; }
-
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+::-webkit-scrollbar-thumb { background: rgba(26,23,20,0.22); }
+::-webkit-scrollbar-thumb:hover { background: rgba(26,23,20,0.38); }
 
 input::placeholder, textarea::placeholder {
-  color: rgba(161,161,170,0.55);
+  color: rgba(64,58,51,0.55);
   font-family: inherit;
   font-weight: 400;
 }
 
-::selection { background: rgba(155,123,255,0.28); color: #fff; }
+::selection { background: rgba(28,46,74,0.22); color: #1A1714; }
 
-/* Landing gradient text utilities — kept identical to landing-src/src/index.css */
+/* Nameplate + heading utilities (Dossier). The "grad-*" names are kept so existing
+   markup keeps working, but they now render as flat ink / navy — no gradients. */
 .grad-title {
-  background: linear-gradient(120deg, #fff 0%, #c8c8d0 40%, #6f6f78 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-family: "Zilla Slab", Georgia, serif;
+  font-weight: 700;
+  color: #1A1714;
 }
 .grad-accent {
-  background: linear-gradient(120deg, #5dd9ff 0%, #9b7bff 60%, #ff6b8b 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.grad-meter {
-  background: linear-gradient(120deg, #fff, #5dd9ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.grad-feature-h {
-  background: linear-gradient(120deg, #fff 0%, #b8b8c0 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.grad-feature-em {
-  background: linear-gradient(120deg, #5dd9ff 0%, #9b7bff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-family: "Zilla Slab", Georgia, serif;
+  font-weight: 700;
+  color: #1C2E4A;
 }
 
 .text-balance { text-wrap: balance; }
 
-@keyframes pulse   { 0%,100%{opacity:1}50%{opacity:0.4} }
-@keyframes spin    { to{transform:rotate(360deg)} }
-@keyframes shimmer { 0%{transform:translateX(-100%)}100%{transform:translateX(100%)} }
-@keyframes marquee { 0%{transform:translateX(0)}100%{transform:translateX(-50%)} }
+/* Functional-only spinner; ambient animation removed. */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

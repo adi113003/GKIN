@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GKIN — Three editorial directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --paper:#F4F2EC; --ink:#1A1A1A; --ink2:#52555C; --ink3:#84878E; --line:#D9D5CB; --navy:#13294B; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Libre Franklin",-apple-system,system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1320px;margin:0 auto;padding:44px 28px 90px;}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);}
+  h1{font-family:"Newsreader",serif;font-weight:500;font-size:clamp(28px,3.4vw,42px);letter-spacing:-.01em;margin:10px 0 12px;}
+  .lead{max-width:74ch;color:var(--ink2);font-size:15.5px;}
+  .lead b{color:var(--ink);font-weight:600;}
+  .rule{height:1px;background:var(--line);margin:26px 0 6px;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:30px;}
+  .card{background:#fff;border:1px solid var(--line);}
+  .card .meta{padding:16px 18px 14px;border-bottom:1px solid var(--line);}
+  .card .idx{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--navy);font-weight:500;}
+  .card h2{font-family:"Newsreader",serif;font-size:22px;font-weight:600;margin:4px 0 6px;}
+  .card .desc{font-size:13px;color:var(--ink2);line-height:1.5;min-height:54px;}
+  .sw{display:flex;gap:6px;margin:12px 0 2px;}
+  .sw span{width:20px;height:20px;border:1px solid rgba(0,0,0,.08);}
+  .shot{display:block;}
+  .shot img{display:block;width:100%;height:auto;border-top:1px solid var(--line);}
+  .open{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;font-size:13px;font-weight:600;color:var(--navy);text-decoration:none;border-top:1px solid var(--line);transition:background .15s;}
+  .open:hover{background:#FAF9F6;}
+  .open .arr{font-size:15px;}
+  .feat{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink3);letter-spacing:.04em;text-transform:uppercase;}
+  .note{margin-top:34px;font-size:13.5px;color:var(--ink2);max-width:80ch;line-height:1.6;}
+  .note b{color:var(--ink);}
+  @media (max-width:980px){.grid{grid-template-columns:1fr;}.card .desc{min-height:0;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">GKIN · redesign · choose a direction</div>
+  <h1>Three committed editorial identities</h1>
+  <p class="lead">Each is a full mock of the <b>two pivotal screens</b> (landing hero + analyzer verdict→evidence→details), built to read like a specific
+  print artifact for journalists &amp; IR analysts — not a generic clean-minimal template. <b>No blue, no gradients, no rounded floating cards, no pill badges, no browser-frame mockups.</b>
+  Color appears only to carry a verdict. Click any one to open the live, interactive version.</p>
+  <div class="rule"></div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="meta">
+        <div class="idx">01 — newspaper front page</div>
+        <h2>The Broadsheet</h2>
+        <div class="desc">FT-salmon newsprint. Condensed masthead + double rule, dateline, drop cap, two-column lede, footnote citations, the verdict as a ruled column.</div>
+        <div class="sw"><span style="background:#FFF1E5"></span><span style="background:#14110E"></span><span style="background:#9B1C2E"></span><span style="background:#15633A"></span></div>
+        <div class="feat" style="margin-top:8px">Spectral · Archivo</div>
+      </div>
+      <a class="shot" href="redesign-broadsheet.html" target="_blank" rel="noopener"><img src="redesign-broadsheet.png" alt="The Broadsheet direction — FT-style front page" loading="lazy" /></a>
+      <a class="open" href="redesign-broadsheet.html" target="_blank" rel="noopener">Open interactive <span class="arr">↗</span></a>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <div class="idx">02 — analytical briefing / case file</div>
+        <h2>The Dossier</h2>
+        <div class="desc">Manila/cream, navy rules. Fielded mono document header, decimal sections, claims as numbered FINDINGS in a ruled evidence table. Reads like a report.</div>
+        <div class="sw"><span style="background:#F2ECDD"></span><span style="background:#1A1714"></span><span style="background:#1C2E4A"></span><span style="background:#9B1C2E"></span></div>
+        <div class="feat" style="margin-top:8px">Zilla Slab · IBM Plex Mono</div>
+      </div>
+      <a class="shot" href="redesign-dossier.html" target="_blank" rel="noopener"><img src="redesign-dossier.png" alt="The Dossier direction — analytical briefing / case file" loading="lazy" /></a>
+      <a class="open" href="redesign-dossier.html" target="_blank" rel="noopener">Open interactive <span class="arr">↗</span></a>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <div class="idx">03 — policy-magazine spread</div>
+        <h2>The Review</h2>
+        <div class="desc">Ivory + burgundy. Expressive Fraunces display type, drop cap, pull-quote, asymmetric margin column, Roman-numeral evidence entries. Reads like Foreign Affairs.</div>
+        <div class="sw"><span style="background:#FBF8F1"></span><span style="background:#1B1A17"></span><span style="background:#6E2433"></span><span style="background:#1B6B3A"></span></div>
+        <div class="feat" style="margin-top:8px">Fraunces · Libre Franklin</div>
+      </div>
+      <a class="shot" href="redesign-review.html" target="_blank" rel="noopener"><img src="redesign-review.png" alt="The Review direction — policy-magazine spread" loading="lazy" /></a>
+      <a class="open" href="redesign-review.html" target="_blank" rel="noopener">Open interactive ↗</a>
+    </div>
+
+  </div>
+
+  <p class="note"><b>How to use this:</b> open each live version, resize the window, and click the “Details” rows on the analyzer screen — they expand. You can pick one outright, or mix
+  (e.g. the Dossier’s ruled evidence table inside the Review’s magazine shell). Whichever you choose, I’ll build it for real into the live landing (<code>landing-src/</code>) and analyzer (<code>landing/Analyzer.tsx</code>).</p>
+</div>
+</body>
+</html>

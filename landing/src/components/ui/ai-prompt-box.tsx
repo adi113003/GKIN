@@ -1,28 +1,26 @@
 import * as React from "react";
 import { ArrowUp, Square, FileText, Globe, AlertTriangle } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 
 const cn = (...c: (string | undefined | null | false)[]) => c.filter(Boolean).join(" ");
 
-// Landing palette anchor points — matches Analyzer.tsx P object.
+// "Dossier" palette anchor points — matches Analyzer.tsx P object (paper/ink/navy).
 const COLORS = {
-  bg: "rgba(255,255,255,0.03)",
-  border: "rgba(255,255,255,0.14)",
-  borderFocus: "rgba(255,255,255,0.24)",
-  text: "#fafafa",
-  muted: "#a1a1aa",
-  cyan: "#5dd9ff",
-  violet: "#9b7bff",
-  rose: "#ff6b8b",
-  red: "#ff5d63",
+  bg: "#F2ECDD",            // paper
+  panel: "#EAE2CE",         // paper-2
+  border: "#B9AE93",        // rule-soft
+  borderFocus: "#1A1714",   // ink
+  text: "#1A1714",          // ink
+  muted: "#5B6472",         // ink-soft / insufficient
+  navy: "#1C2E4A",          // navy accent
+  red: "#9B1C2E",           // contradicted
 };
 
 export type ChatMode = "context" | "open" | "conspiracy";
 
 const MODES: { value: ChatMode; label: string; color: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { value: "context",    label: "Context",    color: COLORS.cyan,   icon: FileText },
-  { value: "open",       label: "Web",        color: COLORS.violet, icon: Globe },
-  { value: "conspiracy", label: "Conspiracy", color: COLORS.rose,   icon: AlertTriangle },
+  { value: "context",    label: "Context",     color: COLORS.navy, icon: FileText },
+  { value: "open",       label: "Web",         color: COLORS.navy, icon: Globe },
+  { value: "conspiracy", label: "Speculative", color: COLORS.red,  icon: AlertTriangle },
 ];
 
 interface PromptInputBoxProps {
@@ -39,15 +37,7 @@ interface PromptInputBoxProps {
 }
 
 const CustomDivider: React.FC = () => (
-  <div className="relative h-3 w-px mx-0.5">
-    <div
-      className="absolute inset-0 rounded-full"
-      style={{
-        background:
-          "linear-gradient(to top, transparent 0%, rgba(155,123,255,0.45) 50%, transparent 100%)",
-      }}
-    />
-  </div>
+  <div className="h-3 w-px mx-1" style={{ background: COLORS.border }} />
 );
 
 export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxProps>(
@@ -96,20 +86,17 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
       }
     };
 
-    const sendIconColor = canSend ? "#0a0a0f" : COLORS.muted;
-    const sendBg = canSend ? "#fafafa" : "transparent";
-    const sendHoverBg = canSend ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.06)";
+    const sendIconColor = canSend ? COLORS.bg : COLORS.muted;
+    const sendBg = canSend ? COLORS.navy : "transparent";
+    const sendHoverBg = canSend ? COLORS.text : COLORS.panel;
 
     return (
       <div
         ref={ref}
-        className={cn("rounded-lg p-1 transition-colors", className)}
+        className={cn("p-1 transition-colors", className)}
         style={{
           background: COLORS.bg,
           border: `1px solid ${focused ? COLORS.borderFocus : COLORS.border}`,
-          boxShadow: focused
-            ? "0 0 0 2px rgba(155,123,255,0.10), 0 4px 14px rgba(0,0,0,0.20)"
-            : "0 4px 14px rgba(0,0,0,0.20)",
         }}
         onFocus={() => setFocused(true)}
         onBlur={(e) => {
@@ -146,41 +133,26 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
                   <button
                     type="button"
                     onClick={() => onModeChange(m.value)}
-                    title={`Chat mode: ${m.label}`}
+                    title={`Mode: ${m.label}`}
                     aria-pressed={active}
-                    className="rounded-full transition-all flex items-center gap-1"
+                    className="transition-colors flex items-center gap-1.5"
                     style={{
-                      height: 20,
-                      padding: active ? "0 7px 0 5px" : "0 5px",
-                      background: active ? `${m.color}26` : "transparent",
-                      border: `1px solid ${active ? m.color : "transparent"}`,
-                      color: active ? m.color : COLORS.muted,
+                      height: 22,
+                      padding: "0 8px",
+                      background: active ? m.color : "transparent",
+                      border: `1px solid ${active ? m.color : COLORS.border}`,
+                      color: active ? COLORS.bg : COLORS.muted,
                       cursor: "pointer",
-                      fontFamily: "inherit",
+                      fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
                     }}
                   >
-                    <motion.span
-                      animate={{ rotate: active ? 360 : 0, scale: active ? 1.05 : 1 }}
-                      transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                      className="inline-flex"
+                    <Icon className="w-2.5 h-2.5" />
+                    <span
+                      className="font-medium whitespace-nowrap"
+                      style={{ fontSize: 9.5, letterSpacing: "0.06em", textTransform: "uppercase" }}
                     >
-                      <Icon className="w-2.5 h-2.5" />
-                    </motion.span>
-                    <AnimatePresence initial={false}>
-                      {active && (
-                        <motion.span
-                          key="label"
-                          initial={{ width: 0, opacity: 0 }}
-                          animate={{ width: "auto", opacity: 1 }}
-                          exit={{ width: 0, opacity: 0 }}
-                          transition={{ duration: 0.18 }}
-                          className="font-medium overflow-hidden whitespace-nowrap"
-                          style={{ color: m.color, fontSize: 9.5, letterSpacing: "0.02em" }}
-                        >
-                          {m.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                      {m.label}
+                    </span>
                   </button>
                 </React.Fragment>
               );
@@ -194,13 +166,13 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
             disabled={!isLoading && !canSend}
             title={isLoading ? "Stop generation" : canSend ? "Send (Enter)" : "Type a message to send"}
             aria-label={isLoading ? "Stop" : "Send message"}
-            className="rounded-full inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed"
             style={{
-              height: 22,
-              width: 22,
-              background: isLoading ? "rgba(255,93,99,0.14)" : sendBg,
+              height: 24,
+              width: 24,
+              background: isLoading ? "transparent" : sendBg,
               color: isLoading ? COLORS.red : sendIconColor,
-              border: isLoading ? `1px solid ${COLORS.red}` : "1px solid transparent",
+              border: isLoading ? `1px solid ${COLORS.red}` : `1px solid ${canSend ? COLORS.navy : COLORS.border}`,
               opacity: !isLoading && !canSend ? 0.55 : 1,
             }}
             onMouseEnter={(e) => {

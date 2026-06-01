@@ -1,110 +1,110 @@
-import { motion } from "framer-motion";
-import { ArrowRight, ArrowDown } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { ProductMockup } from "@/components/sections/ProductMockup";
-
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-};
-
-const MODELS = [
-  { name: "DeepSeek R1", v: "70B", dot: "#5dd9ff" },
-  { name: "Llama 3.3", v: "70B", dot: "#9b7bff" },
-  { name: "Llama Vision", v: "90B", dot: "#ffb547" },
-  { name: "Whisper", v: "large-v3", dot: "#4ade80" },
-  { name: "DistilBERT", v: "99.4%", dot: "#ff6b8b" },
+// The models actually called by server.py (MODEL_* constants). No DistilBERT —
+// it is not deployed; the WELFake classifier is advisory-only, not in the verdict.
+const stack = [
+  "GPT-OSS 120B",
+  "Llama 3.3 70B",
+  "Llama 3.1 8B",
+  "Llama Vision 90B",
+  "Whisper v3",
 ];
 
 export function Hero() {
   return (
-    <header className="relative z-10 pt-32 pb-20 px-7 max-w-[1400px] mx-auto">
-      <div className="grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-8 items-center">
-        {/* Left Column: Text & CTA */}
-        <div className="text-left">
-          <motion.a
-            {...fadeUp}
-            transition={{ duration: 0.7, ease: [0.2, 0.7, 0.3, 1] }}
-            href="#since-midterm"
-            className="inline-flex items-center gap-2 pl-1.5 pr-3 py-1 mb-8 border border-white/[0.14] bg-white/[0.03] rounded-full text-[12.5px] text-ink-2 hover:border-white/[0.24] hover:bg-white/[0.05] transition-all"
+    <section className="border-b-[1.5px] border-ink px-4 py-[34px] sm:px-[26px]">
+      <div className="grid grid-cols-1 md:grid-cols-[1.45fr_1fr]">
+        {/* main column */}
+        <div className="border-b-[1.5px] border-ink pb-[22px] md:border-b-0 md:pb-0 md:pr-[34px]">
+          <div className="mb-[14px] border-b border-rule-soft pb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-navy">
+            1.0 — On reading the record before repeating it
+          </div>
+
+          <h1
+            className="mb-[18px] max-w-[18ch] font-slab font-bold leading-[1.04] tracking-[-0.005em] text-ink"
+            style={{ fontSize: "clamp(32px, 5vw, 42px)" }}
           >
-            <span className="font-mono text-[10px] font-semibold tracking-wider px-1.5 py-[3px] rounded-full bg-gradient-to-r from-brand-blue to-brand-violet text-white">
-              NEW
+            Don't trust the take.{" "}
+            <em className="not-italic text-navy underline decoration-2 underline-offset-[4px]">
+              Check the record
+            </em>
+            , sentence by sentence.
+          </h1>
+
+          <p className="mb-[22px] max-w-[54ch] text-[18px] leading-[1.6] text-ink">
+            Paste an article, a URL, a screenshot, or a podcast. GKIN scores
+            manipulation, names every persuasion technique, and ties every
+            verdict to the exact source sentence that backs it —{" "}
+            <b className="font-semibold">or tells you it can't</b>. Auditable,
+            not a black box.
+          </p>
+
+          {/* action buttons — joined, ruled, square */}
+          <div className="mb-6 flex w-fit flex-wrap border-[1.5px] border-ink">
+            <a
+              href="/login"
+              className="inline-flex cursor-pointer items-center gap-[10px] bg-navy px-[22px] py-[13px] font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-paper no-underline hover:bg-ink"
+            >
+              Analyze an article <span aria-hidden="true">→</span>
+            </a>
+            <a
+              href="#how"
+              className="inline-flex cursor-pointer items-center border-l-[1.5px] border-ink bg-paper px-[22px] py-[13px] font-mono text-[12px] uppercase tracking-[0.1em] text-ink no-underline hover:bg-paper-2"
+            >
+              See how it works
+            </a>
+          </div>
+
+          {/* reasoning stack line */}
+          <div className="max-w-[58ch] border-t border-rule-soft pt-[14px] font-mono text-[11px] leading-[1.9] text-ink-soft">
+            <span className="mb-[6px] block text-[10px] uppercase tracking-[0.14em] text-navy">
+              Reasoning stack on file
             </span>
-            <span>Every verdict now cites its source — see what changed.</span>
-            <span className="text-ink-3">→</span>
-          </motion.a>
-
-          <motion.h1
-            {...fadeUp}
-            transition={{ duration: 0.8, delay: 0.08, ease: [0.2, 0.7, 0.3, 1] }}
-            className="font-semibold leading-[1.05] tracking-[-0.03em] mb-6 text-balance"
-            style={{ fontSize: "clamp(40px, 6vw, 76px)" }}
-          >
-            <span className="text-ink">Cut through the noise.</span>
-            <br />
-            <span className="grad-accent">Detect the lie.</span>
-          </motion.h1>
-
-          <motion.p
-            {...fadeUp}
-            transition={{ duration: 0.8, delay: 0.16, ease: [0.2, 0.7, 0.3, 1] }}
-            className="text-ink-3 mb-10 max-w-[50ch] leading-relaxed"
-            style={{ fontSize: "clamp(16px, 1.5vw, 18px)" }}
-          >
-            Paste an article, URL, screenshot, or podcast. GKIN scores manipulation, names
-            every persuasion technique, and ties{" "}
-            <strong className="text-ink-2 font-medium">every verdict to the exact source
-            sentence</strong>{" "}
-            that backs it — or says it can’t verify it. Auditable, not a black box.
-          </motion.p>
-
-          <motion.div
-            {...fadeUp}
-            transition={{ duration: 0.8, delay: 0.24, ease: [0.2, 0.7, 0.3, 1] }}
-            className="flex flex-wrap gap-4 items-center mb-16"
-          >
-            <Button variant="primary" size="lg" href="/login">
-              Launch GKIN
-              <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.4} />
-            </Button>
-            <Button variant="secondary" size="lg" href="#how">
-              See it work
-              <ArrowDown className="w-3.5 h-3.5" strokeWidth={2.4} />
-            </Button>
-          </motion.div>
-
-          {/* Model strip */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            <div className="font-mono text-[10.5px] tracking-[0.22em] text-ink-4 uppercase mb-4">
-              Reasoning stack
-            </div>
-            <div className="flex flex-wrap gap-x-3 gap-y-2">
-              {MODELS.map((m, i) => (
-                <div
-                  key={m.name}
-                  className="inline-flex items-center gap-2 px-2.5 py-1.5 border border-white/[0.07] rounded-lg bg-white/[0.025] text-[12px] text-ink-2"
-                >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: m.dot, boxShadow: `0 0 8px ${m.dot}` }}
-                  />
-                  {m.name}
-                </div>
-              ))}
-            </div>
-          </motion.div>
+            {stack.map((s, i) => (
+              <span key={s}>
+                <span className="whitespace-nowrap border-b border-rule-soft">
+                  {s}
+                </span>
+                {i < stack.length - 1 && (
+                  <span className="px-1 text-rule-soft">/</span>
+                )}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* Right Column: Product Mockup */}
-        <div className="relative w-full max-w-[700px] mx-auto lg:ml-auto perspective-[2000px]">
-          <ProductMockup />
-        </div>
+        {/* aside — Exhibit A verdict preview */}
+        <aside className="md:border-l-[1.5px] md:border-ink md:pl-[26px]">
+          <div className="mb-[10px] mt-[22px] font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft md:mt-0">
+            Exhibit A — verdict preview
+          </div>
+          <div className="border-[1.5px] border-ink bg-paper">
+            <div className="flex items-center justify-between border-b-[1.5px] border-ink bg-paper-2 px-3 py-[9px]">
+              <span className="inline-flex items-center gap-[7px] font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-contradicted">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-[9px] w-[9px] border-[1.5px] border-contradicted bg-contradicted"
+                />
+                Contradicted
+              </span>
+              <span className="font-mono text-[11px] tracking-[0.06em] text-ink-soft">
+                CONF 0.88
+              </span>
+            </div>
+            <div className="p-3">
+              <p className="mb-3 font-slab text-[16px] font-medium leading-[1.3]">
+                "Sanctions caused the energy crisis across Europe."
+              </p>
+              <blockquote className="border-l-[3px] border-navy py-[7px] pl-3 text-[14.5px] leading-[1.5] text-ink-soft">
+                Analysts attribute the price spike primarily to a
+                colder-than-average winter and reduced pipeline flows, not to the
+                sanctions package.
+                <span className="mt-[7px] block font-mono text-[10.5px] uppercase tracking-[0.05em] text-navy">
+                  Reuters · 12 Mar 2024 · tier-2 journalism
+                </span>
+              </blockquote>
+            </div>
+          </div>
+        </aside>
       </div>
-    </header>
+    </section>
   );
 }

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GKIN — Analytical Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2ECDD;
+    --paper-2:#EAE2CE;     /* slightly deeper field for table heads */
+    --ink:#1A1714;
+    --ink-soft:#403A33;
+    --navy:#1C2E4A;
+    --navy-soft:#3A4D6E;
+    --rule:#1A1714;
+    --rule-soft:#B9AE93;   /* hairline on paper */
+    --supported:#15633A;
+    --contradicted:#9B1C2E;
+    --insufficient:#5B6472;
+    --mono:'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    --slab:'Zilla Slab', Georgia, serif;
+    --serif:'Source Serif 4', Georgia, serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:
+      /* faint horizontal ledger lines, archival not decorative-glow */
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:17px;
+    line-height:1.55;
+    text-rendering:optimizeLegibility;
+    -webkit-font-smoothing:antialiased;
+    font-feature-settings:"liga" 1,"calt" 1,"onum" 1,"kern" 1;
+  }
+
+  /* ---- annotation label above each screen ---- */
+  .screen-tag{
+    max-width:1040px;
+    margin:0 auto;
+    padding:30px 24px 8px;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  .screen-tag .seq{color:var(--ink-soft);}
+
+  /* ---- the document sheet ---- */
+  .sheet{
+    max-width:1040px;
+    margin:0 auto 14px;
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    padding:0;
+  }
+
+  a{color:inherit;}
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--navy);
+    outline-offset:2px;
+  }
+
+  /* =========================================================
+     DOCUMENT HEADER BLOCK
+     ========================================================= */
+  .dochead{
+    border-bottom:1.5px solid var(--ink);
+    padding:18px 26px 16px;
+  }
+  .dochead-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:18px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--rule-soft);
+    padding-bottom:12px;
+  }
+  .wordmark{
+    font-family:var(--slab);
+    font-weight:700;
+    font-size:30px;
+    letter-spacing:.02em;
+    line-height:1;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .wordmark .glyph{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:.04em;
+    color:var(--paper);
+    background:var(--navy);
+    padding:5px 7px 4px;
+    line-height:1;
+    align-self:center;
+  }
+  .descriptor{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    max-width:300px;
+    text-align:right;
+    line-height:1.5;
+  }
+
+  /* fielded metadata grid in mono — the signature */
+  .fields{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:0;
+    margin-top:14px;
+    border-top:1px solid var(--rule-soft);
+    border-left:1px solid var(--rule-soft);
+  }
+  .field{
+    border-right:1px solid var(--rule-soft);
+    border-bottom:1px solid var(--rule-soft);
+    padding:8px 12px 9px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .field .k{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  .field .v{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.01em;
+    color:var(--ink);
+  }
+  .field.span2{grid-column:1 / -1;}
+  .field .v.assess{
+    color:var(--contradicted);
+    font-weight:600;
+    letter-spacing:.04em;
+  }
+
+  /* =========================================================
+     CENTERED NAMEPLATE MASTHEAD + utility nav strip
+     ========================================================= */
+  .topnav{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    background:var(--navy);
+    border-bottom:1.5px solid var(--ink);
+  }
+  .topnav a{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    text-decoration:none;
+    color:var(--paper);
+    padding:9px 18px;
+    border-left:1px solid rgba(242,236,221,.22);
+    cursor:pointer;
+  }
+  .topnav a:first-child{border-left:0;}
+  .topnav a:hover{text-decoration:underline;text-underline-offset:3px;}
+  .topnav a.cta{font-weight:600;background:rgba(242,236,221,.10);}
+
+  /* the centered GKIN nameplate — the journal masthead */
+  .namebar{
+    text-align:center;
+    padding:26px 26px 18px;
+    border-bottom:1.5px solid var(--ink);
+  }
+  .namebar .nameplate{
+    font-family:var(--slab);
+    font-weight:700;
+    font-size:56px;
+    letter-spacing:.16em;
+    text-indent:.16em;        /* keep the tracked wordmark optically centered */
+    line-height:1;
+    color:var(--ink);
+    margin:0;
+  }
+  .namebar .np-desc{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:13px;
+    padding-top:12px;
+    border-top:1px solid var(--rule-soft);
+    display:inline-block;
+  }
+
+  /* =========================================================
+     SECTION SCAFFOLD (decimal numbering)
+     ========================================================= */
+  .section{padding:26px 26px 8px;}
+  .section + .section{border-top:1px solid var(--rule-soft);}
+  .sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    border-bottom:1.5px solid var(--ink);
+    padding-bottom:8px;
+    margin-bottom:18px;
+  }
+  .sec-no{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:14px;
+    color:var(--navy);
+    letter-spacing:.04em;
+  }
+  .sec-title{
+    font-family:var(--slab);
+    font-weight:600;
+    font-size:21px;
+    letter-spacing:.01em;
+    color:var(--ink);
+    line-height:1.1;
+  }
+  .sec-kicker{
+    margin-left:auto;
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+
+  /* =========================================================
+     LANDING HERO
+     ========================================================= */
+  .hero{
+    padding:34px 26px 30px;
+    border-bottom:1.5px solid var(--ink);
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.45fr 1fr;
+    gap:0;
+  }
+  .hero-main{
+    padding-right:34px;
+  }
+  .hero-aside{
+    border-left:1.5px solid var(--ink);
+    padding-left:26px;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--navy);
+    margin-bottom:14px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule-soft);
+  }
+  h1.headline{
+    font-family:var(--slab);
+    font-weight:700;
+    font-size:42px;
+    line-height:1.04;
+    letter-spacing:-.005em;
+    margin:0 0 18px;
+    color:var(--ink);
+    max-width:18ch;
+  }
+  h1.headline em{
+    font-style:normal;
+    color:var(--navy);
+    text-decoration:underline;
+    text-decoration-thickness:2px;
+    text-underline-offset:4px;
+  }
+  .lede{
+    font-size:18px;
+    line-height:1.6;
+    margin:0 0 22px;
+    max-width:54ch;
+    color:var(--ink);
+  }
+  .lede b{font-weight:600;color:var(--ink);}
+
+  .actions{
+    display:flex;
+    gap:0;
+    flex-wrap:wrap;
+    margin-bottom:24px;
+    border:1.5px solid var(--ink);
+    width:fit-content;
+  }
+  .btn{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    text-decoration:none;
+    padding:13px 22px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:0;
+  }
+  .btn-primary{
+    background:var(--navy);
+    color:var(--paper);
+    font-weight:600;
+  }
+  .btn-primary:hover{background:var(--ink);}
+  .btn-secondary{
+    background:var(--paper);
+    color:var(--ink);
+    border-left:1.5px solid var(--ink);
+  }
+  .btn-secondary:hover{background:var(--paper-2);}
+  .btn .arrow{font-family:var(--mono);}
+
+  /* reasoning stack line */
+  .stack-line{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    line-height:1.9;
+    border-top:1px solid var(--rule-soft);
+    padding-top:14px;
+    max-width:58ch;
+  }
+  .stack-line .sk-label{
+    color:var(--navy);
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    display:block;
+    margin-bottom:6px;
+    font-size:10px;
+  }
+  .stack-line .chip{
+    white-space:nowrap;
+    border-bottom:1px solid var(--rule-soft);
+  }
+  .stack-line .sep{color:var(--rule-soft);padding:0 4px;}
+
+  /* aside: verdict preview */
+  .aside-label{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .preview{
+    border:1.5px solid var(--ink);
+    background:var(--paper);
+  }
+  .preview-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:9px 12px;
+    border-bottom:1.5px solid var(--ink);
+    background:var(--paper-2);
+  }
+  .vtag{
+    font-family:var(--mono);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+  }
+  .vtag::before{
+    content:"";
+    width:9px;height:9px;
+    display:inline-block;
+    border:1.5px solid currentColor;
+  }
+  .vtag.contradicted{color:var(--contradicted);}
+  .vtag.contradicted::before{background:var(--contradicted);border-color:var(--contradicted);}
+  .vtag.supported{color:var(--supported);}
+  .vtag.supported::before{background:var(--supported);border-color:var(--supported);}
+  .vtag.insufficient{color:var(--insufficient);}
+  .vtag.insufficient::before{background:transparent;border-color:var(--insufficient);}
+  .vtag .conf{
+    color:var(--ink-soft);
+    font-weight:400;
+    letter-spacing:.06em;
+  }
+  .preview-body{padding:12px;}
+  .claim-text{
+    font-family:var(--slab);
+    font-weight:500;
+    font-size:16px;
+    line-height:1.3;
+    margin:0 0 12px;
+  }
+  .cite{
+    border-left:3px solid var(--navy);
+    padding:7px 0 7px 12px;
+    margin:0;
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .cite .src{
+    display:block;
+    margin-top:7px;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.05em;
+    color:var(--navy);
+    text-transform:uppercase;
+  }
+
+  /* how it works — numbered steps, NOT identical cards */
+  .how{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    border-top:1.5px solid var(--ink);
+    margin-top:26px;
+  }
+  .step{
+    padding:18px 22px 20px;
+    border-right:1px solid var(--rule-soft);
+  }
+  .step:last-child{border-right:0;}
+  .step .sn{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:13px;
+    color:var(--navy);
+    letter-spacing:.05em;
+    display:block;
+    margin-bottom:8px;
+  }
+  .step h4{
+    font-family:var(--slab);
+    font-weight:600;
+    font-size:17px;
+    margin:0 0 5px;
+    letter-spacing:.01em;
+  }
+  .step p{
+    margin:0;
+    font-size:14px;
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+
+  /* =========================================================
+     ANALYZER — source bar
+     ========================================================= */
+  .sourcebar{
+    border:1px solid var(--ink);
+    margin-bottom:24px;
+    background:var(--paper-2);
+  }
+  .sourcebar .sb-k{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--navy);
+    padding:8px 14px 0;
+  }
+  .sourcebar .sb-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px;
+    flex-wrap:wrap;
+    padding:3px 14px 11px;
+  }
+  .sourcebar .sb-title{
+    font-family:var(--slab);
+    font-weight:600;
+    font-size:18px;
+    letter-spacing:.005em;
+  }
+  .sourcebar .sb-title::before{content:"“";}
+  .sourcebar .sb-title::after{content:"”";}
+  .sourcebar .sb-meta{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.05em;
+    color:var(--ink-soft);
+  }
+
+  /* LAYER 1 VERDICT */
+  .verdict-block{
+    display:grid;
+    grid-template-columns:1fr 230px;
+    gap:0;
+    border:1.5px solid var(--ink);
+    margin-bottom:6px;
+  }
+  .verdict-main{padding:18px 20px;}
+  .verdict-line{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .verdict-value{
+    font-family:var(--slab);
+    font-weight:700;
+    font-size:32px;
+    line-height:1.05;
+    color:var(--contradicted);
+    letter-spacing:-.005em;
+    margin-bottom:12px;
+  }
+  .verdict-sum{
+    font-size:16px;
+    line-height:1.5;
+    max-width:50ch;
+    margin:0;
+    color:var(--ink);
+  }
+  /* gauge — a calm ruled gauge, not a glowing meter */
+  .gauge{
+    border-left:1.5px solid var(--ink);
+    padding:18px 18px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .gauge .g-k{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--navy);
+    margin-bottom:8px;
+  }
+  .gauge .g-num{
+    font-family:var(--slab);
+    font-weight:700;
+    font-size:40px;
+    line-height:1;
+    color:var(--ink);
+  }
+  .gauge .g-num small{
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:15px;
+    color:var(--ink-soft);
+    letter-spacing:.02em;
+  }
+  .gauge .g-track{
+    margin-top:12px;
+    height:14px;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    position:relative;
+    display:flex;
+  }
+  /* ruled tick marks built from real elements, not a gradient */
+  .gauge .g-track .tick{
+    flex:1 1 0;
+    border-right:1px solid var(--rule-soft);
+  }
+  .gauge .g-track .tick:last-child{border-right:0;}
+  .gauge .g-fill{
+    position:absolute;
+    top:0;left:0;bottom:0;
+    width:62%;
+    background:var(--contradicted);
+    z-index:1;
+  }
+  .gauge .g-scale{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    margin-top:5px;
+  }
+
+  /* =========================================================
+     FINDINGS TABLE
+     ========================================================= */
+  .findings{
+    border:1.5px solid var(--ink);
+    margin-top:4px;
+  }
+  .ftable-head{
+    display:grid;
+    grid-template-columns:96px 1fr 150px;
+    background:var(--navy);
+    color:var(--paper);
+  }
+  .ftable-head > div{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    padding:9px 14px;
+    border-right:1px solid rgba(242,236,221,.28);
+  }
+  .ftable-head > div:last-child{border-right:0;}
+
+  .finding{
+    display:grid;
+    grid-template-columns:96px 1fr 150px;
+    border-top:1.5px solid var(--ink);
+  }
+  .finding > div{
+    padding:14px;
+    border-right:1px solid var(--rule-soft);
+  }
+  .finding > div:last-child{border-right:0;}
+
+  .f-no{
+    background:var(--paper-2);
+  }
+  .f-no .n{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:13px;
+    color:var(--navy);
+    letter-spacing:.04em;
+  }
+  .f-no .assess{
+    margin-top:9px;
+    display:block;
+    font-family:var(--mono);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .f-no .assess.contradicted{color:var(--contradicted);}
+  .f-no .assess.insufficient{color:var(--insufficient);}
+  .f-no .assess.supported{color:var(--supported);}
+  .f-no .assess::before{
+    content:"";
+    width:8px;height:8px;
+    display:inline-block;
+    margin-right:6px;
+    vertical-align:1px;
+    border:1.5px solid currentColor;
+  }
+  .f-no .assess.contradicted::before,
+  .f-no .assess.supported::before{background:currentColor;}
+  .f-no .assess.insufficient::before{background:transparent;}
+
+  .f-body .f-claim{
+    font-family:var(--slab);
+    font-weight:600;
+    font-size:16.5px;
+    line-height:1.32;
+    margin:0 0 12px;
+  }
+  .f-body .f-claim::before{
+    content:"FINDING " attr(data-n) " — CLAIM UNDER REVIEW";
+    display:block;
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:9.5px;
+    letter-spacing:.14em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .f-evid{
+    border-left:3px solid var(--navy);
+    padding:6px 0 6px 12px;
+    margin:0;
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .f-evid.none{
+    border-left-color:var(--insufficient);
+    font-style:italic;
+  }
+  .f-evid .src{
+    display:block;
+    margin-top:7px;
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.05em;
+    color:var(--navy);
+    text-transform:uppercase;
+    font-style:normal;
+  }
+  .f-tier{
+    background:var(--paper-2);
+  }
+  .f-tier .t-k{
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .f-tier .t-v{
+    font-family:var(--mono);
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink);
+    line-height:1.4;
+    margin-bottom:12px;
+  }
+  .f-tier .t-v:last-child{margin-bottom:0;}
+
+  /* marginal note */
+  .margin-note{
+    border-top:1px solid var(--rule-soft);
+    margin-top:16px;
+    padding-top:10px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .margin-note .mn-mark{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--navy);
+    border:1px solid var(--navy);
+    padding:2px 6px;
+    white-space:nowrap;
+    flex:none;
+  }
+  .margin-note p{
+    margin:0;
+    font-size:14px;
+    line-height:1.5;
+    font-style:italic;
+    color:var(--ink-soft);
+    max-width:70ch;
+  }
+
+  /* =========================================================
+     LAYER 3 — DETAILS / DISCLOSURES
+     ========================================================= */
+  .disclosures{
+    border:1.5px solid var(--ink);
+    margin-top:4px;
+  }
+  details.row{
+    border-top:1px solid var(--rule-soft);
+  }
+  details.row:first-child{border-top:0;}
+  details.row > summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    padding:13px 16px;
+    user-select:none;
+  }
+  details.row > summary::-webkit-details-marker{display:none;}
+  details.row > summary .d-no{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:12px;
+    color:var(--navy);
+    letter-spacing:.04em;
+    flex:none;
+    width:34px;
+  }
+  details.row > summary .d-title{
+    font-family:var(--slab);
+    font-weight:600;
+    font-size:16px;
+    letter-spacing:.005em;
+  }
+  details.row > summary .d-count{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-left:auto;
+    flex:none;
+  }
+  details.row > summary .d-tog{
+    font-family:var(--mono);
+    font-size:14px;
+    color:var(--navy);
+    flex:none;
+    width:14px;
+    text-align:center;
+  }
+  details.row[open] > summary .d-tog{transform:none;}
+  details.row > summary .d-tog::after{content:"+";}
+  details.row[open] > summary .d-tog::after{content:"–";}
+  details.row[open] > summary{
+    border-bottom:1px solid var(--rule-soft);
+    background:var(--paper-2);
+  }
+  .d-content{
+    padding:6px 16px 16px 64px;
+  }
+  .d-item{
+    border-top:1px solid var(--rule-soft);
+    padding:11px 0;
+  }
+  .d-item:first-child{border-top:0;}
+  .d-item .di-term{
+    font-family:var(--mono);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--navy);
+    margin-bottom:4px;
+  }
+  .d-item .di-body{
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink);
+    margin:0;
+  }
+  .d-item .di-quote{
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+
+  /* footer / colophon */
+  .colophon{
+    padding:16px 26px 22px;
+    border-top:1.5px solid var(--ink);
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  .colophon .c-navy{color:var(--navy);}
+
+  /* =========================================================
+     RESPONSIVE
+     ========================================================= */
+  @media (max-width:820px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-main{padding-right:0;border-bottom:1.5px solid var(--ink);padding-bottom:22px;margin-bottom:22px;}
+    .hero-aside{border-left:0;padding-left:0;}
+    .verdict-block{grid-template-columns:1fr;}
+    .gauge{border-left:0;border-top:1.5px solid var(--ink);}
+    .how{grid-template-columns:1fr;}
+    .step{border-right:0;border-bottom:1px solid var(--rule-soft);}
+    .step:last-child{border-bottom:0;}
+  }
+  @media (max-width:560px){
+    body{font-size:16px;}
+    h1.headline{font-size:32px;}
+    .verdict-value{font-size:26px;}
+    .fields{grid-template-columns:1fr;}
+    .field.span2{grid-column:auto;}
+    .ftable-head{display:none;}
+    .finding{grid-template-columns:1fr;}
+    .finding > div{border-right:0;border-bottom:1px solid var(--rule-soft);}
+    .finding > div:last-child{border-bottom:0;}
+    .f-tier .t-v,.f-tier .t-k{display:inline-block;}
+    .namebar{padding:18px 16px 14px;}
+    .namebar .nameplate{font-size:40px;letter-spacing:.1em;text-indent:.1em;}
+  }
+  @media (max-width:375px){
+    .section,.hero,.dochead,.namebar{padding-left:16px;padding-right:16px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+  }
+  @media print{
+    .screen-tag{display:none;}
+    .sheet{border:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ====================================================== SCREEN 1 ===== -->
+<div class="screen-tag"><span class="seq">SCREEN 01 /</span> &nbsp;LANDING — PUBLIC BRIEFING COVER</div>
+
+<main class="sheet" aria-label="GKIN landing">
+
+  <!-- centered nameplate masthead -->
+  <nav class="topnav" aria-label="Primary">
+    <a href="#how">How it works</a>
+    <a href="#method">Method</a>
+    <a href="#bench">Benchmarks</a>
+    <a href="#signin" class="cta">Sign in</a>
+  </nav>
+  <header class="namebar">
+    <div class="nameplate">GKIN</div>
+    <div class="np-desc">Ground Knowledge · Media-Forensics Bureau</div>
+  </header>
+
+  <!-- document header block -->
+  <div class="dochead">
+    <div class="fields" role="group" aria-label="Briefing metadata">
+      <div class="field"><span class="k">Ref</span><span class="v">GKIN-BRF-0001</span></div>
+      <div class="field"><span class="k">Date</span><span class="v">01 JUN 2026</span></div>
+      <div class="field"><span class="k">Subject</span><span class="v">How GKIN reads a source</span></div>
+      <div class="field"><span class="k">Prepared for</span><span class="v">Newsroom &amp; IR desks</span></div>
+      <div class="field span2"><span class="k">Assessment</span><span class="v assess">AUDITABLE — EVERY VERDICT TIED TO A SOURCE SENTENCE OR DECLARED INSUFFICIENT</span></div>
+    </div>
+  </div>
+
+  <!-- hero -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-main">
+        <div class="eyebrow">1.0 — On reading the record before repeating it</div>
+        <h1 class="headline">Don't trust the take. <em>Check the record</em>, sentence by sentence.</h1>
+        <p class="lede">Paste an article, a URL, a screenshot, or a podcast. GKIN scores manipulation, names every persuasion technique, and ties every verdict to the exact source sentence that backs it — <b>or tells you it can't</b>. Auditable, not a black box.</p>
+
+        <div class="actions">
+          <a class="btn btn-primary" href="#analyze">Analyze an article <span class="arrow">→</span></a>
+          <a class="btn btn-secondary" href="#how">See how it works</a>
+        </div>
+
+        <div class="stack-line">
+          <span class="sk-label">Reasoning stack on file</span>
+          <span class="chip">DeepSeek R1 70B</span><span class="sep">/</span><span class="chip">Llama 3.3 70B</span><span class="sep">/</span><span class="chip">Llama Vision 90B</span><span class="sep">/</span><span class="chip">Whisper v3</span><span class="sep">/</span><span class="chip">DistilBERT 99.4%</span>
+        </div>
+      </div>
+
+      <aside class="hero-aside">
+        <div class="aside-label">Exhibit A — verdict preview</div>
+        <div class="preview">
+          <div class="preview-top">
+            <span class="vtag contradicted">Contradicted</span>
+            <span class="vtag contradicted" style="border:0;"><span class="conf">CONF 0.88</span></span>
+          </div>
+          <div class="preview-body">
+            <p class="claim-text">"Sanctions caused the energy crisis across Europe."</p>
+            <blockquote class="cite">
+              Analysts attribute the price spike primarily to a colder-than-average winter and reduced pipeline flows, not to the sanctions package.
+              <span class="src">Reuters · 12 Mar 2024 · tier-2 journalism</span>
+            </blockquote>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- how it works -->
+    <div class="how" id="how">
+      <div class="step">
+        <span class="sn">01</span>
+        <h4>Paste anything</h4>
+        <p>Article text, a URL, a screenshot, or a podcast. The intake doesn't care about format.</p>
+      </div>
+      <div class="step">
+        <span class="sn">02</span>
+        <h4>It checks the record</h4>
+        <p>Each claim is isolated and matched against primary sources, ranked by tier.</p>
+      </div>
+      <div class="step">
+        <span class="sn">03</span>
+        <h4>You see the receipts</h4>
+        <p>Every verdict cites the sentence behind it — or admits the record is silent.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="colophon">
+    <span>GKIN — Ground Knowledge · Media-Forensics Bureau</span>
+    <span class="c-navy">FILE GKIN-BRF-0001 · PAGE 1 OF 2</span>
+  </div>
+</main>
+
+
+<!-- ====================================================== SCREEN 2 ===== -->
+<div class="screen-tag"><span class="seq">SCREEN 02 /</span> &nbsp;ANALYZER — CASE FILE FOR ONE SOURCE</div>
+
+<main class="sheet" aria-label="GKIN analyzer result">
+
+  <!-- centered nameplate for the case file -->
+  <header class="namebar">
+    <div class="nameplate">GKIN</div>
+    <div class="np-desc">Case File · Single-Source Adjudication</div>
+  </header>
+  <!-- document header block for the case file -->
+  <div class="dochead">
+    <div class="fields" role="group" aria-label="Case file metadata">
+      <div class="field"><span class="k">Ref</span><span class="v">GKIN-2026-0612</span></div>
+      <div class="field"><span class="k">Date</span><span class="v">01 JUN 2026 · 14:22Z</span></div>
+      <div class="field"><span class="k">Subject</span><span class="v">Opinion column, ~1,240 words</span></div>
+      <div class="field"><span class="k">Prepared for</span><span class="v">Standards desk</span></div>
+      <div class="field span2"><span class="k">Assessment</span><span class="v assess">LIKELY MISLEADING — MANIPULATION INDEX 62/100 · CONFIDENCE 0.74</span></div>
+    </div>
+  </div>
+
+  <!-- source bar -->
+  <section class="section">
+    <div class="sourcebar">
+      <div class="sb-k">Source under analysis</div>
+      <div class="sb-row">
+        <span class="sb-title">Why the sanctions backfired</span>
+        <span class="sb-meta">OPINION COLUMN · ~1,240 WORDS · TEXT INTAKE</span>
+      </div>
+    </div>
+
+    <!-- ============ 1.0 VERDICT ============ -->
+    <div class="sec-head" id="analyze">
+      <span class="sec-no">1.0</span>
+      <span class="sec-title">Verdict</span>
+      <span class="sec-kicker">Layer 1 · overall assessment</span>
+    </div>
+
+    <div class="verdict-block">
+      <div class="verdict-main">
+        <div class="verdict-line">Assessment</div>
+        <div class="verdict-value">Likely misleading</div>
+        <p class="verdict-sum">The column's central causal claim is contradicted by the reporting record; it leans on loaded language and an unsourced reversal claim to carry an argument the evidence does not support.</p>
+      </div>
+      <div class="gauge" aria-label="Manipulation index 62 of 100">
+        <div class="g-k">Manipulation index</div>
+        <div class="g-num">62<small>/100</small></div>
+        <div class="g-track"><div class="g-fill"></div><span class="tick"></span><span class="tick"></span><span class="tick"></span><span class="tick"></span><span class="tick"></span><span class="tick"></span><span class="tick"></span><span class="tick"></span><span class="tick"></span><span class="tick"></span></div>
+        <div class="g-scale"><span>0 · CLEAN</span><span>100 · HEAVY</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2.0 EVIDENCE ============ -->
+  <section class="section">
+    <div class="sec-head">
+      <span class="sec-no">2.0</span>
+      <span class="sec-title">Evidence</span>
+      <span class="sec-kicker">Layer 2 · 3 checkable claims</span>
+    </div>
+
+    <div class="findings">
+      <div class="ftable-head" aria-hidden="true">
+        <div>Finding · Assessment</div>
+        <div>Claim &amp; grounded citation</div>
+        <div>Source tier</div>
+      </div>
+
+      <!-- FINDING 01 -->
+      <div class="finding">
+        <div class="f-no">
+          <span class="n">FINDING 01</span>
+          <span class="assess contradicted">Contradicted</span>
+        </div>
+        <div class="f-body">
+          <p class="f-claim" data-n="01">Sanctions caused the energy crisis across Europe.</p>
+          <blockquote class="f-evid">
+            "Analysts attribute the price spike primarily to a colder-than-average winter and reduced pipeline flows, not to the sanctions package."
+            <span class="src">Reuters · 12 Mar 2024</span>
+          </blockquote>
+        </div>
+        <div class="f-tier">
+          <div class="t-k">Tier</div>
+          <div class="t-v">Tier-2 · journalism</div>
+          <div class="t-k">Match</div>
+          <div class="t-v">Direct refutation</div>
+        </div>
+      </div>
+
+      <!-- FINDING 02 -->
+      <div class="finding">
+        <div class="f-no">
+          <span class="n">FINDING 02</span>
+          <span class="assess insufficient">Insufficient</span>
+        </div>
+        <div class="f-body">
+          <p class="f-claim" data-n="02">Officials have confirmed the policy will be reversed within weeks.</p>
+          <blockquote class="f-evid none">
+            No primary source found. The assertion appears only in opinion blogs; no government statement, transcript, or wire report corroborates it.
+            <span class="src">Record silent · no tier assigned</span>
+          </blockquote>
+        </div>
+        <div class="f-tier">
+          <div class="t-k">Tier</div>
+          <div class="t-v">— · uncorroborated</div>
+          <div class="t-k">Match</div>
+          <div class="t-v">None on record</div>
+        </div>
+      </div>
+
+      <!-- FINDING 03 -->
+      <div class="finding">
+        <div class="f-no">
+          <span class="n">FINDING 03</span>
+          <span class="assess supported">Supported</span>
+        </div>
+        <div class="f-body">
+          <p class="f-claim" data-n="03">The treaty was originally signed in 2014.</p>
+          <blockquote class="f-evid">
+            "The agreement was concluded and signed by all parties in September 2014."
+            <span class="src">Associated Press · primary</span>
+          </blockquote>
+        </div>
+        <div class="f-tier">
+          <div class="t-k">Tier</div>
+          <div class="t-v">Tier-1 · primary</div>
+          <div class="t-k">Match</div>
+          <div class="t-v">Direct confirmation</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="margin-note">
+      <span class="mn-mark">Note ▸ 2.1</span>
+      <p>Tier reflects proximity to the primary record, not editorial agreement. A tier-2 outlet can still directly refute a tier-1-styled assertion — see Finding 01.</p>
+    </div>
+  </section>
+
+  <!-- ============ 3.0 APPENDIX / DETAILS ============ -->
+  <section class="section">
+    <div class="sec-head">
+      <span class="sec-no">3.0</span>
+      <span class="sec-title">Appendix</span>
+      <span class="sec-kicker">Layer 3 · progressive disclosure</span>
+    </div>
+
+    <div class="disclosures">
+
+      <details class="row" open>
+        <summary>
+          <span class="d-no">3.1</span>
+          <span class="d-title">Persuasion techniques</span>
+          <span class="d-count">4 found · 2 shown</span>
+          <span class="d-tog" aria-hidden="true"></span>
+        </summary>
+        <div class="d-content">
+          <div class="d-item">
+            <div class="di-term">Loaded language</div>
+            <p class="di-body">Repeated use of <span class="di-quote">"backfired," "self-inflicted," "reckless"</span> frames a contested policy outcome as settled fact before evidence is presented.</p>
+          </div>
+          <div class="d-item">
+            <div class="di-term">False cause</div>
+            <p class="di-body">Treats the sanctions package as the sole driver of the energy crisis, omitting the weather and pipeline factors named in the reporting record (Finding 01).</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="d-no">3.2</span>
+          <span class="d-title">Missing context</span>
+          <span class="d-count">2 gaps</span>
+          <span class="d-tog" aria-hidden="true"></span>
+        </summary>
+        <div class="d-content">
+          <div class="d-item">
+            <div class="di-term">Gap · base rate</div>
+            <p class="di-body">No mention that European gas prices had been volatile for three winters prior; the column implies a single-cause break from a stable baseline.</p>
+          </div>
+          <div class="d-item">
+            <div class="di-term">Gap · counter-record</div>
+            <p class="di-body">The reversal claim (Finding 02) is presented without noting that no official has gone on record — a material omission for the reader.</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="d-no">3.3</span>
+          <span class="d-title">Claim timeline</span>
+          <span class="d-count">3 dated anchors</span>
+          <span class="d-tog" aria-hidden="true"></span>
+        </summary>
+        <div class="d-content">
+          <div class="d-item">
+            <div class="di-term">Sep 2014</div>
+            <p class="di-body">Treaty concluded and signed (AP, tier-1). Anchors Finding 03 — supported.</p>
+          </div>
+          <div class="d-item">
+            <div class="di-term">12 Mar 2024</div>
+            <p class="di-body">Reuters attributes price spike to weather and pipeline flows. Anchors Finding 01 — contradicts the column.</p>
+          </div>
+          <div class="d-item">
+            <div class="di-term">Undated</div>
+            <p class="di-body">"Reversal within weeks" — no dateable primary source. Remains Finding 02 — insufficient.</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="d-no">3.4</span>
+          <span class="d-title">AI-generation &amp; source-reliability checks</span>
+          <span class="d-count">2 checks</span>
+          <span class="d-tog" aria-hidden="true"></span>
+        </summary>
+        <div class="d-content">
+          <div class="d-item">
+            <div class="di-term">AI-generation likelihood</div>
+            <p class="di-body">Low. DistilBERT stylometry (WELFake-trained, 99.4% in-domain) flags no synthetic-text signature; cadence and attribution patterns read as human-authored opinion.</p>
+          </div>
+          <div class="d-item">
+            <div class="di-term">Source-reliability note</div>
+            <p class="di-body">Classifier reads publisher style, not truth; it is advisory only. Adjudication rests on the grounded citations in Section 2.0, not on the stylometric score.</p>
+          </div>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <div class="colophon">
+    <span>GKIN — Ground Knowledge · Adjudicated 01 JUN 2026</span>
+    <span class="c-navy">FILE GKIN-2026-0612 · PAGE 2 OF 2</span>
+  </div>
+</main>
+
+</body>
+</html>

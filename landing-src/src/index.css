@@ -8,12 +8,22 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    font-family:
-      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-feature-settings: "ss01", "cv11";
+    background-color: #f2ecdd;
+    color: #1a1714;
+    font-family: "Source Serif 4", Georgia, serif;
+    font-feature-settings: "liga" 1, "calt" 1, "onum" 1, "kern" 1;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
+  }
+  a {
+    color: inherit;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  input:focus-visible {
+    outline: 2px solid #1c2e4a;
+    outline-offset: 2px;
   }
 }
 
@@ -21,34 +31,12 @@
   .text-balance {
     text-wrap: balance;
   }
-  .grad-title {
-    background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .grad-accent {
-    background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .grad-meter {
-    background: linear-gradient(120deg, #ffffff, #818cf8);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .grad-feature-h {
-    background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .grad-feature-em {
-    background: linear-gradient(180deg, #818cf8 0%, #4f46e5 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

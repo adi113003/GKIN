@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GKIN — Redesign proof · Light Editorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ──────────────────────────────────────────────────────────────────────────
+     GKIN — Light Editorial design language (proof of direction)
+     Palette: warm paper, ink text, ONE sober accent (ink-navy), color = meaning only.
+     Type:    Newsreader (serif display) · Libre Franklin (UI/body) · IBM Plex Mono (data only)
+     ────────────────────────────────────────────────────────────────────────── */
+  :root {
+    --paper:      #FAF9F6;   /* warm off-white background          */
+    --surface:    #FFFFFF;   /* cards / panels                      */
+    --surface-2:  #F4F2EC;   /* recessed wells                      */
+    --ink:        #1A1A1A;   /* primary text                        */
+    --ink-2:      #44464B;   /* secondary text                      */
+    --ink-3:      #6B6E76;   /* muted / captions                    */
+    --ink-4:      #9A9CA3;   /* faint                               */
+    --line:       #E6E3DC;   /* warm hairline                       */
+    --line-2:     #D8D4CA;   /* stronger hairline                   */
+    --navy:       #13294B;   /* the single brand accent             */
+    --navy-2:     #1E3A66;   /* navy hover                          */
+    /* semantic — verdict states only */
+    --green:      #1B7F4B;
+    --green-bg:   #E9F3EC;
+    --red:        #B42318;
+    --red-bg:     #FBEBE9;
+    --amber:      #B45309;
+    --amber-bg:   #FBF1E2;
+    --slate:      #5A6472;   /* insufficient / neutral verdict      */
+    --slate-bg:   #EEF0F2;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: #ECEAE3;
+    color: var(--ink);
+    font-family: "Libre Franklin", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
+  }
+  .serif { font-family: "Newsreader", Georgia, "Times New Roman", serif; }
+  .mono  { font-family: "IBM Plex Mono", ui-monospace, "SF Mono", monospace; }
+  a { color: inherit; }
+  ::selection { background: rgba(19,41,75,0.14); }
+
+  /* annotation chrome around the two mock screens */
+  .doc { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
+  .doc-head { margin: 8px 0 28px; }
+  .doc-kicker {
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 600;
+  }
+  .doc-title { font-size: 30px; line-height: 1.15; font-weight: 600; margin: 8px 0 10px; letter-spacing: -0.01em; }
+  .doc-sub { color: var(--ink-2); max-width: 70ch; font-size: 15px; }
+  .doc-sub b { color: var(--ink); font-weight: 600; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 18px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px 11px;
+  }
+  .sw { width: 13px; height: 13px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08); }
+
+  .screen-label {
+    display: flex; align-items: baseline; gap: 12px;
+    margin: 46px 0 14px;
+  }
+  .screen-label .n {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600;
+    color: #fff; background: var(--navy); border-radius: 6px; padding: 3px 9px;
+  }
+  .screen-label .t { font-size: 17px; font-weight: 600; }
+  .screen-label .d { font-size: 13px; color: var(--ink-3); }
+
+  /* browser frame */
+  .frame {
+    background: var(--paper);
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 1px rgba(20,20,20,0.03), 0 18px 50px -28px rgba(20,20,20,0.28);
+  }
+  .frame-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; background: #F1EFE9; border-bottom: 1px solid var(--line);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: #D8D4CA; }
+  .frame-url {
+    margin-left: 10px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+    color: var(--ink-3); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 7px; padding: 4px 12px; flex: 1; max-width: 360px;
+  }
+
+  /* ── shared UI atoms ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    border-radius: 9px; padding: 11px 18px; cursor: pointer;
+    border: 1px solid transparent; text-decoration: none;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+  }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-primary:hover { background: var(--navy-2); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+  .btn-ghost:hover { border-color: var(--ink-3); }
+  .btn-text { background: transparent; color: var(--ink); padding: 11px 4px; }
+  .btn-text:hover { color: var(--navy); }
+  .arrow { font-size: 15px; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 6px; padding: 3px 9px; border: 1px solid transparent;
+  }
+  .pill .ic { width: 13px; height: 13px; }
+  .pill-green { color: var(--green); background: var(--green-bg); border-color: rgba(27,127,75,0.22); }
+  .pill-red   { color: var(--red);   background: var(--red-bg);   border-color: rgba(180,35,24,0.22); }
+  .pill-amber { color: var(--amber); background: var(--amber-bg); border-color: rgba(180,83,9,0.22); }
+  .pill-slate { color: var(--slate); background: var(--slate-bg); border-color: rgba(90,100,114,0.22); }
+
+  /* ════════════════════════ SCREEN 1 — LANDING HERO ════════════════════════ */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px; border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand .mark { font-family: "Newsreader", serif; font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+  .brand .tag { font-size: 11px; color: var(--ink-3); letter-spacing: 0.12em; text-transform: uppercase; }
+  .nav { display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--ink-2); }
+  .nav a { text-decoration: none; }
+  .nav a:hover { color: var(--ink); }
+  .nav .signin { font-weight: 600; color: var(--ink); }
+
+  .hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; padding: 64px 40px 36px; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-bottom: 20px; }
+  .hero h1 {
+    font-family: "Newsreader", serif; font-weight: 500;
+    font-size: clamp(38px, 4.4vw, 60px); line-height: 1.04; letter-spacing: -0.02em;
+    margin: 0 0 20px; color: var(--ink);
+  }
+  .hero h1 .em { font-style: italic; }
+  .hero p.lede { font-size: 17px; line-height: 1.62; color: var(--ink-2); max-width: 52ch; margin: 0 0 28px; }
+  .hero p.lede b { color: var(--ink); font-weight: 600; }
+  .cta-row { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+  .stack-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px; }
+  .stack { display: flex; flex-wrap: wrap; gap: 8px; }
+  .stack .m {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink-2);
+    border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 5px 10px;
+  }
+  .stack .m b { color: var(--ink); font-weight: 600; }
+
+  /* product preview card on the right of hero */
+  .preview {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: 0 1px 1px rgba(20,20,20,0.02), 0 24px 50px -34px rgba(20,20,20,0.4);
+    overflow: hidden;
+  }
+  .preview .ph {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; border-bottom: 1px solid var(--line); background: #FCFBF8;
+  }
+  .preview .ph .lab { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+  .preview .pb { padding: 18px 18px 20px; }
+  .source-line { font-size: 12px; color: var(--ink-3); margin-bottom: 14px; }
+  .source-line b { color: var(--ink-2); font-weight: 600; }
+  .verdict-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .verdict-head .v { font-family: "Newsreader", serif; font-size: 24px; font-weight: 600; }
+  .vdot { width: 11px; height: 11px; border-radius: 50%; }
+  .meter-row { display: flex; align-items: center; gap: 12px; margin: 14px 0 18px; }
+  .meter { flex: 1; height: 7px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .meter > span { display: block; height: 100%; border-radius: 999px; }
+  .meter-num { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--ink-2); font-weight: 600; }
+  .meter-cap { font-size: 11px; color: var(--ink-3); }
+  .claimlet { border-top: 1px solid var(--line); padding-top: 14px; }
+  .claimlet .ct { font-size: 13.5px; color: var(--ink); line-height: 1.5; margin: 0 0 9px; }
+  .cite {
+    display: flex; gap: 9px; font-size: 12px; color: var(--ink-2);
+    background: var(--surface-2); border-radius: 8px; padding: 9px 11px; line-height: 1.45;
+  }
+  .cite .q { font-family: "Newsreader", serif; font-style: italic; color: var(--ink); }
+  .cite .src { display: block; margin-top: 5px; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--ink-3); letter-spacing: 0.02em; }
+
+  /* 3-step how, decluttered */
+  .how { padding: 8px 40px 56px; border-top: 1px solid var(--line); margin-top: 28px; }
+  .how-h { font-family: "Newsreader", serif; font-size: 13px; letter-spacing: 0.04em; color: var(--ink-3); text-transform: uppercase; margin: 30px 0 22px; font-weight: 600; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+  .step .num { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--navy); font-weight: 600; }
+  .step h3 { font-family: "Newsreader", serif; font-size: 19px; font-weight: 600; margin: 8px 0 7px; }
+  .step p { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; margin: 0; }
+
+  /* ══════════════════════ SCREEN 2 — ANALYZER RESULT ══════════════════════ */
+  .work { padding: 0; }
+  .work-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 30px; border-bottom: 1px solid var(--line);
+  }
+  .work-top .brand .mark { font-size: 18px; }
+  .work-top .meta { display: flex; align-items: center; gap: 18px; font-size: 13px; color: var(--ink-3); }
+  .work-top .meta .who { display: inline-flex; align-items: center; gap: 7px; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); }
+
+  .work-body { display: grid; grid-template-columns: 1fr; max-width: 760px; margin: 0 auto; padding: 34px 30px 48px; }
+  .src-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    font-size: 13px; color: var(--ink-3); border: 1px solid var(--line); background: var(--surface);
+    border-radius: 10px; padding: 12px 15px; margin-bottom: 26px;
+  }
+  .src-bar .title { color: var(--ink); font-weight: 600; }
+  .src-bar .re { font-size: 12.5px; color: var(--navy); cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .src-bar .re:hover { text-decoration: underline; }
+
+  /* layer 1 — VERDICT */
+  .layer-tag { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; margin-bottom: 12px; }
+  .verdict-block { margin-bottom: 36px; }
+  .verdict-line { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .verdict-line .v { font-family: "Newsreader", serif; font-size: 34px; font-weight: 600; letter-spacing: -0.01em; line-height: 1; }
+  .verdict-summary { font-size: 16px; line-height: 1.6; color: var(--ink-2); max-width: 60ch; }
+  .verdict-summary b { color: var(--ink); font-weight: 600; }
+  .mi { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: center; margin: 20px 0 6px; max-width: 460px; }
+  .mi .big { font-family: "Newsreader", serif; font-size: 30px; font-weight: 600; }
+  .mi .big small { font-size: 15px; color: var(--ink-3); font-weight: 500; }
+  .mi .lab { font-size: 12px; color: var(--ink-3); letter-spacing: 0.04em; }
+
+  /* layer 2 — EVIDENCE */
+  .layer { margin-bottom: 34px; }
+  .layer-head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--line-2); padding-bottom: 10px; margin-bottom: 4px; }
+  .layer-head h2 { font-family: "Newsreader", serif; font-size: 21px; font-weight: 600; margin: 0; }
+  .layer-head .count { font-size: 12.5px; color: var(--ink-3); }
+  .claim {
+    border-bottom: 1px solid var(--line); padding: 18px 0;
+  }
+  .claim:last-child { border-bottom: none; }
+  .claim-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .claim-text { font-size: 16px; line-height: 1.5; color: var(--ink); font-family: "Newsreader", serif; flex: 1; }
+  .evidence {
+    display: grid; grid-template-columns: auto 1fr; gap: 12px;
+    background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--line-2);
+    border-radius: 0 9px 9px 0; padding: 13px 15px; margin-left: 0;
+  }
+  .evidence.supp { border-left-color: var(--green); }
+  .evidence.contra { border-left-color: var(--red); }
+  .evidence.insuf { border-left-color: var(--slate); }
+  .evidence .q { font-family: "Newsreader", serif; font-style: italic; font-size: 14.5px; color: var(--ink); line-height: 1.55; }
+  .evidence .meta { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .tier {
+    font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.06em;
+    color: var(--ink-3); border: 1px solid var(--line-2); border-radius: 5px; padding: 2px 7px;
+  }
+  .tier.j { color: var(--navy); border-color: rgba(19,41,75,0.3); }
+  .evidence .when { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-3); }
+  .evidence .ico { padding-top: 2px; }
+
+  /* layer 3 — DETAILS (progressive disclosure) */
+  .details { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+  .drow { border-bottom: 1px solid var(--line); }
+  .drow:last-child { border-bottom: none; }
+  .dsummary {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 15px 18px; cursor: pointer; background: none; border: none;
+    font-family: inherit; text-align: left; color: var(--ink);
+    transition: background .15s ease;
+  }
+  .dsummary:hover { background: #FBFAF7; }
+  .dsummary .chev { color: var(--ink-3); transition: transform .2s ease; font-size: 12px; }
+  details[open] .dsummary .chev { transform: rotate(90deg); }
+  .dsummary .dt { font-size: 15px; font-weight: 600; flex: 1; }
+  .dsummary .dc { font-size: 12.5px; color: var(--ink-3); }
+  .dbody { padding: 4px 18px 20px 42px; }
+  details summary::-webkit-details-marker { display: none; }
+  .tech { padding: 11px 0; border-top: 1px solid var(--line); }
+  .tech:first-child { border-top: none; }
+  .tech .tn { font-weight: 600; font-size: 14px; }
+  .tech .tspan { font-family: "Newsreader", serif; font-style: italic; color: var(--ink-2); font-size: 13.5px; margin: 4px 0; }
+  .tech .tex { font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+
+  footer.note {
+    max-width: 1180px; margin: 36px auto 0; padding: 0 24px;
+    font-size: 13px; color: var(--ink-3); line-height: 1.6;
+  }
+  footer.note b { color: var(--ink-2); }
+
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; gap: 34px; padding: 40px 22px 24px; }
+    .steps { grid-template-columns: 1fr; gap: 22px; }
+    .topbar, .how, .work-top { padding-left: 22px; padding-right: 22px; }
+    .nav { gap: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Redesign proof · direction only · not wired up</div>
+    <h1 class="doc-title serif">GKIN in a light-editorial language</h1>
+    <p class="doc-sub">
+      Two pivotal screens, rebuilt to read like a <b>newsroom / research instrument</b> instead of an
+      AI-startup template. The moves: drop indigo-on-black for warm paper, swap gradient display type for a
+      <b>serif (Newsreader)</b>, remove the mesh / glow / ambient animation, reserve <b>color for meaning only</b>
+      (verdict states), and collapse the analyzer's eight competing panels into <b>three progressive layers</b>.
+    </p>
+    <div class="legend">
+      <span class="chip"><span class="sw" style="background:#FAF9F6"></span> Paper #FAF9F6</span>
+      <span class="chip"><span class="sw" style="background:#1A1A1A"></span> Ink #1A1A1A</span>
+      <span class="chip"><span class="sw" style="background:#13294B"></span> Accent · ink-navy #13294B</span>
+      <span class="chip"><span class="sw" style="background:#1B7F4B"></span> Supported</span>
+      <span class="chip"><span class="sw" style="background:#B42318"></span> Contradicted</span>
+      <span class="chip"><span class="sw" style="background:#B45309"></span> Caution</span>
+      <span class="chip serif" style="font-style:italic">Aa Newsreader</span>
+      <span class="chip">Aa Libre Franklin</span>
+      <span class="chip mono">01 IBM Plex Mono</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════ SCREEN 1 ════════════════════ -->
+  <div class="screen-label">
+    <span class="n">01</span>
+    <span class="t">Landing — hero + how it works</span>
+    <span class="d">5 sections total, down from 11. No marquee / bento / pipeline-beams / duplicate stats.</span>
+  </div>
+
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="frame-url">gkin.app</span>
+    </div>
+
+    <div class="topbar">
+      <div class="brand">
+        <span class="mark">GKIN</span>
+        <span class="tag">Media-literacy analysis</span>
+      </div>
+      <nav class="nav">
+        <a href="#">How it works</a>
+        <a href="#">Method</a>
+        <a href="#">Benchmarks</a>
+        <a href="#" class="signin">Sign in</a>
+      </nav>
+    </div>
+
+    <div class="hero">
+      <div>
+        <div class="eyebrow">For journalists &amp; analysts</div>
+        <h1 class="serif">Cut through the noise.<br /><span class="em">Verify the claim.</span></h1>
+        <p class="lede">
+          Paste an article, a URL, a screenshot, or a podcast. GKIN scores manipulation, names every
+          persuasion technique, and ties <b>every verdict to the exact source sentence</b> that backs it —
+          or tells you it can't. Auditable, not a black box.
+        </p>
+        <div class="cta-row">
+          <a href="#" class="btn btn-primary">Analyze an article <span class="arrow">→</span></a>
+          <a href="#" class="btn btn-text">See how it works <span class="arrow">↓</span></a>
+        </div>
+        <div class="stack-label">Reasoning stack</div>
+        <div class="stack">
+          <span class="m"><b>DeepSeek R1</b> 70B</span>
+          <span class="m"><b>Llama 3.3</b> 70B</span>
+          <span class="m"><b>Llama Vision</b> 90B</span>
+          <span class="m"><b>Whisper</b> v3</span>
+          <span class="m"><b>DistilBERT</b> 99.4%</span>
+        </div>
+      </div>
+
+      <!-- product preview -->
+      <div class="preview">
+        <div class="ph">
+          <span class="lab">Verdict</span>
+          <span class="lab">gkin · live</span>
+        </div>
+        <div class="pb">
+          <div class="source-line">Analyzed · <b>opinion column</b> · 1,240 words · 6 claims extracted</div>
+          <div class="verdict-head">
+            <span class="vdot" style="background:var(--amber)"></span>
+            <span class="v serif">Likely misleading</span>
+          </div>
+          <div class="meter-row">
+            <span class="meter-num">62<small style="color:var(--ink-3)">/100</small></span>
+            <div class="meter"><span style="width:62%;background:var(--amber)"></span></div>
+          </div>
+          <div class="meter-cap" style="margin:-8px 0 16px">Manipulation index · emotionally charged framing</div>
+          <div class="claimlet">
+            <p class="ct">"Sanctions caused the energy crisis across Europe."</p>
+            <div class="cite">
+              <span class="pill pill-red" style="height:fit-content">Contradicted</span>
+              <span>
+                <span class="q">"Analysts attribute the price spike primarily to a cold winter and reduced pipeline flows…"</span>
+                <span class="src">REUTERS · 12 Mar 2024 · tier 2 journalism</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="how">
+      <div class="how-h">How it works</div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">01</div>
+          <h3 class="serif">Paste anything</h3>
+          <p>An article, a link, a screenshot of a post, or an audio clip. GKIN transcribes, reads, and pulls out the checkable claims.</p>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <h3 class="serif">It checks the record</h3>
+          <p>Each claim is matched against primary sources and established reporting, then labelled supported, contradicted, or insufficient evidence.</p>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <h3 class="serif">You see the receipts</h3>
+          <p>Every verdict shows the exact source sentence and where it came from — so you can quote it, challenge it, or move on.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ SCREEN 2 ════════════════════ -->
+  <div class="screen-label">
+    <span class="n">02</span>
+    <span class="t">Analyzer — verdict → evidence → details</span>
+    <span class="d">One reading column. The 8 old views become 3 layers; complexity is tucked behind disclosures.</span>
+  </div>
+
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="frame-url">gkin.app/app</span>
+    </div>
+
+    <div class="work">
+      <div class="work-top">
+        <div class="brand"><span class="mark serif">GKIN</span></div>
+        <div class="meta">
+          <span>History</span>
+          <span>New analysis</span>
+          <span class="who"><span class="avatar"></span> a.asokan</span>
+        </div>
+      </div>
+
+      <div class="work-body">
+
+        <div class="src-bar">
+          <span><span class="title">"Why the sanctions backfired"</span> · opinion column · politico-style · 1,240 words</span>
+          <span class="re">Re-analyze ↻</span>
+        </div>
+
+        <!-- LAYER 1 — VERDICT -->
+        <div class="verdict-block">
+          <div class="layer-tag">Verdict</div>
+          <div class="verdict-line">
+            <span class="vdot" style="background:var(--amber);width:14px;height:14px"></span>
+            <span class="v serif">Likely misleading</span>
+          </div>
+          <p class="verdict-summary">
+            The piece relies on <b>emotionally charged framing</b> and presents three claims as settled fact.
+            Two of its central claims <b>contradict primary reporting</b>; one is accurate. Read the evidence below
+            before citing it.
+          </p>
+          <div class="mi">
+            <span class="big serif">62<small>/100</small></span>
+            <div class="meter" style="height:9px"><span style="width:62%;background:var(--amber)"></span></div>
+            <span class="lab" style="grid-column:1 / -1">Manipulation index — higher means more persuasion pressure relative to substance</span>
+          </div>
+        </div>
+
+        <!-- LAYER 2 — EVIDENCE -->
+        <div class="layer">
+          <div class="layer-head">
+            <h2 class="serif">Evidence</h2>
+            <span class="count">3 checkable claims · 2 sources cited</span>
+          </div>
+
+          <div class="claim">
+            <div class="claim-top">
+              <span class="pill pill-red">Contradicted</span>
+              <span class="claim-text">"Sanctions caused the energy crisis across Europe."</span>
+            </div>
+            <div class="evidence contra">
+              <span class="ico"><span class="pill pill-red" style="padding:2px 6px">✕</span></span>
+              <span>
+                <span class="q">"Analysts attribute the price spike primarily to a colder-than-average winter and reduced pipeline maintenance flows, not to the sanctions package."</span>
+                <span class="meta">
+                  <span class="tier j">tier 2 · journalism</span>
+                  <span class="when">reuters.com · 12 Mar 2024</span>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="claim">
+            <div class="claim-top">
+              <span class="pill pill-slate">Insufficient</span>
+              <span class="claim-text">"Officials have confirmed the policy will be reversed within weeks."</span>
+            </div>
+            <div class="evidence insuf">
+              <span class="ico"><span class="pill pill-slate" style="padding:2px 6px">?</span></span>
+              <span>
+                <span class="q">No primary statement found. The assertion appears only in opinion blogs that cite each other — GKIN will not call this true or false.</span>
+                <span class="meta">
+                  <span class="tier">no tier-1/2 source located</span>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="claim">
+            <div class="claim-top">
+              <span class="pill pill-green">Supported</span>
+              <span class="claim-text">"The treaty was originally signed in 2014."</span>
+            </div>
+            <div class="evidence supp">
+              <span class="ico"><span class="pill pill-green" style="padding:2px 6px">✓</span></span>
+              <span>
+                <span class="q">"The agreement was concluded and signed by all parties in September 2014."</span>
+                <span class="meta">
+                  <span class="tier j">tier 1 · primary / official</span>
+                  <span class="when">apnews.com · archived</span>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 3 — DETAILS (progressive disclosure) -->
+        <div class="layer">
+          <div class="layer-head">
+            <h2 class="serif">Details</h2>
+            <span class="count">expand only what you need</span>
+          </div>
+          <div class="details">
+
+            <details open class="drow">
+              <summary class="dsummary">
+                <span class="chev">▸</span>
+                <span class="dt">Persuasion techniques</span>
+                <span class="dc">4 found</span>
+              </summary>
+              <div class="dbody">
+                <div class="tech">
+                  <div class="tn">Loaded language</div>
+                  <div class="tspan">"backfired spectacularly," "a self-inflicted catastrophe"</div>
+                  <div class="tex">Strong evaluative wording stands in for evidence and steers the reader to a conclusion.</div>
+                </div>
+                <div class="tech">
+                  <div class="tn">False cause</div>
+                  <div class="tspan">"prices rose the week sanctions passed, so sanctions are to blame"</div>
+                  <div class="tex">Treats a coincidence in timing as proof of causation; ignores the documented drivers.</div>
+                </div>
+              </div>
+            </details>
+
+            <details class="drow">
+              <summary class="dsummary">
+                <span class="chev">▸</span>
+                <span class="dt">Missing context</span>
+                <span class="dc">2 gaps</span>
+              </summary>
+              <div class="dbody"><div class="tech" style="border-top:none"><div class="tex">Omits that pipeline flows were already declining before the sanctions, and that comparable price spikes occurred in markets with no sanctions exposure.</div></div></div>
+            </details>
+
+            <details class="drow">
+              <summary class="dsummary">
+                <span class="chev">▸</span>
+                <span class="dt">Claim timeline</span>
+                <span class="dc">how the story shifted across 4 outlets</span>
+              </summary>
+              <div class="dbody"><div class="tech" style="border-top:none"><div class="tex">The "officials confirmed" framing first appeared in a single blog, then propagated unchanged — no new sourcing added at any step.</div></div></div>
+            </details>
+
+            <details class="drow">
+              <summary class="dsummary">
+                <span class="chev">▸</span>
+                <span class="dt">AI-generation &amp; source-reliability checks</span>
+                <span class="dc">DistilBERT + tiered sources</span>
+              </summary>
+              <div class="dbody"><div class="tech" style="border-top:none"><div class="tex">Text reads as human-written (low AI-generation score). Of 2 sources located, both are tier 1–2; the contradicting claims rely on tier-0 blogs.</div></div></div>
+            </details>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="note">
+  <b>What this proof demonstrates, concretely:</b> no gradient text, no background mesh, no scan-lines or
+  blinking "live" dots; a single sober accent (ink-navy) with color used only for verdict meaning; an editorial
+  serif for everything that's "voice," a clean grotesque for UI, and monospace reserved for genuine data
+  (model IDs, dates, tiers). The analyzer reads top-to-bottom like a fact-check — <b>verdict first, then the
+  receipts, then optional depth</b> — instead of eight side-by-side panels. Plain copy throughout
+  ("Sign in," "Re-analyze," "History") replaces the "REGISTER AGENT / AUTHENTICATE / neural" register.
+</footer>
+
+</body>
+</html>

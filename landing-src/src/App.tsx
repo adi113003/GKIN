@@ -1,33 +1,23 @@
-import { Mesh } from "@/components/ui/Mesh";
-import { Nav } from "@/components/sections/Nav";
+import { Masthead } from "@/components/sections/Masthead";
 import { Hero } from "@/components/sections/Hero";
-import { HeadlineMarquee } from "@/components/sections/HeadlineMarquee";
-import { PipelineBeams } from "@/components/sections/PipelineBeams";
-import { BentoGrid } from "@/components/sections/BentoGrid";
-import { StickyHow } from "@/components/sections/StickyHow";
-import { Comparison } from "@/components/sections/Comparison";
-import { MidtermResponse } from "@/components/sections/MidtermResponse";
-import { Stats } from "@/components/sections/Stats";
-import { FAQ } from "@/components/sections/FAQ";
+import { HowItWorks } from "@/components/sections/HowItWorks";
+import { Method } from "@/components/sections/Method";
+import { Benchmarks } from "@/components/sections/Benchmarks";
 import { FinalCTA } from "@/components/sections/FinalCTA";
 import { Footer } from "@/components/sections/Footer";
 
 export default function App() {
   return (
-    <div className="relative min-h-screen text-ink">
-      <Mesh />
-      <Nav />
-      <Hero />
-      <HeadlineMarquee />
-      <PipelineBeams />
-      <BentoGrid />
-      <StickyHow />
-      <Comparison />
-      <MidtermResponse />
-      <Stats />
-      <FAQ />
-      <FinalCTA />
-      <Footer />
+    <div className="min-h-screen bg-paper text-ink">
+      <main className="mx-auto max-w-[1040px] border-x border-ink/0 md:border-x-[1.5px] md:border-ink">
+        <Masthead />
+        <Hero />
+        <HowItWorks />
+        <Method />
+        <Benchmarks />
+        <FinalCTA />
+        <Footer />
+      </main>
     </div>
   );
 }
