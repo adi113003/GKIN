@@ -74,6 +74,7 @@ from gkin.agentic import (
     Deps as AgenticDeps,
     VerdictCache,
     configure_tracing,
+    gdelt_timeline,
     resolve_backend,
     search_available,
     verify_claims,
@@ -955,7 +956,10 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
     if not verifiable:
         verifiable = claims[:3]
 
-    # ── Step 1: ML model score (trained on 72k WELFake articles) ──────────────
+    # ── Step 1: ML stylometric signal (ADVISORY ONLY — not used in the verdict).
+    # baseline_model.joblib is the WELFake TF-IDF + LogReg; per our own ablation
+    # work it keys on publisher style ("reuters" => real), not truth, so it is
+    # surfaced transparently as ml_score below but excluded from the trust score.
     ml_fc: Optional[int] = None
     if _fake_model is not None:
         try:
@@ -1093,12 +1097,11 @@ async def _fake_detect(client: AsyncGroq, article_text: str, structured: dict) -
     except Exception:
         pass
 
-    # ── Step 5: Combine ML (60%) + LLM (40%) ──────────────────────────────────
-    if ml_fc is not None:
-        combined_fc = int(round(0.6 * ml_fc + 0.4 * llm_fc))
-    else:
-        combined_fc = llm_fc
-    combined_fc = max(0, min(100, combined_fc))
+    # ── Step 5: Trust verdict = the grounded LLM pass ONLY ─────────────────────
+    # The verdict rests on scraped evidence + the source-tier / corroboration
+    # rules in FAKE_DETECT_PROMPT — NOT the WELFake style classifier. ml_fc is
+    # retained as an advisory signal in the response but never blended in.
+    combined_fc = max(0, min(100, llm_fc))
     trust_rating = 100 - combined_fc
 
     if combined_fc <= 20:   verdict = "REAL"
@@ -1296,9 +1299,52 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
                 seen.add(url)
                 all_urls.append(url)
 
+    # Step 2b: GDELT — real, dated, cross-outlet coverage of the claim (keyless,
+    # global). Anchors the timeline's dates/sources in actual coverage rather than
+    # only the model's recollection. ONE call (GDELT allows ~1 req/5s); fail-soft
+    # to [] on rate-limit/error, leaving the DDG-only behavior unchanged.
+    gdelt_articles: list[dict] = []
+    try:
+        gdelt_articles = await asyncio.wait_for(
+            asyncio.to_thread(gdelt_timeline, (core_claim or topic), 40, "18m"),
+            timeout=18.0,
+        )
+    except Exception:
+        gdelt_articles = []
+    gdelt_by_url = {a["url"]: a for a in gdelt_articles if a.get("url")}
+
+    def _gdelt_coverage() -> dict:
+        dates = sorted(d for d in (a.get("date") for a in gdelt_articles) if d)
+        outlets = sorted({a.get("hostname", "") for a in gdelt_articles if a.get("hostname")})
+        return {
+            "source": "GDELT DOC 2.0",
+            "article_count": len(gdelt_articles),
+            "distinct_outlets": len(outlets),
+            "first_seen": dates[0] if dates else "",
+            "last_seen": dates[-1] if dates else "",
+            "outlets": outlets[:20],
+            "articles": gdelt_articles[:25],
+        }
+    gdelt_coverage = _gdelt_coverage()
+
+    # Prepend a few reliably-dated GDELT URLs so their coverage is scraped too.
+    for u in [u for u in gdelt_by_url if u not in seen][:6]:
+        seen.add(u)
+        all_urls.insert(0, u)
+
     # Step 3: scrape up to 12 pages with full metadata (was 20 — still enough
     # signal for the narrative analysis, halves worst-case scrape time)
     pages = await _scrape_pages_with_meta(all_urls[:12])
+
+    # Backfill missing date / hostname from GDELT (its seendate is reliable;
+    # trafilatura's date extraction is spotty).
+    for p in pages:
+        g = gdelt_by_url.get(p.get("url", ""))
+        if g:
+            if not p.get("date"):
+                p["date"] = g.get("date", "")
+            if not p.get("hostname"):
+                p["hostname"] = g.get("hostname", "")
 
     # Sort by date where available
     def _date_key(p):
@@ -1307,6 +1353,39 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
     pages.sort(key=_date_key)
 
     if not pages:
+        # Nothing scraped — but GDELT may still give real, dated anchors.
+        if gdelt_articles:
+            g_entries = [
+                {"index": i + 1, "url": a["url"], "title": a.get("title", ""),
+                 "date": a.get("date", ""), "hostname": a.get("hostname", "")}
+                for i, a in enumerate(gdelt_articles[:20])
+            ]
+            g_tl = [{
+                "claim": core_claim or topic,
+                "first_reported": (
+                    f"{gdelt_articles[0].get('hostname','')} · {gdelt_articles[0].get('date','')}".strip(" ·")
+                ),
+                "timeline_entries": [
+                    {"date": a.get("date", ""), "hostname": a.get("hostname", ""),
+                     "url": a["url"], "how_claim_changed": "Coverage of the same topic."}
+                    for a in gdelt_articles[:20]
+                ],
+            }]
+            return {
+                "topic": topic, "core_claim": core_claim,
+                "entries": g_entries, "sources_used": [],
+                "claim_timeline": g_tl,
+                "narrative_shifts": [], "dropped_context": [], "amplification_chain": [],
+                "origin_assessment": (
+                    f"Article text could not be scraped, but GDELT shows "
+                    f"{gdelt_coverage['article_count']} articles across "
+                    f"{gdelt_coverage['distinct_outlets']} outlets "
+                    f"({gdelt_coverage['first_seen']} → {gdelt_coverage['last_seen']})."
+                ),
+                "timeline_summary": "Dated coverage anchors from GDELT; full-text narrative analysis unavailable.",
+                "narrative_verdict": "UNVERIFIED", "credibility_score": 50,
+                "gdelt_coverage": gdelt_coverage,
+            }
         return {
             "topic": topic,
             "core_claim": core_claim,
@@ -1320,6 +1399,7 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
             "timeline_summary": "Insufficient data to build a narrative timeline.",
             "narrative_verdict": "UNVERIFIED",
             "credibility_score": 50,
+            "gdelt_coverage": gdelt_coverage,
         }
 
     # Step 4: build text block for LLM (1200 chars per article for depth)
@@ -1443,6 +1523,7 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
         "timeline_summary": ana.get("timeline_summary", ""),
         "narrative_verdict": ana.get("narrative_verdict", "UNVERIFIED"),
         "credibility_score": int(ana.get("credibility_score", 50)),
+        "gdelt_coverage": gdelt_coverage,
     }
 
 

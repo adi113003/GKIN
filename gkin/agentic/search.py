@@ -21,12 +21,109 @@ from __future__ import annotations
 
 import os
 import re
+import time
 import urllib.parse
 from typing import Callable
 
 import httpx
 
 SearchFn = Callable[[str, int], list]
+
+# ── GDELT (keyless, global news coverage + dated anchors) ─────────────────────
+# GDELT DOC 2.0 API is free and needs no key, but enforces a strict ~1 request
+# per 5 seconds limit (HTTP 429 + a plaintext warning otherwise). So GDELT is
+# offered as an OPT-IN backend and used mainly for the single-call timeline —
+# it is deliberately NOT folded into the multi-call 'auto' path.
+_GDELT_DOC = "https://api.gdeltproject.org/api/v2/doc/doc"
+_GDELT_MIN_INTERVAL = 5.0  # seconds between GDELT calls (their policy)
+_GDELT_UA = "GKIN-TruthNavigator/1.0 (media-literacy fact-check research)"
+_gdelt_last_call = 0.0
+
+
+def _gdelt_throttle() -> None:
+    """Block (in the worker thread) just long enough to honor GDELT's 1-req/5s
+    policy. Cheap when calls are already spaced (e.g. one timeline call)."""
+    global _gdelt_last_call
+    gap = _GDELT_MIN_INTERVAL - (time.monotonic() - _gdelt_last_call)
+    if gap > 0:
+        time.sleep(min(gap, _GDELT_MIN_INTERVAL))
+    _gdelt_last_call = time.monotonic()
+
+
+def _gdelt_date_to_iso(seendate: str) -> str:
+    """GDELT seendate 'YYYYMMDDTHHMMSSZ' -> 'YYYY-MM-DD' (or '' if unparseable)."""
+    s = (seendate or "").strip()
+    return f"{s[0:4]}-{s[4:6]}-{s[6:8]}" if len(s) >= 8 and s[:8].isdigit() else ""
+
+
+def _gdelt_query(text: str, max_terms: int = 6) -> str:
+    """Build a GDELT-friendly query: GDELT ANDs bare terms and chokes on long
+    sentences/punctuation, so keep the first few meaningful words only."""
+    cleaned = re.sub(r"[^\w\s]", " ", text or "")
+    return " ".join(cleaned.split()[:max_terms]).strip()
+
+
+def _gdelt_doc(query: str, *, mode: str, maxrecords: int, sort: str,
+               timespan: str | None = None) -> list[dict]:
+    """One GDELT DOC ArtList call, returning the raw 'articles' list. Fail-soft:
+    raises nothing — returns [] on rate-limit / HTTP / parse error."""
+    q = _gdelt_query(query)
+    if not q:
+        return []
+    _gdelt_throttle()
+    params = {"query": q, "mode": mode, "maxrecords": max(1, min(maxrecords, 250)),
+              "format": "json", "sort": sort}
+    if timespan:
+        params["timespan"] = timespan
+    try:
+        resp = httpx.get(_GDELT_DOC, params=params,
+                         headers={"User-Agent": _GDELT_UA}, timeout=15.0)
+        if resp.status_code == 429:
+            return []  # rate limited — caller falls back
+        resp.raise_for_status()
+        return (resp.json() or {}).get("articles", []) or []
+    except Exception:  # noqa: BLE001  (incl. non-JSON warning bodies)
+        return []
+
+
+def gdelt_search(query: str, max_results: int = 10) -> list[dict]:
+    """Keyless GDELT news-coverage backend (SearchFn shape: {title, snippet, url},
+    plus bonus date/domain keys that downstream code may ignore). Opt-in only —
+    honors the 5s rate limit and fails soft to []. Best for low-volume use."""
+    arts = _gdelt_doc(query, mode="artlist", maxrecords=min(max(max_results, 1), 75),
+                      sort="hybridrel")
+    if not arts:
+        return []
+    out: list[dict] = []
+    for a in arts[:max_results]:
+        url = a.get("url", "")
+        if not url:
+            continue
+        domain, date = a.get("domain", ""), _gdelt_date_to_iso(a.get("seendate", ""))
+        snippet = " · ".join(x for x in (domain, a.get("sourcecountry", ""), date) if x)
+        out.append({"title": a.get("title", "") or domain or url, "snippet": snippet,
+                    "url": url, "date": date, "domain": domain})
+    return out
+
+
+def gdelt_timeline(query: str, max_records: int = 40, timespan: str = "18m") -> list[dict]:
+    """Dated cross-outlet coverage anchors for a claim, oldest-first, as
+    [{date, hostname, url, title}] — the shape server._build_timeline wants.
+    Keyless, rate-limit aware, fail-soft to []."""
+    arts = _gdelt_doc(query, mode="artlist", maxrecords=max_records, sort="dateasc",
+                      timespan=timespan)
+    out: list[dict] = []
+    seen: set[str] = set()
+    for a in arts:
+        url = a.get("url", "")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        out.append({"date": _gdelt_date_to_iso(a.get("seendate", "")),
+                    "hostname": a.get("domain", ""), "url": url,
+                    "title": a.get("title", "") or a.get("domain", "") or url})
+    out.sort(key=lambda e: e["date"] or "9999")
+    return out
 
 
 def wikipedia_search(query: str, max_results: int = 10) -> list[dict]:
@@ -115,9 +212,11 @@ def google_search(query: str, max_results: int = 10) -> list[dict]:
 
 
 def available() -> dict:
-    """Which backends are usable. Wikipedia is keyless so always available."""
+    """Which backends are usable. Wikipedia and GDELT are keyless so always
+    available (GDELT is opt-in due to its rate limit; see resolve_backend)."""
     return {
         "wikipedia": True,
+        "gdelt": True,
         "brave": bool(os.environ.get("BRAVE_SEARCH_API_KEY")),
         "google": bool(os.environ.get("GOOGLE_SEARCH_API_KEY") and os.environ.get("GOOGLE_SEARCH_CX")),
     }
@@ -185,6 +284,11 @@ def resolve_backend(name: str | None, ddg: SearchFn) -> SearchFn:
         return ddg
     if name == "wikipedia":
         return wikipedia_search
+    if name == "gdelt":
+        # Opt-in: GDELT first (dated global coverage), DDG as the safety net.
+        # Kept OUT of 'auto' because 'auto' fires several searches per analysis
+        # and GDELT's 1-req/5s limit would throttle/429 the whole run.
+        return chained(gdelt_search, ddg)
     if name == "brave":
         return chained(brave_search, ddg)
     if name == "google":
