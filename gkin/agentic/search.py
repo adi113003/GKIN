@@ -56,11 +56,27 @@ def _gdelt_date_to_iso(seendate: str) -> str:
     return f"{s[0:4]}-{s[4:6]}-{s[6:8]}" if len(s) >= 8 and s[:8].isdigit() else ""
 
 
-def _gdelt_query(text: str, max_terms: int = 6) -> str:
-    """Build a GDELT-friendly query: GDELT ANDs bare terms and chokes on long
-    sentences/punctuation, so keep the first few meaningful words only."""
+# GDELT ANDs every bare term, so a single rare verb (e.g. "tightens") can zero
+# out an otherwise common topic. Drop stopwords + common news verbs and keep the
+# salient nouns/proper nouns.
+_GDELT_STOP = {
+    "the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are",
+    "was", "were", "be", "by", "with", "as", "at", "that", "this", "it", "its",
+    "from", "new", "over", "after", "amid", "into", "up", "down", "out", "about",
+    "tightens", "tighten", "moves", "move", "moved", "says", "said", "say",
+    "warns", "warn", "plans", "plan", "sets", "set", "calls", "call", "urges",
+    "could", "would", "will", "may", "might", "vows", "vow", "seeks", "seek",
+}
+
+
+def _gdelt_query(text: str, max_terms: int = 5) -> str:
+    """Build a GDELT-friendly query: strip punctuation + stopwords/news-verbs and
+    keep the most salient few terms (GDELT ANDs them, so fewer/stronger is better)."""
     cleaned = re.sub(r"[^\w\s]", " ", text or "")
-    return " ".join(cleaned.split()[:max_terms]).strip()
+    terms = [w for w in cleaned.split() if w.lower() not in _GDELT_STOP]
+    if not terms:  # don't return empty if filtering removed everything
+        terms = cleaned.split()
+    return " ".join(terms[:max_terms]).strip()
 
 
 def _gdelt_doc(query: str, *, mode: str, maxrecords: int, sort: str,
@@ -70,20 +86,30 @@ def _gdelt_doc(query: str, *, mode: str, maxrecords: int, sort: str,
     q = _gdelt_query(query)
     if not q:
         return []
-    _gdelt_throttle()
     params = {"query": q, "mode": mode, "maxrecords": max(1, min(maxrecords, 250)),
               "format": "json", "sort": sort}
     if timespan:
         params["timespan"] = timespan
-    try:
-        resp = httpx.get(_GDELT_DOC, params=params,
-                         headers={"User-Agent": _GDELT_UA}, timeout=15.0)
+    # One retry: on a 429 the throttle at the top of the next loop enforces the
+    # required 5s gap before re-trying, so a transient rate-limit recovers instead
+    # of silently returning empty.
+    for attempt in range(2):
+        _gdelt_throttle()
+        try:
+            resp = httpx.get(_GDELT_DOC, params=params,
+                             headers={"User-Agent": _GDELT_UA}, timeout=15.0)
+        except Exception:  # noqa: BLE001  (connect/timeout)
+            return []
         if resp.status_code == 429:
-            return []  # rate limited — caller falls back
-        resp.raise_for_status()
-        return (resp.json() or {}).get("articles", []) or []
-    except Exception:  # noqa: BLE001  (incl. non-JSON warning bodies)
-        return []
+            if attempt == 0:
+                continue
+            return []
+        try:
+            resp.raise_for_status()
+            return (resp.json() or {}).get("articles", []) or []
+        except Exception:  # noqa: BLE001  (non-JSON warning bodies, etc.)
+            return []
+    return []
 
 
 def gdelt_search(query: str, max_results: int = 10) -> list[dict]:
@@ -106,10 +132,12 @@ def gdelt_search(query: str, max_results: int = 10) -> list[dict]:
     return out
 
 
-def gdelt_timeline(query: str, max_records: int = 40, timespan: str = "18m") -> list[dict]:
+def gdelt_timeline(query: str, max_records: int = 40, timespan: str | None = None) -> list[dict]:
     """Dated cross-outlet coverage anchors for a claim, oldest-first, as
     [{date, hostname, url, title}] — the shape server._build_timeline wants.
-    Keyless, rate-limit aware, fail-soft to []."""
+    Keyless, rate-limit aware, fail-soft to []. timespan defaults to GDELT's
+    own window (~3 months of real-time coverage); pass an explicit value like
+    '1w' / '24h' to narrow it (avoid bare 'Nm' — GDELT reads 'm' as minutes)."""
     arts = _gdelt_doc(query, mode="artlist", maxrecords=max_records, sort="dateasc",
                       timespan=timespan)
     out: list[dict] = []

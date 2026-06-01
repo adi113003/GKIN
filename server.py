@@ -1306,7 +1306,7 @@ async def _build_timeline(client: AsyncGroq, article_text: str) -> dict:
     gdelt_articles: list[dict] = []
     try:
         gdelt_articles = await asyncio.wait_for(
-            asyncio.to_thread(gdelt_timeline, (core_claim or topic), 40, "18m"),
+            asyncio.to_thread(gdelt_timeline, (core_claim or topic), 40),
             timeout=18.0,
         )
     except Exception:
