@@ -77,6 +77,16 @@ interface GroundedVerdict {
 }
 interface TimelineEntry { date: string; hostname: string; url: string; how_claim_changed: string; }
 interface ClaimTimeline { claim: string; first_reported: string; timeline_entries: TimelineEntry[]; }
+// Spread/corroboration signal from GDELT (global news index) returned by /timeline.
+interface GdeltCoverage {
+  source?: string;
+  article_count: number;
+  distinct_outlets: number;
+  first_seen: string;
+  last_seen: string;
+  outlets?: string[];
+  articles?: { date: string; hostname: string; url: string; title: string }[];
+}
 interface AnalysisResult {
   summary?: string;
   manipulation_index?: number;
@@ -523,6 +533,7 @@ export default function Analyzer() {
 
   // Claim timeline (lazy-loaded so /analyze stays under 1.8s)
   const [claimTimeline, setClaimTimeline] = useState<ClaimTimeline[] | null>(null);
+  const [gdeltCoverage, setGdeltCoverage] = useState<GdeltCoverage | null>(null);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const [timelineError, setTimelineError] = useState("");
   const [timelineOpen, setTimelineOpen] = useState(false);
@@ -577,6 +588,7 @@ export default function Analyzer() {
       if (!r.ok) throw new Error(await r.text());
       const d = await r.json();
       setClaimTimeline(d.claim_timeline || []);
+      setGdeltCoverage(d.gdelt_coverage || null);
       // If /analyze had no sources_used (e.g. older cached investigation), borrow from /timeline.
       if (!result.sources_used?.length && Array.isArray(d.sources_used) && d.sources_used.length) {
         setResult(prev => prev ? { ...prev, sources_used: d.sources_used } : prev);
@@ -612,7 +624,7 @@ export default function Analyzer() {
     setLoading(true); setResult(null); setScanError(""); setFetchedTitle(""); setLangBadge("");
     setChatMessages([]); setSuggestions([]);
     setGroundedVerdicts(null); setVerifyError(""); setVerifying(false);
-    setClaimTimeline(null); setTimelineError(""); setTimelineOpen(false); setExpandedSrc(null);
+    setClaimTimeline(null); setGdeltCoverage(null); setTimelineError(""); setTimelineOpen(false); setExpandedSrc(null);
     try {
       let articleText = sourceText, displayTitle = "";
       if (activeTab === "URL" && !overrideText) {
@@ -1418,6 +1430,26 @@ export default function Analyzer() {
                         </div>
                       )}
                       {timelineError && <p style={{ fontSize: 13, color: P.red, lineHeight: 1.6 }}>{timelineError}</p>}
+                      {gdeltCoverage && gdeltCoverage.article_count > 0 && (
+                        <div style={{ border: `1px solid ${P.border}`, background: P.panel, padding: "10px 12px", marginBottom: 14 }}>
+                          <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.14em", textTransform: "uppercase", color: P.accent, marginBottom: 6 }}>
+                            Coverage · GDELT global news index
+                          </div>
+                          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontFamily: MONO, fontSize: 11, color: P.text2 }}>
+                            <span><b style={{ color: P.text }}>{gdeltCoverage.article_count}</b> articles</span>
+                            <span><b style={{ color: P.text }}>{gdeltCoverage.distinct_outlets}</b> outlets</span>
+                            {gdeltCoverage.first_seen && <span>{gdeltCoverage.first_seen} → {gdeltCoverage.last_seen}</span>}
+                          </div>
+                          {gdeltCoverage.outlets && gdeltCoverage.outlets.length > 0 && (
+                            <div style={{ marginTop: 7, fontFamily: MONO, fontSize: 10, color: P.muted, lineHeight: 1.6 }}>
+                              {gdeltCoverage.outlets.slice(0, 12).join(" · ")}{gdeltCoverage.distinct_outlets > 12 ? " · …" : ""}
+                            </div>
+                          )}
+                          <div style={{ marginTop: 7, fontFamily: MONO, fontSize: 9, color: P.faint, letterSpacing: "0.04em", lineHeight: 1.5 }}>
+                            Coverage breadth, not a truth signal — verdicts rest on the cited sources above.
+                          </div>
+                        </div>
+                      )}
                       {claimTimeline && claimTimeline.length === 0 && !timelineLoading && (
                         <p style={{ fontFamily: MONO, fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>NO DATED EVIDENCE FOUND TO RECONSTRUCT TIMELINE</p>
                       )}
