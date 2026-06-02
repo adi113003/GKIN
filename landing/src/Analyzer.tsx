@@ -1294,7 +1294,9 @@ export default function Analyzer() {
                                       if (!s) return null;
                                       const tip = `${s.hostname}${s.published_date ? " · " + s.published_date : ""}${s.relevance_snippet ? "\n\n" + s.relevance_snippet : ""}`;
                                       return (
-                                        <a key={idx} href="#sources" title={tip}
+                                        <a key={idx} href={s.url || "#sources"}
+                                          target={s.url ? "_blank" : undefined} rel="noopener noreferrer"
+                                          title={s.url ? `Open source ${idx + 1}: ${tip}` : tip}
                                           onClick={() => { setExpandedSrc(idx); }}
                                           style={{ display: "inline-flex", alignItems: "center", fontFamily: MONO, fontSize: 10, fontWeight: 600, color: P.accent, border: `1px solid ${P.accent}`, padding: "0 5px", cursor: "pointer", letterSpacing: "0.02em", lineHeight: 1.4, textDecoration: "none" }}>
                                           {idx + 1}
