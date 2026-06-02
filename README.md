@@ -162,18 +162,6 @@ Open **http://localhost:8000/** (landing) or **http://localhost:8000/app**
 
 ---
 
-## Documentation
-
-| Doc | What it covers |
-|---|---|
-| [docs/RESPONSE_TO_MIDTERM_FEEDBACK.md](docs/RESPONSE_TO_MIDTERM_FEEDBACK.md) | Where we were at midterm → where we are now; every feedback point, what we changed |
-| [docs/COMPETITIVE_COMPARISON.md](docs/COMPETITIVE_COMPARISON.md) | GKIN vs ChatGPT / Gemini / Perplexity — capability matrix + benchmark methodology |
-| [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md) | Final report draft mapped to the 11 rubric sections |
-| [docs/PRESENTATION_KIT.md](docs/PRESENTATION_KIT.md) | 1-min pitch, 3-min demo script, slide outline, Q&A prep |
-| [CLAUDE.md](CLAUDE.md) | Engineering notes, model IDs, WELFake leakage analysis, gotchas |
-
----
-
 ## Tests
 
 ```bash
