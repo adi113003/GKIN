@@ -255,6 +255,7 @@ Deploy is automated on push to `main` (GitHub Actions → SSH to the DigitalOcea
 | Var | Why | If missing |
 |---|---|---|
 | `GROQ_API_KEY` | all LLM analysis + verification | `/analyze` etc. return 500 |
+| `GROQ_API_KEY_2`, `GROQ_API_KEY_3`, … *(optional)* | **failover keys** — if the primary hits its rate limit / daily quota (TPD) or is rejected, calls automatically retry on the next key | none — single-key, no failover |
 | `MONGODB_URI` | register/login (auth) | landing/app stay up; login returns 503 |
 | `SECRET_KEY` | signs JWT auth tokens | **pin a fixed value** — otherwise every restart silently logs users out |
 

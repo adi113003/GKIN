@@ -705,7 +705,119 @@ def manipulation_label(mi: int) -> str:
 
 # ── App ────────────────────────────────────────────────────────────────────────
 
-_client: Optional[AsyncGroq] = None
+# Bound per-call latency on every Groq client. Without this the SDK defaults to a 60s
+# read timeout x2 retries, so one throttled call can stall ~3 min and trip nginx's 60s
+# proxy timeout (504). Fail fast into a fallback / clean error instead.
+_GROQ_TIMEOUT = httpx.Timeout(25.0, connect=5.0)
+
+
+def _collect_groq_keys() -> list[str]:
+    """All configured Groq API keys, in priority (failover) order. Accepts
+    GROQ_API_KEYS (a comma/space/newline-separated bundle) plus the numbered vars
+    GROQ_API_KEY, GROQ_API_KEY_2 ... GROQ_API_KEY_5. Duplicates are dropped."""
+    keys: list[str] = []
+    for raw in re.split(r"[,\s]+", os.environ.get("GROQ_API_KEYS", "")):
+        if raw.strip():
+            keys.append(raw.strip())
+    for name in ("GROQ_API_KEY", "GROQ_API_KEY_2", "GROQ_API_KEY_3", "GROQ_API_KEY_4", "GROQ_API_KEY_5"):
+        v = (os.environ.get(name) or "").strip()
+        if v:
+            keys.append(v)
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for k in keys:
+        if k not in seen:
+            seen.add(k)
+            ordered.append(k)
+    return ordered
+
+
+def _should_failover(e: Exception) -> bool:
+    """True if a Groq call failed for a reason a DIFFERENT API key might survive:
+    rate-limit / daily-quota (TPD), auth (key invalid/disabled), server/overload, or a
+    transient network/timeout error. A 400/404 (bad model/request) returns False — it
+    would fail identically on every key, so we raise immediately instead of burning keys."""
+    status = getattr(e, "status_code", None)
+    if status is None:
+        status = getattr(getattr(e, "response", None), "status_code", None)
+    if status in (401, 403, 408, 429, 500, 502, 503, 504):
+        return True
+    msg = str(e).lower()
+    return any(k in msg for k in (
+        "rate limit", "rate_limit", "ratelimit", "quota", "429", "too many requests",
+        "tokens per day", "tpd", "invalid api key", "invalid_api_key", "authentication",
+        "over capacity", "overloaded", "service unavailable", "502", "503", "504",
+        "timeout", "timed out", "connection",
+    ))
+
+
+class _GroqPool:
+    """One AsyncGroq client per API key, with transparent failover. When a call hits a
+    rate-limit / daily-quota (TPD) / auth / server error on key N it retries on key N+1
+    (see _should_failover). Exposes the SDK surface GKIN uses — chat.completions.create
+    and audio.transcriptions.create — so it is a drop-in for an AsyncGroq instance; any
+    other attribute delegates to the primary client. Failover also covers streaming
+    (stream=True): the Groq SDK issues the request and raises on non-2xx inside create(),
+    before any chunk is yielded, so a throttled key is caught and the next key is used."""
+
+    def __init__(self, keys: list[str]):
+        self._clients = [AsyncGroq(api_key=k, timeout=_GROQ_TIMEOUT, max_retries=1) for k in keys]
+        self.chat = _PoolChat(self)
+        self.audio = _PoolAudio(self)
+
+    @property
+    def key_count(self) -> int:
+        return len(self._clients)
+
+    async def _failover_create(self, pick, **kwargs):
+        last_exc: Optional[Exception] = None
+        n = len(self._clients)
+        for i, c in enumerate(self._clients):
+            try:
+                return await pick(c)(**kwargs)
+            except Exception as e:
+                last_exc = e
+                if i + 1 < n and _should_failover(e):
+                    print(f"[groq] key #{i + 1}/{n} failed ({type(e).__name__}: {str(e)[:120]}); "
+                          f"failing over to key #{i + 2}", flush=True)
+                    continue
+                raise
+        assert last_exc is not None
+        raise last_exc
+
+    def __getattr__(self, name):
+        if name == "_clients":  # avoid recursion before __init__ runs
+            raise AttributeError(name)
+        return getattr(self._clients[0], name)
+
+
+class _PoolChat:
+    def __init__(self, pool: "_GroqPool"):
+        self.completions = _PoolChatCompletions(pool)
+
+
+class _PoolChatCompletions:
+    def __init__(self, pool: "_GroqPool"):
+        self._pool = pool
+
+    async def create(self, **kwargs):
+        return await self._pool._failover_create(lambda c: c.chat.completions.create, **kwargs)
+
+
+class _PoolAudio:
+    def __init__(self, pool: "_GroqPool"):
+        self.transcriptions = _PoolAudioTranscriptions(pool)
+
+
+class _PoolAudioTranscriptions:
+    def __init__(self, pool: "_GroqPool"):
+        self._pool = pool
+
+    async def create(self, **kwargs):
+        return await self._pool._failover_create(lambda c: c.audio.transcriptions.create, **kwargs)
+
+
+_client: Optional["_GroqPool"] = None
 _welfake_df = None
 _claim_sem: Optional[asyncio.Semaphore] = None
 _fake_model = None
@@ -715,12 +827,15 @@ _verdict_cache: Optional[VerdictCache] = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _client, _claim_sem, _mongo_client, _users_col, _fake_model, _verdict_cache
-    api_key = os.environ.get("GROQ_API_KEY")
-    if api_key:
-        # Bound per-call latency. Without this the Groq SDK defaults to a 60s read
-        # timeout x2 retries, so one throttled call can stall ~3 min and trip nginx's
-        # 60s proxy timeout (504). Fail fast into the 8B fallback / a clean error.
-        _client = AsyncGroq(api_key=api_key, timeout=httpx.Timeout(25.0, connect=5.0), max_retries=1)
+    groq_keys = _collect_groq_keys()
+    if groq_keys:
+        _client = _GroqPool(groq_keys)
+        if len(groq_keys) > 1:
+            print(f"✓ Groq ready with {len(groq_keys)}-key failover")
+        else:
+            print("✓ Groq ready (1 key — set GROQ_API_KEY_2 / _3 for quota failover)")
+    else:
+        print("⚠ No GROQ_API_KEY set — /analyze, /verify-claims, /timeline, /chat will return 500")
     _claim_sem = asyncio.Semaphore(4)
     configure_tracing()          # structured JSON traces for the agentic loop
     _verdict_cache = VerdictCache()
@@ -750,12 +865,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="GKIN Truth Navigator v3", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
-app.mount("/landing", StaticFiles(directory="static/landing"), name="landing")
-app.mount("/analyzer", StaticFiles(directory="static/analyzer"), name="analyzer")
+# Mount static dirs defensively — a missing directory must not crash startup
+# (StaticFiles raises at construction if the dir is absent). /assets in particular
+# is optional now that no served page references a bundled image.
+for _route, _dir in (("/assets", "static/assets"), ("/landing", "static/landing"), ("/analyzer", "static/analyzer")):
+    if os.path.isdir(_dir):
+        app.mount(_route, StaticFiles(directory=_dir), name=_route.strip("/"))
+    else:
+        print(f"⚠ static mount {_route} skipped — '{_dir}' not found")
 
 
-def get_client() -> AsyncGroq:
+def get_client() -> "_GroqPool":
     if _client is None:
         raise HTTPException(500, "GROQ_API_KEY not set — export it before starting the server")
     return _client
@@ -2300,6 +2420,7 @@ async def health():
         "dependencies": {
             # groq powers /analyze, /verify-claims, /timeline, /chat
             "groq_configured": _client is not None,
+            "groq_keys": _client.key_count if _client is not None else 0,
             "auth_available": _AUTH_OK,
             "mongo_connected": mongo_ok,
             "classifier_loaded": _fake_model is not None,
