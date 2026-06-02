@@ -162,55 +162,6 @@ Open **http://localhost:8000/** (landing) or **http://localhost:8000/app**
 
 ---
 
-## Benchmarks
-
-```bash
-# Out-of-distribution accuracy of the ML classifier (the honest headline number)
-python benchmark/run_benchmark.py --dataset liar
-python benchmark/run_benchmark.py --dataset gonzalo
-python benchmark/generate_report.py && open benchmark/BENCHMARK_REPORT.md
-
-# Agentic fact-check loop vs. a bare LLM (and optionally ChatGPT / Gemini / Perplexity)
-uvicorn server:app --port 8000 &
-export GKIN_JWT="$(curl -s -XPOST localhost:8000/login \
-  -H content-type:application/json \
-  -d '{"username":"tester","password":"testpass123"}' | python -c 'import sys,json;print(json.load(sys.stdin)["token"])')"
-python benchmark/run_verification_benchmark.py --baseline
-```
-
-### Automated competitor benchmark (GKIN vs ChatGPT / Gemini / Perplexity)
-
-Sends the same verification prompts to every available provider and scores each answer on a
-shared 7-category rubric (rule-based, or optional LLM-as-judge). **Missing API keys are
-skipped gracefully — no numbers are hardcoded.**
-
-```bash
-python server.py                                              # GKIN must be up
-python benchmark/run_competitor_benchmark.py                  # all available, heuristic
-python benchmark/run_competitor_benchmark.py --mode judge     # + LLM-as-judge (needs OPENAI_API_KEY)
-python benchmark/run_competitor_benchmark.py --providers gkin openai perplexity gemini
-# → benchmark/results/latest_report.md  (+ .json, .csv)
-```
-
-Optional environment variables (all skip-safe):
-
-| Var | Purpose | Default |
-|---|---|---|
-| `GKIN_BASE_URL` | GKIN server URL | `http://localhost:8000` |
-| `GKIN_USERNAME` / `GKIN_PASSWORD` | benchmark account (auto-registered) | `benchmark` / `benchmarkpass123` |
-| `OPENAI_API_KEY` / `OPENAI_MODEL` | enable ChatGPT (+ LLM-judge) | model `gpt-4o-mini` |
-| `GEMINI_API_KEY` / `GEMINI_MODEL` | enable Gemini | model `gemini-1.5-flash` |
-| `PERPLEXITY_API_KEY` / `PERPLEXITY_MODEL` | enable Perplexity | model `sonar` |
-| `JUDGE_MODEL` | model used by `--mode judge` | `gpt-4o-mini` |
-
-See [`benchmark/README.md`](benchmark/README.md) and
-[`docs/COMPETITIVE_COMPARISON.md`](docs/COMPETITIVE_COMPARISON.md). We report our
-limitations honestly — the classifier is near-chance on truly out-of-distribution data;
-the agentic loop is the part designed to generalize because it grounds every verdict in
-live retrieved evidence rather than learned publisher style.
-
----
-
 ## Documentation
 
 | Doc | What it covers |
