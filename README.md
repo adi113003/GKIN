@@ -133,10 +133,8 @@ before a hard verdict is emitted.
 ## Quick start
 
 ```bash
-# 1. Install
-pip install fastapi uvicorn groq pydantic pandas python-multipart \
-            ddgs trafilatura python-jose[cryptography] passlib[bcrypt] \
-            motor python-dotenv requests scikit-learn joblib
+# 1. Install  (pinned dependency list in requirements.txt)
+pip install -r requirements.txt
 
 # 2. Configure  (copy .env.example → .env and fill in)
 export GROQ_API_KEY="your_groq_key"          # required for LLM + verification
@@ -158,7 +156,9 @@ Open **http://localhost:8000/** (landing) or **http://localhost:8000/app**
 | `POST /verify-claims` | **Agentic grounded fact-check** → cited SUPPORTED/CONTRADICTED/INSUFFICIENT verdicts |
 | `POST /timeline` | Narrative forensics timeline of an event |
 | `POST /fetch-url` `/transcribe` `/analyze-image` | URL / audio / screenshot ingestion |
+| `POST /chat` `/compare` `/suggestions` | Follow-up Q&A, source comparison, claim suggestions |
 | `GET /benchmark` | Serves benchmark JSON for the in-app accuracy panel |
+| `GET /health` | Liveness + dependency status (Groq keys, Mongo, classifier, search backends) for monitoring / smoke tests — booleans only, never secrets |
 
 ---
 
