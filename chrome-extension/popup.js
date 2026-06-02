@@ -177,37 +177,22 @@ function animateGauge(gaugeId, numId, value, color) {
   }, 30);
 }
 
-function miColor(v) {
-  if (v >= 60) return "#f43f5e"; // Rose
-  if (v >= 40) return "#f59e0b"; // Amber
-  if (v >= 20) return "#eab308"; // Yellow
-  return "#10b981"; // Emerald
-}
-function trustColor(fc) {
-  if (fc <= 20) return "#10b981"; // Emerald
-  if (fc <= 40) return "#84cc16"; // Lime
-  if (fc <= 60) return "#eab308"; // Yellow
-  if (fc <= 80) return "#f97316"; // Orange
-  return "#f43f5e"; // Rose
-}
-function aiColor(ac) {
-  if (ac <= 20) return "#10b981"; // Emerald
-  if (ac <= 40) return "#84cc16"; // Lime
-  if (ac <= 60) return "#6366f1"; // Indigo
-  if (ac <= 80) return "#8b5cf6"; // Violet
-  return "#d946ef"; // Fuchsia
-}
+// Verdict palette — matches the site (green = clear, grey = mixed, red = flagged).
+const C_GOOD = "#15633A", C_MID = "#6a6a6a", C_BAD = "#9B1C2E";
+function miColor(v)     { return v  >= 60 ? C_BAD  : v  >= 40 ? C_MID : C_GOOD; } // higher manipulation = worse
+function trustColor(fc) { return fc <= 40 ? C_GOOD : fc <= 60 ? C_MID : C_BAD;  } // lower fake-confidence = more trustworthy
+function aiColor(ac)    { return ac <= 40 ? C_GOOD : ac <= 60 ? C_MID : C_BAD;  } // lower AI-likelihood = more human
 
 function renderResult(a) {
   // ── Manipulation ──
   const mi = a.manipulation_index || 0;
   const mc = miColor(mi);
   animateGauge("g-manip", "manip-num", mi, mc);
-  let miLabel = "STRAIGHT REPORTING";
-  if (mi>=80) miLabel="BLATANT PROPAGANDA";
-  else if (mi>=60) miLabel="HEAVY MANIPULATION";
-  else if (mi>=40) miLabel="NOTICEABLE PERSUASION";
-  else if (mi>=20) miLabel="MILD FRAMING";
+  let miLabel = "Straight reporting";
+  if (mi>=80) miLabel="Blatant propaganda";
+  else if (mi>=60) miLabel="Heavy manipulation";
+  else if (mi>=40) miLabel="Noticeable persuasion";
+  else if (mi>=20) miLabel="Mild framing";
   $("manip-verdict").textContent = miLabel;
   $("manip-verdict").style.color = mc;
   setPill("manip-pill", miLabel, mc);
@@ -219,7 +204,7 @@ function renderResult(a) {
     const tr = 100 - fc;
     const tc = trustColor(fc);
     animateGauge("g-trust", "trust-num", tr, tc);
-    const tv = fd.verdict || "UNCERTAIN";
+    const tv = fd.verdict || "Uncertain";
     $("trust-verdict").textContent = tv;
     $("trust-verdict").style.color = tc;
     setPill("trust-pill", tv, tc);
@@ -231,20 +216,21 @@ function renderResult(a) {
     const ac = ad.ai_confidence != null ? ad.ai_confidence : 50;
     const avc = aiColor(ac);
     animateGauge("g-ai", "ai-num", ac, avc);
-    const av = ad.verdict || "UNCERTAIN";
+    const av = ad.verdict || "Uncertain";
     $("ai-verdict").textContent = av;
     $("ai-verdict").style.color = avc;
     setPill("ai-pill", av, avc);
   }
 
   // ── Cluster ──
-  $("ext-cluster").textContent = "Narrative: " + (a.narrative_cluster||"none").replace(/_/g," ").toUpperCase();
+  const cluster = (a.narrative_cluster||"none").replace(/_/g," ");
+  $("ext-cluster").textContent = "Narrative: " + cluster.charAt(0).toUpperCase() + cluster.slice(1);
 
   // ── Techniques (top 3) ──
   const techs = (a.persuasion_techniques||[]).slice(0,3);
   $("ext-techniques").innerHTML = techs.length
     ? techs.map(t=>`<div class="tech-item"><div class="tech-name">${t.technique.replace(/_/g," ")}</div><div class="tech-span">${esc(t.span,55)}</div></div>`).join("")
-    : `<div style="color:#888899;font-size:12px;font-style:italic;">None detected.</div>`;
+    : `<div style="color:#6a6a6a;font-size:12px;font-style:italic;">None detected.</div>`;
 
   // ── Conspiracy note ──
   $("ext-conspiracy-note").classList.toggle("show", mi >= 60);

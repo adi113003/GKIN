@@ -20,13 +20,15 @@ The common result structure returned by every query():
     }
 """
 
-from . import gkin_provider, openai_provider, gemini_provider, perplexity_provider
+from . import gkin_provider, openai_provider, perplexity_provider
 
 # CLI key -> module. Order is the default run order.
+# Gemini is intentionally excluded: its API key requires Google billing to be
+# enabled, so it only ever returned quota errors (0). The adapter file
+# (gemini_provider.py) is kept in case billing is added later — re-add it here.
 PROVIDERS = {
     gkin_provider.KEY: gkin_provider,
     openai_provider.KEY: openai_provider,
-    gemini_provider.KEY: gemini_provider,
     perplexity_provider.KEY: perplexity_provider,
 }
 

@@ -357,21 +357,31 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").lower()).strip()
 
 
+def _fold(text: str) -> str:
+    """Normalize for verbatim comparison: lowercase, drop punctuation/quotes/
+    dashes (so trivial quote/whitespace munging still matches), and collapse
+    whitespace. Word order and tokens are preserved, so reordering or negation
+    changes survive folding and therefore fail the substring test below."""
+    t = re.sub(r"[^\w\s]", " ", (text or "").lower())
+    return re.sub(r"\s+", " ", t).strip()
+
+
 def _grounded_in_evidence(sentence: str, evidence_text: str) -> bool:
-    """A cited sentence counts as grounded only if it genuinely comes from the
-    evidence: an exact normalized substring, or >=80% token overlap (tolerates
-    minor whitespace/quote munging without permitting free paraphrase)."""
-    n_sent, n_ev = _normalize(sentence), _normalize(evidence_text)
+    """A cited sentence is grounded only if it appears VERBATIM in the evidence,
+    i.e. as an exact substring after folding case/punctuation/whitespace.
+
+    We deliberately reject fuzzy token-overlap matches. Bag-of-words overlap is
+    polarity- and order-blind: a paraphrase that inserts or drops a 'not', or
+    swaps subject and object, keeps near-total overlap while meaning the OPPOSITE
+    of its source — which previously let an inverted citation back a
+    SUPPORTED/CONTRADICTED verdict (the >=80%-overlap fallback removed here). The
+    grounding prompt already requires citations copied verbatim, so this only
+    rejects unsafe paraphrases; anything non-verbatim falls back to INSUFFICIENT,
+    the safe direction for a fact-checker."""
+    n_sent, n_ev = _fold(sentence), _fold(evidence_text)
     if not n_sent or len(n_sent) < 8:
         return False
-    if n_sent in n_ev:
-        return True
-    sent_tokens = [t for t in re.findall(r"\w+", n_sent) if len(t) > 2]
-    if len(sent_tokens) < 4:
-        return False
-    ev_tokens = set(re.findall(r"\w+", n_ev))
-    hits = sum(1 for t in sent_tokens if t in ev_tokens)
-    return hits / len(sent_tokens) >= 0.8
+    return n_sent in n_ev
 
 
 def validated_spans(state: dict) -> list[EvidenceSpan]:

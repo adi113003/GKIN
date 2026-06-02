@@ -8,22 +8,26 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    background-color: #f2ecdd;
-    color: #1a1714;
-    font-family: "Source Serif 4", Georgia, serif;
-    font-feature-settings: "liga" 1, "calt" 1, "onum" 1, "kern" 1;
+    background-color: #ffffff;
+    color: #222222;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", sans-serif;
+    font-feature-settings: "cv11" 1, "ss01" 1, "liga" 1, "calt" 1, "kern" 1;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   a {
     color: inherit;
   }
+  /* Soft Rausch focus ring: no glow, just a clean accent outline. */
   a:focus-visible,
   button:focus-visible,
   summary:focus-visible,
   input:focus-visible {
-    outline: 2px solid #1c2e4a;
+    outline: 2px solid #ff385c;
     outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
@@ -31,6 +35,11 @@
   .text-balance {
     text-wrap: balance;
   }
+}
+
+::selection {
+  background: rgba(255, 56, 92, 0.16);
+  color: #222222;
 }
 
 @media (prefers-reduced-motion: reduce) {

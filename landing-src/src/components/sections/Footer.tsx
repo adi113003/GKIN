@@ -7,20 +7,25 @@ const links = [
 
 export function Footer() {
   return (
-    <footer className="flex flex-wrap items-center justify-between gap-3 px-4 py-[18px] font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-soft sm:px-[26px]">
-      <span>GKIN — Ground Knowledge · Media-Forensics Bureau</span>
-      <div className="flex flex-wrap gap-4">
-        {links.map((l) => (
-          <a
-            key={l.href}
-            href={l.href}
-            className="cursor-pointer no-underline hover:underline hover:underline-offset-[3px]"
-          >
-            {l.label}
-          </a>
-        ))}
+    <footer className="border-t border-hairline bg-white px-6 py-10 sm:px-10">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col">
+          <span className="text-base font-semibold text-ink">GKIN</span>
+          <span className="text-sm text-muted">Ground Knowledge</span>
+        </div>
+        <nav className="flex flex-wrap gap-x-6 gap-y-2">
+          {links.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="cursor-pointer text-sm text-ink-soft no-underline transition-colors hover:text-ink"
+            >
+              {l.label}
+            </a>
+          ))}
+        </nav>
+        <span className="text-sm text-muted">© 2026 GKIN</span>
       </div>
-      <span className="text-navy">© 2026 · FILE GKIN-BRF-0001</span>
     </footer>
   );
 }

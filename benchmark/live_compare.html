@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GKIN — Live Comparison</title>
+<style>
+  :root{
+    --bg:#f4f1ea; --panel:#fbf9f4; --ink:#1c1a17; --ink2:#5c574e;
+    --line:#d9d2c4; --accent:#8a2b2b; --good:#2e6b3e; --warn:#9a6b15;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);}
+  header{border-bottom:1px solid var(--line);padding:22px 28px;}
+  .nameplate{font-family:var(--mono);letter-spacing:.32em;font-size:13px;color:var(--ink2);}
+  h1{margin:6px 0 2px;font-size:26px;font-weight:600;letter-spacing:-.01em;}
+  .sub{color:var(--ink2);font-size:14px;}
+  .wrap{max-width:1280px;margin:0 auto;padding:24px 28px 64px;}
+  .controls{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:22px;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  textarea{width:100%;min-height:62px;resize:vertical;font-family:var(--serif);font-size:16px;
+    padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);}
+  label.fld{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink2);text-transform:uppercase;
+    display:flex;flex-direction:column;gap:5px;}
+  select{font-family:var(--mono);font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;}
+  button.go{font-family:var(--mono);font-size:13px;letter-spacing:.08em;padding:11px 22px;border:none;border-radius:7px;
+    background:var(--accent);color:#fff;cursor:pointer;text-transform:uppercase;}
+  button.go:disabled{opacity:.5;cursor:default;}
+  .chips{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{font-size:13px;padding:6px 12px;border:1px dashed var(--line);border-radius:20px;background:#fff;cursor:pointer;color:var(--ink2);}
+  .chip:hover{border-color:var(--accent);color:var(--accent);}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;overflow:hidden;}
+  .col.off{opacity:.55;}
+  .col h2{margin:0;padding:13px 16px;font-size:16px;font-weight:600;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .badge{font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;background:#eee;color:var(--ink2);}
+  .badge.win{background:var(--good);color:#fff;}
+  .body{padding:14px 16px;font-size:14px;line-height:1.55;color:var(--ink);white-space:pre-wrap;
+    max-height:300px;overflow:auto;border-bottom:1px solid var(--line);}
+  .muted{color:var(--ink2);font-style:italic;}
+  .cites{padding:10px 16px;font-size:12px;border-bottom:1px solid var(--line);}
+  .cites a{color:var(--accent);text-decoration:none;word-break:break-all;}
+  .cites .none{color:var(--ink2);font-style:italic;}
+  .scores{padding:12px 16px;}
+  .scline{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px;}
+  .scline .nm{font-family:var(--mono);font-size:10.5px;color:var(--ink2);width:128px;text-transform:uppercase;letter-spacing:.04em;}
+  .bar{flex:1;height:8px;background:#e7e1d4;border-radius:4px;overflow:hidden;}
+  .bar > i{display:block;height:100%;background:var(--accent);}
+  .bar.b2 > i{background:var(--good);} .bar.b1 > i{background:var(--warn);} .bar.b0 > i{background:#c9c2b4;}
+  .scnum{font-family:var(--mono);font-size:11px;width:26px;text-align:right;color:var(--ink2);}
+  .method{padding:8px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink2);text-transform:uppercase;}
+  .spin{padding:28px 16px;text-align:center;color:var(--ink2);font-family:var(--mono);font-size:12px;letter-spacing:.1em;}
+  .note{margin-top:18px;font-size:13px;color:var(--ink2);line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+  code{font-family:var(--mono);font-size:12px;background:#ece6d8;padding:1px 5px;border-radius:4px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="nameplate">G K I N</div>
+  <h1>Live Comparison</h1>
+  <div class="sub">One claim, answered side-by-side and scored on the same rubric — GKIN vs general AI tools.</div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <textarea id="claim" placeholder="Enter a claim or question to verify…">The Eiffel Tower was originally built for the 1889 World's Fair.</textarea>
+    <div class="row" style="margin-top:12px;">
+      <label class="fld">Mode
+        <select id="mode">
+          <option value="verify">Verify a claim</option>
+          <option value="timeline">Build a timeline</option>
+        </select>
+      </label>
+      <label class="fld">Known answer (optional)
+        <select id="expected">
+          <option value="auto">auto / unknown</option>
+          <option value="true">true claim</option>
+          <option value="false">false claim (misinfo trap)</option>
+          <option value="uncertain">genuinely uncertain</option>
+        </select>
+      </label>
+      <button id="go" class="go">Compare</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="note" id="note"></div>
+</div>
+
+<script>
+const EXAMPLES = [
+  ["The Eiffel Tower was originally built for the 1889 World's Fair.", "verify", "true"],
+  ["A new medical study proves that drinking coffee cures Alzheimer's disease.", "verify", "false"],
+  ["Artificial intelligence will eliminate the majority of human jobs within five years.", "verify", "uncertain"],
+  ["The development of COVID-19 vaccines.", "timeline", "auto"],
+];
+const PRETTY = {
+  factual_correctness:"factual", citation_availability:"citations",
+  source_quality:"source qual.", traceability:"traceability",
+  timeline_clarity:"timeline", uncertainty_handling:"uncertainty",
+  misinformation_resistance:"misinfo resist",
+};
+let CONFIG = null;
+
+const $ = (s)=>document.querySelector(s);
+
+async function boot(){
+  CONFIG = await (await fetch("/providers")).json();
+  // example chips
+  $("#chips").innerHTML = "";
+  EXAMPLES.forEach(([c,m,e])=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=c.slice(0,46)+(c.length>46?"…":"");
+    b.onclick=()=>{ $("#claim").value=c; $("#mode").value=m; $("#expected").value=e; };
+    $("#chips").appendChild(b);
+  });
+  const judge = CONFIG.judge ? "LLM-as-judge ON" : "heuristic only (set OPENAI_API_KEY for the judge)";
+  $("#note").innerHTML =
+    `Scoring: each answer is graded 0–2 on 7 categories (max ${CONFIG.max_total}). Primary score = `+
+    `<b>${judge}</b>; the rule-based heuristic is always computed too. `+
+    `GKIN answers via its own <code>/verify-claims</code> and <code>/timeline</code> endpoints; other tools get the full prompt. `+
+    `The score is directional, not ground truth — it rewards the right shape (citations, dates, hedging, trusted domains), not proof of correctness.`;
+}
+
+function scoreRows(scores){
+  if(!scores) return "";
+  return CONFIG.categories.map(c=>{
+    const v = scores[c] ?? 0, pct = (v/CONFIG.max_per_category)*100;
+    return `<div class="scline"><span class="nm">${PRETTY[c]||c}</span>`+
+           `<span class="bar b${v}"><i style="width:${pct}%"></i></span>`+
+           `<span class="scnum">${v}/2</span></div>`;
+  }).join("");
+}
+
+function render(key, name, data){
+  const col = $("#col-"+key);
+  if(!col) return;
+  col.classList.remove("off");
+  if(data.skipped){
+    col.classList.add("off");
+    col.innerHTML = `<h2>${name} <span class="badge">no key</span></h2>`+
+      `<div class="body muted">${data.reason||"unavailable"}</div>`;
+    return;
+  }
+  if(data.error){
+    col.innerHTML = `<h2>${name} <span class="badge">error</span></h2>`+
+      `<div class="body muted">${data.error}</div>`;
+    return;
+  }
+  const s = data.primary || data.heuristic || {};
+  const total = s.total ?? 0;
+  const cites = (data.citations||[]).filter(c=>c.url);
+  const citeHtml = cites.length
+    ? cites.slice(0,8).map(c=>`<div><a href="${c.url}" target="_blank" rel="noopener">${c.url}</a></div>`).join("")
+    : `<span class="none">No citations.</span>`;
+  const method = data.judge ? "scored by LLM-as-judge" : "scored by rule-based heuristic";
+  col.innerHTML =
+    `<h2>${name} <span class="badge tot" data-total="${total}">${total}/${CONFIG.max_total}</span></h2>`+
+    `<div class="body">${(data.answer||"(empty)").replace(/</g,"&lt;")}</div>`+
+    `<div class="cites"><b>${cites.length}</b> citation(s)${cites.length?":":""}<br>${citeHtml}</div>`+
+    `<div class="scores">${scoreRows(s)}</div>`+
+    `<div class="method">${method}</div>`;
+}
+
+function highlightWinner(){
+  let best=-1; const badges=[...document.querySelectorAll(".badge.tot")];
+  badges.forEach(b=>{ best=Math.max(best, +b.dataset.total); });
+  badges.forEach(b=>{ if(+b.dataset.total===best && best>0) b.classList.add("win"); });
+}
+
+async function run(){
+  const claim = $("#claim").value.trim();
+  if(!claim) return;
+  const mode = $("#mode").value, expected = $("#expected").value;
+  $("#go").disabled = true;
+
+  // build a column per wired provider, in config order
+  const grid = $("#grid"); grid.innerHTML = "";
+  CONFIG.providers.forEach(p=>{
+    const col=document.createElement("div");
+    col.className="col"+(p.available?"":" off"); col.id="col-"+p.key;
+    col.innerHTML = `<h2>${p.name} ${p.available?'<span class="badge">…</span>':'<span class="badge">no key</span>'}</h2>`+
+      (p.available ? `<div class="spin">querying…</div>`
+                   : `<div class="body muted">${p.reason||"unavailable"}</div>`);
+    grid.appendChild(col);
+  });
+
+  // fire each available provider independently; fill its column on return
+  const jobs = CONFIG.providers.filter(p=>p.available).map(async p=>{
+    try{
+      const r = await fetch("/compare/"+p.key, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({claim, mode, expected})
+      });
+      render(p.key, p.name, await r.json());
+    }catch(e){
+      render(p.key, p.name, {error:String(e)});
+    }
+  });
+  await Promise.allSettled(jobs);
+  highlightWinner();
+  $("#go").disabled = false;
+}
+
+$("#go").onclick = run;
+boot();
+</script>
+</body>
+</html>

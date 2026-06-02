@@ -3,157 +3,150 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GKIN Truth Navigator</title>
+<title>GKIN Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-/* ── Base ── */
+/* ── Airbnb-style system — white canvas, single Rausch accent, Inter ── */
 :root {
-  --bg:        #09090b; /* Zinc 950 */
-  --bg-2:      #18181b; /* Zinc 900 */
-  --bg-3:      #27272a; /* Zinc 800 */
-  --ink:       #fafafa; /* Zinc 50 */
-  --ink-2:     #e4e4e7; /* Zinc 200 */
-  --ink-3:     #a1a1aa; /* Zinc 400 */
-  --border:    rgba(255,255,255,0.08);
-  --border-2:  rgba(255,255,255,0.14);
-  --gold:      #eab308; /* Amber 500 */
-  --red:       #f43f5e; /* Rose 500 */
-  --green:     #10b981; /* Emerald 500 */
-  --blue:      #6366f1; /* Indigo 500 */
-  --purple:    #8b5cf6; /* Violet 500 */
+  --bg:        #ffffff;
+  --surface:   #f7f7f7;
+  --surface-2: #f2f2f2;
+  --ink:       #222222;
+  --ink-2:     #3f3f3f;
+  --ink-3:     #6a6a6a;
+  --ink-4:     #929292;
+  --border:    #ebebeb;
+  --border-2:  #dddddd;
+  --rausch:        #ff385c;
+  --rausch-active: #e00b41;
+  --supported:     #15633A;
+  --contradicted:  #9B1C2E;
+  --insufficient:  #6a6a6a;
+  --shadow: rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { width: 400px; }
 body {
   background: var(--bg); color: var(--ink);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 14px; line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Header ── */
 .header {
-  padding: 13px 16px 11px;
+  padding: 16px;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
-  background: var(--bg-2);
+  background: var(--bg);
 }
 .brand {
-  font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--ink);
-  display: flex; align-items: center; gap: 6px;
+  font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink);
+  display: flex; align-items: baseline; gap: 8px;
 }
-.brand em { color: var(--blue); font-style: normal; font-weight: 600; font-size: 11px; letter-spacing: 0.1em; background: rgba(99,102,241,0.15); padding: 2px 6px; border-radius: 4px; }
+.brand .dot { color: var(--rausch); }
+.brand .brand-sub { font-size: 12px; font-weight: 500; letter-spacing: 0; color: var(--ink-3); }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .icon-btn {
-  background: transparent; border: 1px solid var(--border);
+  background: transparent; border: 1px solid var(--border-2);
   color: var(--ink-3); font-size: 15px; cursor: pointer;
-  padding: 4px 8px; border-radius: 4px; line-height: 1; transition: all 0.15s;
+  padding: 6px 9px; border-radius: 9999px; line-height: 1; transition: all 0.15s;
 }
-.icon-btn:hover { color: var(--ink); border-color: var(--border-2); background: var(--bg-3); }
+.icon-btn:hover { color: var(--ink); border-color: var(--ink-3); background: var(--surface); }
 
 /* ── Server settings ── */
 .settings-box {
-  display: none; padding: 12px 16px 14px;
-  border-bottom: 1px solid var(--border); background: var(--bg-2);
+  display: none; padding: 14px 16px 16px;
+  border-bottom: 1px solid var(--border); background: var(--surface);
 }
 .settings-box.show { display: block; }
-.field-label {
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--ink-3); margin-bottom: 6px;
-}
+.field-label { font-size: 12px; color: var(--ink-3); margin-bottom: 6px; font-weight: 500; }
 .settings-input {
-  width: 100%; background: var(--bg-3); border: 1px solid var(--border);
-  border-radius: 5px; color: var(--ink); padding: 8px 10px;
-  font-size: 13px; font-family: monospace;
+  width: 100%; background: #fff; border: 1px solid var(--border-2);
+  border-radius: 8px; color: var(--ink); padding: 10px 12px;
+  font-size: 13px; font-family: inherit;
 }
-.settings-input:focus { outline: none; border-color: var(--border-2); }
-.settings-row { display: flex; gap: 6px; margin-top: 8px; }
+.settings-input:focus { outline: none; border-color: var(--ink); }
+.settings-row { display: flex; gap: 8px; margin-top: 10px; }
 .btn-ghost {
-  flex: 1; padding: 7px; font-size: 12px; font-weight: 600;
-  background: transparent; color: var(--ink-2);
-  border: 1px solid var(--border-2); border-radius: 5px;
+  flex: 1; padding: 9px; font-size: 13px; font-weight: 600;
+  background: #fff; color: var(--ink);
+  border: 1px solid var(--border-2); border-radius: 8px;
   cursor: pointer; transition: all 0.15s;
 }
-.btn-ghost:hover { background: var(--bg-3); color: var(--ink); }
+.btn-ghost:hover { background: var(--surface); }
 
 /* ── Auth ── */
 .section { padding: 16px; }
-.auth-label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
-  color: var(--ink-3); margin-bottom: 12px; font-weight: 600;
-}
+.auth-label { font-size: 18px; color: var(--ink); margin-bottom: 14px; font-weight: 700; letter-spacing: -0.01em; }
 .auth-field { margin-bottom: 10px; }
 .auth-field input {
-  width: 100%; background: var(--bg-3); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--ink); padding: 10px 12px;
-  font-size: 14px; transition: border-color 0.15s;
+  width: 100%; background: #fff; border: 1px solid var(--border-2);
+  border-radius: 8px; color: var(--ink); padding: 11px 12px;
+  font-size: 14px; font-family: inherit; transition: border-color 0.15s;
 }
-.auth-field input:focus { outline: none; border-color: var(--border-2); }
-.auth-field input::placeholder { color: var(--ink-3); }
+.auth-field input:focus { outline: none; border-color: var(--ink); }
+.auth-field input::placeholder { color: var(--ink-4); }
 .btn-primary {
-  width: 100%; padding: 11px; font-size: 14px; font-weight: 700;
-  background: var(--ink); color: var(--bg); border: none;
-  border-radius: 6px; cursor: pointer; letter-spacing: 0.04em;
-  transition: opacity 0.15s;
+  width: 100%; padding: 12px; font-size: 15px; font-weight: 600;
+  background: var(--rausch); color: #fff; border: none;
+  border-radius: 9999px; cursor: pointer; letter-spacing: 0;
+  transition: background 0.15s;
 }
-.btn-primary:hover:not(:disabled) { opacity: 0.88; }
-.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
-.auth-switch {
-  text-align: center; margin-top: 10px; font-size: 12px; color: var(--ink-3);
-}
-.auth-switch a { color: var(--gold); cursor: pointer; text-decoration: none; }
+.btn-primary:hover:not(:disabled) { background: var(--rausch-active); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.auth-switch { text-align: center; margin-top: 12px; font-size: 13px; color: var(--ink-3); }
+.auth-switch a { color: var(--rausch); cursor: pointer; text-decoration: none; font-weight: 600; }
 .auth-switch a:hover { text-decoration: underline; }
 .auth-error {
-  background: rgba(204,51,51,0.12); color: #ff8080;
-  padding: 8px 11px; border-radius: 5px; font-size: 12px;
-  margin-top: 10px; display: none; border: 1px solid rgba(204,51,51,0.25);
+  background: #fbeaec; color: var(--contradicted);
+  padding: 9px 12px; border-radius: 8px; font-size: 13px;
+  margin-top: 10px; display: none; border-left: 3px solid var(--contradicted);
 }
 .auth-error.show { display: block; }
 
 /* ── Logged-in header row ── */
 .user-row {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
 }
-.user-info { font-size: 12px; color: var(--ink-3); }
-.user-info strong { color: var(--gold); font-weight: 600; }
+.user-info { font-size: 13px; color: var(--ink-3); }
+.user-info strong { color: var(--ink); font-weight: 600; }
 .logout-btn {
-  font-size: 11px; color: var(--ink-3); cursor: pointer;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  background: none; border: none; padding: 0; transition: color 0.15s;
+  font-size: 13px; color: var(--ink-3); cursor: pointer;
+  background: none; border: none; padding: 0; transition: color 0.15s; font-weight: 500;
 }
-.logout-btn:hover { color: var(--red); }
+.logout-btn:hover { color: var(--contradicted); }
 
 /* ── Page info ── */
 .page-card {
-  background: var(--bg-2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  box-shadow: var(--shadow);
 }
-.page-card-label {
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--ink-3); margin-bottom: 4px;
-}
+.page-card-label { font-size: 12px; color: var(--ink-3); margin-bottom: 4px; }
 .page-title-text {
-  font-size: 13px; color: var(--ink-2); white-space: nowrap;
+  font-size: 14px; color: var(--ink); font-weight: 500; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
-.chars-note { font-size: 11px; color: var(--ink-3); margin-bottom: 12px; font-family: monospace; }
+.chars-note { font-size: 12px; color: var(--ink-3); margin-bottom: 14px; }
 
 /* ── Analyze button ── */
 .btn-analyze {
-  width: 100%; padding: 12px; font-size: 14px; font-weight: 700;
-  background: var(--ink); color: var(--bg); border: none;
-  border-radius: 6px; cursor: pointer; letter-spacing: 0.06em;
-  text-transform: uppercase; transition: opacity 0.15s;
+  width: 100%; padding: 13px; font-size: 15px; font-weight: 600;
+  background: var(--rausch); color: #fff; border: none;
+  border-radius: 9999px; cursor: pointer; letter-spacing: 0;
+  transition: background 0.15s;
 }
-.btn-analyze:hover:not(:disabled) { opacity: 0.88; }
-.btn-analyze:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-analyze:hover:not(:disabled) { background: var(--rausch-active); }
+.btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Loading ── */
 .status {
-  font-size: 12px; font-family: monospace; color: var(--ink-3);
-  padding: 8px 0; text-align: center; display: none;
+  font-size: 13px; color: var(--ink-3);
+  padding: 10px 0; text-align: center; display: none;
 }
 .status.show { display: block; }
 .status::after { content: ""; animation: dots 1.2s steps(4,end) infinite; }
@@ -162,26 +155,21 @@ body {
 /* ── Result card ── */
 .result-card {
   display: none; margin-top: 14px;
-  background: var(--bg-2); border: 1px solid var(--border);
-  border-radius: 8px; overflow: hidden;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; box-shadow: var(--shadow);
   animation: fadeUp 0.25s ease;
 }
 .result-card.show { display: block; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── Metric row (gauge + label) ── */
-.metric-section {
-  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
-}
+.metric-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
 .metric-section:last-child { border-bottom: none; }
-.metric-header {
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
-  color: var(--ink-3); margin-bottom: 10px; font-weight: 700;
-}
+.metric-header { font-size: 13px; color: var(--ink-3); margin-bottom: 10px; font-weight: 600; }
 .metric-row { display: flex; align-items: center; gap: 14px; }
 .mini-gauge { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
 .mini-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.gauge-bg { fill: none; stroke: var(--bg-3); stroke-width: 7; }
+.gauge-bg { fill: none; stroke: var(--surface-2); stroke-width: 7; }
 .gauge-fg {
   fill: none; stroke-width: 7; stroke-linecap: round;
   transition: stroke-dashoffset 1s cubic-bezier(0.25,0.46,0.45,0.94), stroke 0.4s;
@@ -191,57 +179,47 @@ body {
   align-items: center; justify-content: center;
 }
 .gauge-num { font-size: 18px; font-weight: 800; line-height: 1; }
-.gauge-denom { font-size: 9px; color: var(--ink-3); font-family: monospace; }
+.gauge-denom { font-size: 9px; color: var(--ink-3); }
 .metric-info { flex: 1; min-width: 0; }
-.metric-verdict {
-  font-size: 15px; font-weight: 700; margin-bottom: 5px; line-height: 1.2;
-}
+.metric-verdict { font-size: 15px; font-weight: 600; margin-bottom: 6px; line-height: 1.2; color: var(--ink); }
 .metric-pill {
-  display: inline-block; font-size: 9px; font-family: monospace;
-  text-transform: uppercase; letter-spacing: 0.1em;
-  padding: 3px 9px; border-radius: 3px; font-weight: 700;
+  display: inline-block; font-size: 11px; letter-spacing: 0;
+  padding: 3px 10px; border-radius: 9999px; font-weight: 600;
 }
 
 /* ── Techniques ── */
-.techniques-section { padding: 12px 16px; border-top: 1px solid var(--border); }
-.section-label {
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
-  color: var(--ink-3); font-weight: 700; margin-bottom: 8px;
-}
-.tech-list { display: flex; flex-direction: column; gap: 5px; }
+.techniques-section { padding: 14px 16px; border-top: 1px solid var(--border); }
+.section-label { font-size: 13px; color: var(--ink-3); font-weight: 600; margin-bottom: 10px; }
+.tech-list { display: flex; flex-direction: column; gap: 6px; }
 .tech-item {
-  background: var(--bg-3); border-radius: 5px; padding: 7px 11px;
+  background: var(--surface); border-radius: 10px; padding: 9px 12px;
   display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
   border: 1px solid var(--border);
 }
-.tech-name {
-  font-family: monospace; font-size: 10px; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--gold); flex-shrink: 0; font-weight: 700;
-}
-.tech-span { font-size: 11px; color: var(--ink-2); font-style: italic; text-align: right; max-width: 180px; line-height: 1.4; }
+.tech-name { font-family: inherit; font-size: 12px; letter-spacing: 0; color: var(--ink); flex-shrink: 0; font-weight: 600; }
+.tech-span { font-size: 12px; color: var(--ink-3); font-style: italic; text-align: right; max-width: 180px; line-height: 1.4; }
 
 /* ── Narrative cluster ── */
 .cluster-row {
-  font-family: monospace; font-size: 10px; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--ink-3); padding: 8px 16px;
-  border-top: 1px solid var(--border);
+  font-family: inherit; font-size: 12px; letter-spacing: 0;
+  color: var(--ink-3); padding: 10px 16px; border-top: 1px solid var(--border);
 }
 
 /* ── Open full button ── */
-.actions { padding: 12px 16px; border-top: 1px solid var(--border); }
+.actions { padding: 14px 16px; border-top: 1px solid var(--border); }
 .btn-open {
-  width: 100%; padding: 10px; font-size: 13px; font-weight: 600;
-  background: transparent; color: var(--ink-2); letter-spacing: 0.06em;
-  border: 1px solid var(--border-2); border-radius: 6px;
-  cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+  width: 100%; padding: 11px; font-size: 14px; font-weight: 600;
+  background: #fff; color: var(--ink); letter-spacing: 0;
+  border: 1px solid var(--border-2); border-radius: 9999px;
+  cursor: pointer; transition: all 0.15s;
 }
-.btn-open:hover { background: var(--bg-3); color: var(--ink); border-color: var(--ink-3); }
+.btn-open:hover { background: var(--surface); border-color: var(--ink-3); }
 
-/* ── Conspiracy alert ── */
+/* ── High-manipulation alert ── */
 .conspiracy-note {
-  font-size: 11px; color: rgba(168,85,247,0.85);
-  background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.22);
-  padding: 7px 11px; border-radius: 5px; margin: 0 16px 12px; display: none;
+  font-size: 13px; color: var(--contradicted);
+  background: #fbeaec; border: 1px solid rgba(155,28,46,0.2);
+  padding: 9px 12px; border-radius: 10px; margin: 0 16px 14px; display: none;
   line-height: 1.5;
 }
 .conspiracy-note.show { display: block; }
@@ -254,7 +232,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 
 <!-- Header -->
 <div class="header">
-  <div class="brand">GKIN <em>NAVIGATOR</em></div>
+  <div class="brand">GKIN<span class="dot">.</span> <span class="brand-sub">Navigator</span></div>
   <div class="header-right">
     <button class="icon-btn" id="settings-toggle" title="Server settings">⚙</button>
   </div>
@@ -270,8 +248,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
   </div>
 </div>
 
-<hr />
-
 <!-- Auth section -->
 <div class="section" id="auth-section">
   <div class="auth-label" id="auth-form-label">Sign in</div>
@@ -283,7 +259,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
     <div class="auth-field">
       <input type="password" id="ext-password" placeholder="Password" autocomplete="current-password" />
     </div>
-    <button class="btn-primary" id="ext-login-btn">Sign In</button>
+    <button class="btn-primary" id="ext-login-btn">Sign in</button>
     <div class="auth-switch">No account? <a id="show-register">Create one</a></div>
     <div class="auth-error" id="ext-login-error"></div>
   </div>
@@ -298,7 +274,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
     <div class="auth-field">
       <input type="password" id="ext-reg-password" placeholder="Password (min 6 chars)" autocomplete="new-password" />
     </div>
-    <button class="btn-primary" id="ext-register-btn">Create Account</button>
+    <button class="btn-primary" id="ext-register-btn">Create account</button>
     <div class="auth-switch">Already have one? <a id="show-login">Sign in</a></div>
     <div class="auth-error" id="ext-reg-error"></div>
   </div>
@@ -308,23 +284,23 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 <div class="section" id="analyze-section" style="display:none;">
   <div class="user-row">
     <div class="user-info">Signed in as <strong id="ext-username-display"></strong></div>
-    <button class="logout-btn" id="ext-logout">Logout</button>
+    <button class="logout-btn" id="ext-logout">Sign out</button>
   </div>
 
   <div class="page-card">
     <div class="page-card-label">Current page</div>
-    <div class="page-title-text" id="page-title-text">Loading...</div>
+    <div class="page-title-text" id="page-title-text">Loading…</div>
   </div>
   <div class="chars-note" id="chars-note"></div>
 
-  <button class="btn-analyze" id="analyze-btn">Analyze This Article</button>
+  <button class="btn-analyze" id="analyze-btn">Analyze this article</button>
   <div class="status" id="status">Analyzing</div>
 
   <div class="result-card" id="result-card">
 
     <!-- Manipulation Index -->
     <div class="metric-section">
-      <div class="metric-header">Manipulation Index</div>
+      <div class="metric-header">Manipulation index</div>
       <div class="metric-row">
         <div class="mini-gauge">
           <svg viewBox="0 0 64 64">
@@ -345,7 +321,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 
     <!-- Authenticity Rating -->
     <div class="metric-section">
-      <div class="metric-header">Authenticity Rating</div>
+      <div class="metric-header">Authenticity rating</div>
       <div class="metric-row">
         <div class="mini-gauge">
           <svg viewBox="0 0 64 64">
@@ -366,7 +342,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 
     <!-- AI Authorship -->
     <div class="metric-section">
-      <div class="metric-header">AI Authorship</div>
+      <div class="metric-header">AI authorship</div>
       <div class="metric-row">
         <div class="mini-gauge">
           <svg viewBox="0 0 64 64">
@@ -390,18 +366,18 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 
     <!-- Techniques -->
     <div class="techniques-section">
-      <div class="section-label">Persuasion Techniques</div>
+      <div class="section-label">Persuasion techniques</div>
       <div class="tech-list" id="ext-techniques"></div>
     </div>
 
-    <!-- Conspiracy alert -->
+    <!-- High-manipulation alert -->
     <div class="conspiracy-note" id="ext-conspiracy-note">
-      ⚠ High manipulation detected — try Conspiracy Mode in the full app.
+      High manipulation detected. Try Speculative mode in the full app.
     </div>
 
     <!-- Open full -->
     <div class="actions">
-      <button class="btn-open" id="open-full-btn">Open Full Analysis →</button>
+      <button class="btn-open" id="open-full-btn">Open full analysis →</button>
     </div>
 
   </div>

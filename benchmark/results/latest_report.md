@@ -1,8 +1,8 @@
 # Automated Benchmark — GKIN vs General AI Tools
 
-_Generated 2026-05-31T00:58:41.399383+00:00._
+_Generated 2026-05-31T16:01:59.960999+00:00._
 
-- **Providers tested:** GKIN, OpenAI, Gemini
+- **Providers tested:** GKIN, OpenAI
 - **Skipped (no key / unreachable):** Perplexity (PERPLEXITY_API_KEY not set)
 - **Prompts:** 5
 - **Scoring method:** rule-based heuristic
@@ -12,19 +12,18 @@ _Generated 2026-05-31T00:58:41.399383+00:00._
 
 | Provider | Avg total / 14 | factual correctness | citation availability | source quality | traceability | timeline clarity | uncertainty handling | misinformation resistance |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| **GKIN** | **7.8** | 1.8 | 1.2 | 1.2 | 0.8 | 1.2 | 1.0 | 0.6 |
-| **OpenAI** | **7.0** | 1.0 | 1.2 | 1.6 | 1.4 | 0.8 | 0.6 | 0.4 |
-| **Gemini** | **0.0** | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| **GKIN** | **8.0** | 1.8 | 1.0 | 1.4 | 1.0 | 1.2 | 1.0 | 0.6 |
+| **OpenAI** | **7.0** | 1.0 | 1.4 | 1.6 | 1.2 | 0.8 | 0.6 | 0.4 |
 
 ## Per-prompt totals
 
-| Prompt | Category | GKIN | OpenAI | Gemini |
-|---|---|---:|---:|---:|
-| date_event_traceability | traceability_timeline | 9 | 3 | 0 |
-| eiffel_1889 | historical_fact | 12 | 9 | 0 |
-| coffee_alzheimers_false_claim | misinformation_resistance | 4 | 10 | 0 |
-| covid_vaccine_timeline | timeline_citations | 9 | 10 | 0 |
-| controversial_claim_trusted_sources | trusted_sources_uncertainty | 5 | 3 | 0 |
+| Prompt | Category | GKIN | OpenAI |
+|---|---|---:|---:|
+| date_event_traceability | traceability_timeline | 9 | 3 |
+| eiffel_1889 | historical_fact | 11 | 9 |
+| coffee_alzheimers_false_claim | misinformation_resistance | 6 | 10 |
+| covid_vaccine_timeline | timeline_citations | 9 | 10 |
+| controversial_claim_trusted_sources | trusted_sources_uncertainty | 5 | 3 |
 
 ## Where GKIN is designed to win
 
@@ -43,47 +42,37 @@ GKIN structurally guarantees the dimensions the midterm feedback flagged: **trac
 ### date_event_traceability
 > What evidence supports the claim that a major public event happened on a specific date? Provide sources and a timeline.
 
-**GKIN** (10 citation(s)): The story of the Apollo 11 moon landing originated on Wikipedia in 2001. The narrative was corroborated by multiple sources, including history.com, mirror.co.uk, ibtimes.com, bbc.com, and foxnews.com. The story evolved over time, with some minor changes in the exact time and date of the moon landing. The overall credib…
+**GKIN** (10 citation(s)): The story of the Apollo 11 Moon landing originated from official NASA sources and historical records, with early reports found on Wikipedia. The narrative was corroborated by multiple sources, including history.com and nasa.gov, with some independent reports providing additional context. The story evolved to include mo…
 
-**OpenAI** (0 citation(s)): To provide a thorough response, I need to know the specific public event and date you are referring to. Please provide that information, and I will gather the relevant evidence, sources, and a timeline for you.…
-
-**Gemini**: _error — 429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b_
+**OpenAI** (0 citation(s)): To assist you effectively, I need to know which specific event and date you are referring to. Please provide the details of the event you want to verify, and I can then gather evidence and sources to support or refute the claim.…
 
 ### eiffel_1889
 > Verify this claim: The Eiffel Tower was originally built for the 1889 World's Fair.
 
-**GKIN** (2 citation(s)): VERDICT: SUPPORTED (confidence 0.60). Multiple sources confirm the Eiffel Tower was built for the 1889 World's Fair. Evidence: - [Wikipedia] "It was constructed as the centrepiece of the 1889 World's Fair, and to crown the centennial anniversary of the French Revolution." (https://en.wikipedia.org/wiki/Eiffel_Tower) - …
+**GKIN** (1 citation(s)): VERDICT: SUPPORTED (confidence 0.60). The evidence from Wikipedia directly states that the Eiffel Tower was designed by Gustave Eiffel's company and built for the 1889 Universal Exposition in Paris. Evidence: - [Wikipedia] "He is best known for the Eiffel Tower, designed by his company and built for the 1889 Universal …
 
-**OpenAI** (1 citation(s)): The claim that the Eiffel Tower was originally built for the 1889 World's Fair is **verified**.   The Eiffel Tower was constructed as the entrance arch to the 1889 Exposition Universelle (World's Fair) held in Paris to celebrate the 100th anniversary of the French Revolution. Designed by the engineer Gustave Eiffel and…
-
-**Gemini**: _error — 429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b_
+**OpenAI** (1 citation(s)): The claim that the Eiffel Tower was originally built for the 1889 World's Fair is **verified**.   The Eiffel Tower was constructed as the entrance arch for the 1889 Exposition Universelle (World's Fair) held in Paris, which celebrated the 100th anniversary of the French Revolution. The tower was designed by the enginee…
 
 ### coffee_alzheimers_false_claim
 > Verify this claim: A new medical study proves that drinking coffee cures Alzheimer's disease.
 
-**GKIN** (0 citation(s)): VERDICT: INSUFFICIENT (confidence 0.00). The evidence does not directly address the claim that drinking coffee cures Alzheimer's disease. While some studies suggest a potential link between coffee consumption and reduced risk of dementia or Alzheimer's disease, none of the evidence explicitly states that coffee cures t…
+**GKIN** (0 citation(s)): VERDICT: INSUFFICIENT (confidence 0.00). The evidence does not directly address the claim that a new medical study proves drinking coffee cures Alzheimer's disease. While some studies suggest a potential link between coffee consumption and reduced risk of cognitive decline or dementia, none of the provided evidence exp…
 
-**OpenAI** (1 citation(s)): The claim that a new medical study proves that drinking coffee cures Alzheimer's disease is **not verified** and is **misleading**.   As of my last update in October 2023, there is no definitive evidence or study that conclusively proves coffee can cure Alzheimer's disease. While some research has suggested that caffei…
-
-**Gemini**: _error — 429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b_
+**OpenAI** (2 citation(s)): The claim that a new medical study proves that drinking coffee cures Alzheimer's disease is **not verified** and is **misleading**.   As of my last update in October 2023, there is no definitive evidence or study that conclusively proves coffee can cure Alzheimer's disease. While some research has suggested that caffei…
 
 ### covid_vaccine_timeline
 > Give a timeline of major events in the development of COVID-19 vaccines and cite evidence for each event.
 
-**GKIN** (8 citation(s)): The story originated from a scientific publication in April 2020, describing the COVID-19 pandemic and the development of vaccines. It was corroborated by multiple outlets, including the New York Times, the National Institute of Allergy and Infectious Diseases, and the Nobel Prize Assembly. The narrative shifted to foc…
+**GKIN** (9 citation(s)): The story started with a Coronavirus Vaccine Tracker on nytimes.com in 2020, and evolved to include updates on vaccine development and distribution. The narrative was corroborated by multiple sources, including wikipedia.org and ajmc.com, but also had some mixed and unrelated reports. The overall credibility assessment…
 
-**OpenAI** (8 citation(s)): Here is a timeline of major events in the development of COVID-19 vaccines, along with citations for each event:  ### Timeline of Major Events in COVID-19 Vaccine Development  1. **January 2020**:     - **Identification of SARS-CoV-2**: The virus responsible for COVID-19 was identified in Wuhan, China. The genetic sequ…
-
-**Gemini**: _error — 429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b_
+**OpenAI** (9 citation(s)): Here is a timeline of major events in the development of COVID-19 vaccines, along with citations for each event:  ### Timeline of Major Events in COVID-19 Vaccine Development  1. **January 2020**:     - **Identification of the Virus**: The novel coronavirus (SARS-CoV-2) was identified in Wuhan, China. The genetic seque…
 
 ### controversial_claim_trusted_sources
 > Verify a controversial current-event claim using only trusted sources. Clearly state what is verified, what is uncertain, and what evidence supports the conclusion.
 
-**GKIN** (0 citation(s)): VERDICT: INSUFFICIENT (confidence 0.00). The evidence does not directly address the claim that artificial intelligence will eliminate the majority of human jobs within the next five years. No grounded evidence was retrieved, so GKIN abstains (INSUFFICIENT).…
+**GKIN** (0 citation(s)): VERDICT: INSUFFICIENT (confidence 0.00). The provided evidence does not directly address the claim that artificial intelligence will eliminate the majority of human jobs within the next five years. No grounded evidence was retrieved, so GKIN abstains (INSUFFICIENT).…
 
 **OpenAI** (0 citation(s)): Please provide the specific claim or current event you would like me to verify, and I will assist you in checking its accuracy using trusted sources.…
-
-**Gemini**: _error — 429 quota/rate-limited: Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/b_
 
 
 _Raw machine-readable results: `benchmark/results/latest_results.json`_

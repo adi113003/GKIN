@@ -45,6 +45,8 @@ import base64
 import asyncio
 import pathlib
 import secrets
+import socket
+import ipaddress
 import statistics as _stats
 import urllib.parse
 import urllib.request
@@ -98,7 +100,7 @@ except ImportError:
 MODEL_REASON  = "openai/gpt-oss-120b"
 MODEL_STRUCT  = "llama-3.3-70b-versatile"
 MODEL_FAST    = "llama-3.1-8b-instant"
-MODEL_VISION  = "llama-3.2-90b-vision-preview"
+MODEL_VISION  = "meta-llama/llama-4-scout-17b-16e-instruct"  # llama-3.2-90b-vision-preview was decommissioned by Groq
 MODEL_WHISPER = "whisper-large-v3"
 
 WELFAKE_CSV          = "WELFake_Dataset.csv"
@@ -715,23 +717,35 @@ async def lifespan(app: FastAPI):
     global _client, _claim_sem, _mongo_client, _users_col, _fake_model, _verdict_cache
     api_key = os.environ.get("GROQ_API_KEY")
     if api_key:
-        _client = AsyncGroq(api_key=api_key)
+        # Bound per-call latency. Without this the Groq SDK defaults to a 60s read
+        # timeout x2 retries, so one throttled call can stall ~3 min and trip nginx's
+        # 60s proxy timeout (504). Fail fast into the 8B fallback / a clean error.
+        _client = AsyncGroq(api_key=api_key, timeout=httpx.Timeout(25.0, connect=5.0), max_retries=1)
     _claim_sem = asyncio.Semaphore(4)
     configure_tracing()          # structured JSON traces for the agentic loop
     _verdict_cache = VerdictCache()
-    _mongo_client = AsyncIOMotorClient(MONGODB_URI)
-    _users_col = _mongo_client["gkin"]["users"]
-    await _users_col.create_index("username", unique=True)
-    await _users_col.create_index("email", unique=True)
+    # Mongo init must never abort startup: a connectivity blip at boot would otherwise
+    # crash the whole ASGI app (landing + analyzer go down, not just auth). On failure
+    # leave _users_col=None so auth requests degrade to a clean 503 (_get_users_col).
+    try:
+        _mongo_client = AsyncIOMotorClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+        _users_col = _mongo_client["gkin"]["users"]
+        await _users_col.create_index("username", unique=True)
+        await _users_col.create_index("email", unique=True)
+        print("✓ MongoDB connected (auth enabled)")
+    except Exception as e:
+        _users_col = None
+        print(f"⚠ MongoDB unavailable — auth disabled, public pages still served: {e}")
     _get_pwd_context()
     try:
         import joblib
         _fake_model = joblib.load("baseline_model.joblib")
-        print("✓ Fake detection model loaded (97% accuracy on WELFake)")
+        print("✓ Stylometric classifier loaded (advisory only; ~chance-level out-of-domain — see benchmark/)")
     except Exception as e:
         print(f"⚠ Fake detection model not loaded: {e}")
     yield
-    _mongo_client.close()
+    if _mongo_client is not None:
+        _mongo_client.close()
 
 
 app = FastAPI(title="GKIN Truth Navigator v3", lifespan=lifespan)
@@ -928,8 +942,55 @@ async def auth_google_callback(code: str = Query(None), error: str = Query(None)
 
 # ── Analysis pipeline ──────────────────────────────────────────────────────────
 
+def _url_points_to_private_host(url: str) -> bool:
+    """SSRF guard. Return True if the URL's host resolves to a non-public
+    address — loopback (127.0.0.1/::1), private (10/8, 192.168/16, …),
+    link-local (169.254/16, incl. the 169.254.169.254 cloud-metadata endpoint),
+    or otherwise reserved/multicast. Such URLs must never be fetched server-side.
+
+    Fails OPEN only when the host cannot be resolved at all: there is no IP to
+    connect to in that case, so trafilatura's own fetch will simply return None
+    and no internal request is made — this avoids blocking legitimate public
+    sites on a transient DNS hiccup."""
+    try:
+        host = urllib.parse.urlparse(url).hostname
+        if not host:
+            return True
+        infos = socket.getaddrinfo(host, None)
+    except Exception:
+        return False
+    for info in infos:
+        raw = info[4][0].split("%")[0]  # strip any IPv6 zone id (e.g. fe80::1%en0)
+        try:
+            ip = ipaddress.ip_address(raw)
+        except ValueError:
+            return True
+        if not ip.is_global:
+            return True
+    return False
+
+
+def _llm_http_error(e: Exception, *, action: str) -> HTTPException:
+    """Map a Groq/LLM exception to a clean, client-safe HTTPException without
+    leaking internal exception text. Rate-limit / daily-quota (TPD) errors are
+    surfaced as a 429 with a retry hint; everything else as a generic 503."""
+    msg = str(e).lower()
+    if any(k in msg for k in (
+        "rate limit", "rate_limit", "ratelimit", "quota", "429",
+        "too many requests", "tokens per day", "tpd",
+    )):
+        return HTTPException(
+            429,
+            "Our analysis models are at capacity right now. "
+            "Please wait a few seconds and try again.",
+        )
+    return HTTPException(503, f"{action} is temporarily unavailable. Please try again in a moment.")
+
+
 def _scrape_page_sync(url: str) -> Optional[str]:
     try:
+        if _url_points_to_private_host(url):
+            return None
         downloaded = trafilatura.fetch_url(url)
         if not downloaded:
             return None
@@ -1221,6 +1282,8 @@ async def _ai_detect(client: AsyncGroq, article_text: str) -> dict:
 
 def _scrape_with_meta_sync(url: str) -> Optional[dict]:
     try:
+        if _url_points_to_private_host(url):
+            return None
         downloaded = trafilatura.fetch_url(url)
         if not downloaded:
             return None
@@ -1663,7 +1726,8 @@ async def analyze(req: AnalyzeRequest, user: dict = Depends(require_auth)):
             struct_err = e
             continue
     if result is None:
-        raise HTTPException(503, f"Analysis structuring failed (all models): {struct_err}")
+        print(f"[analyze] structuring failed (all models): {struct_err!r}", flush=True)
+        raise _llm_http_error(struct_err, action="Analysis")
 
     # Anchor manipulation_index to the auditable rubric sum (additive field).
     _reconcile_manipulation_index(result)
@@ -1771,6 +1835,17 @@ async def verify_claims_endpoint(req: VerifyClaimsRequest, _user: dict = Depends
 # ── Agentic streaming chat ─────────────────────────────────────────────────────
 
 async def _stream_agent(client: AsyncGroq, messages: list, mode: str):
+    """Guard the chat stream so a Groq failure mid-response (429/quota/5xx) yields a
+    friendly message instead of dying with a raw traceback the client renders verbatim."""
+    try:
+        async for chunk in _stream_agent_inner(client, messages, mode):
+            yield chunk
+    except Exception as e:
+        print(f"[chat] stream failed: {e!r}", flush=True)
+        yield "\n\n_The assistant is briefly at capacity — please try again in a moment._"
+
+
+async def _stream_agent_inner(client: AsyncGroq, messages: list, mode: str):
     if mode != "open":
         stream = await client.chat.completions.create(
             model=MODEL_STRUCT, messages=messages, temperature=0.4, stream=True
@@ -1860,6 +1935,11 @@ async def chat(req: ChatRequest, user: dict = Depends(require_auth)):
 MAX_WORDS_URL = 3000
 
 def _fetch_article_sync(url: str):
+    if _url_points_to_private_host(url):
+        raise ValueError(
+            "That link points to a private or internal address and can't be fetched. "
+            "Please use a public article URL, or paste the text directly."
+        )
     downloaded = trafilatura.fetch_url(url)
     if not downloaded:
         return None, None
@@ -1966,7 +2046,8 @@ async def fetch_url(req: FetchUrlRequest, _user: dict = Depends(require_auth)):
     except ValueError as e:
         raise HTTPException(422, str(e))
     except Exception as e:
-        raise HTTPException(500, f"Failed to fetch URL: {e}")
+        print(f"[fetch-url] failed for {url!r}: {e!r}", flush=True)
+        raise HTTPException(502, "Couldn't fetch that link. Check the URL, or paste the article text directly.")
 
     if not text or len(text) < 50:
         raise HTTPException(422, "Could not extract enough content from that URL. Try pasting the text directly.")
@@ -1998,7 +2079,8 @@ async def transcribe(file: UploadFile = File(...), user: dict = Depends(require_
         )
         return {"transcript": str(result)}
     except Exception as e:
-        raise HTTPException(500, f"Transcription failed: {e}")
+        print(f"[transcribe] failed: {e!r}", flush=True)
+        raise _llm_http_error(e, action="Transcription")
 
 
 # ── Vision / screenshot analysis ───────────────────────────────────────────────
@@ -2034,7 +2116,8 @@ async def analyze_image(file: UploadFile = File(...), user: dict = Depends(requi
         )
         extracted = extract_resp.choices[0].message.content.strip()
     except Exception as e:
-        raise HTTPException(500, f"Image text extraction failed: {e}")
+        print(f"[analyze-image] extraction failed: {e!r}", flush=True)
+        raise _llm_http_error(e, action="Image analysis")
 
     if len(extracted) < 100:
         raise HTTPException(
@@ -2083,7 +2166,8 @@ async def compare_articles(req: CompareRequest, user: dict = Depends(require_aut
         )
         comparison = json.loads(comp_resp.choices[0].message.content)
     except Exception as e:
-        raise HTTPException(500, f"Comparison failed: {e}")
+        print(f"[compare] failed: {e!r}", flush=True)
+        raise _llm_http_error(e, action="Comparison")
 
     return {"analyses": analyses, "comparison": comparison}
 

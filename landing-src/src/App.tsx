@@ -8,8 +8,8 @@ import { Footer } from "@/components/sections/Footer";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      <main className="mx-auto max-w-[1040px] border-x border-ink/0 md:border-x-[1.5px] md:border-ink">
+    <div className="min-h-screen bg-canvas text-ink">
+      <main>
         <Masthead />
         <Hero />
         <HowItWorks />

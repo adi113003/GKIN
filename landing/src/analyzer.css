@@ -1,57 +1,63 @@
 @import "tailwindcss";
 
+@theme {
+  /* Airbnb-style system - single Rausch voltage on a white canvas. */
+  --color-rausch: #ff385c;
+  --color-rausch-active: #e00b41;
+  --color-canvas: #ffffff;
+  --color-surface-soft: #f7f7f7;
+  --color-surface-strong: #f2f2f2;
+  --color-ink: #222222;
+  --color-body: #3f3f3f;
+  --color-muted: #6a6a6a;
+  --color-hairline: #dddddd;
+  --color-hairline-soft: #ebebeb;
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { -webkit-text-size-adjust: 100%; }
 
 body {
-  background: #F2ECDD;
-  color: #1A1714;
-  font-family:
-    "Source Serif 4", Georgia, "Times New Roman", serif;
-  font-feature-settings: "liga" 1, "calt" 1, "onum" 1, "kern" 1;
+  background: #ffffff;
+  color: #222222;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+  font-feature-settings: "cv11" 1, "ss01" 1, "liga" 1, "calt" 1, "kern" 1;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
-.font-mono {
-  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
-}
-
+/* Legacy family helpers now resolve to Inter (full-Inter direction). */
+.font-mono,
 .font-slab {
-  font-family: "Zilla Slab", Georgia, serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(26,23,20,0.22); }
-::-webkit-scrollbar-thumb:hover { background: rgba(26,23,20,0.38); }
+::-webkit-scrollbar-thumb { background: #dddddd; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #c1c1c1; }
 
 input::placeholder, textarea::placeholder {
-  color: rgba(64,58,51,0.55);
+  color: #929292;
   font-family: inherit;
   font-weight: 400;
 }
 
-::selection { background: rgba(28,46,74,0.22); color: #1A1714; }
+::selection { background: rgba(255, 56, 92, 0.16); color: #222222; }
 
-/* Nameplate + heading utilities (Dossier). The "grad-*" names are kept so existing
-   markup keeps working, but they now render as flat ink / navy — no gradients. */
-.grad-title {
-  font-family: "Zilla Slab", Georgia, serif;
-  font-weight: 700;
-  color: #1A1714;
-}
-.grad-accent {
-  font-family: "Zilla Slab", Georgia, serif;
-  font-weight: 700;
-  color: #1C2E4A;
-}
+/* Kept for back-compat with any .grad-* markup - now flat ink / Rausch. */
+.grad-title { font-weight: 700; color: #222222; }
+.grad-accent { font-weight: 700; color: #ff385c; }
 
 .text-balance { text-wrap: balance; }
 
-/* Functional-only spinner; ambient animation removed. */
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) {

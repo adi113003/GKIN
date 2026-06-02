@@ -25,7 +25,7 @@ Media-literacy analysis tool. Two parallel detection systems run side-by-side: a
 MODEL_REASON  = "openai/gpt-oss-120b"             # chain-of-thought reasoning (plain only; not JSON-safe)
 MODEL_STRUCT  = "llama-3.3-70b-versatile"          # JSON structuring & chat
 MODEL_FAST    = "llama-3.1-8b-instant"             # claim verification, suggestions
-MODEL_VISION  = "llama-3.2-90b-vision-preview"     # screenshot / image analysis
+MODEL_VISION  = "meta-llama/llama-4-scout-17b-16e-instruct"  # screenshot / image analysis (llama-3.2-90b-vision-preview was decommissioned)
 MODEL_WHISPER = "whisper-large-v3"                 # audio transcription
 ```
 

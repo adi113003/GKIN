@@ -10,8 +10,30 @@ that justifies it, and it refuses to commit when the evidence isn't there.
 |---|---|
 | **Course** | CS343 — Neural AI |
 | **Repo** | https://github.com/adi113003/GKIN |
-| **Live demo** | run locally (see [Quick start](#quick-start)); analyzer at `/analyzer/analyzer.html` |
+| **Live demo** | **<https://gkin.app>** · analyzer at **<https://gkin.app/app>** |
 | **Status** | Working full-stack app + agentic fact-check loop + benchmark suite |
+
+---
+
+## Try it on the public site (no install)
+
+**Live:** <https://gkin.app>  ·  **Analyzer:** <https://gkin.app/app>
+
+1. Open **<https://gkin.app>** and click **"Analyze an article."**
+2. On the login screen, **create an account** (any username + email + 6-character
+   password) or sign in. *A free account is required — there is no install or local setup.*
+3. In the analyzer, click **"Load a sample article"** — or paste your own article text or a
+   news URL — then press **Analyze**.
+4. Read the scorecard: 0–100 manipulation index, named persuasion techniques (with exact
+   quotes), emotional framing, missing context, and extracted claims.
+5. Click **"Verify with sources"** to run the grounded fact-check loop — each claim comes
+   back **SUPPORTED / CONTRADICTED / INSUFFICIENT** with the exact source sentence behind it.
+6. Open the **Timeline** for GDELT coverage of the story, and use the **chat** panel to ask
+   follow-up questions about the analysis.
+
+> The headline flow (text/URL → Analyze → Verify) runs on Groq plus keyless
+> Wikipedia / DuckDuckGo / GDELT. Screenshot and audio inputs are available from the
+> **Upload** and **mic** buttons (or the **MEDIA** tab).
 
 ---
 
@@ -100,7 +122,7 @@ before a hard verdict is emitted.
 |---|---|
 | Frontend | React + Vite + TypeScript + Tailwind + Framer Motion (landing); vanilla SPA (analyzer) |
 | Backend | Python 3, FastAPI, Uvicorn |
-| AI / LLM | Groq-hosted `llama-3.3-70b-versatile`, `gpt-oss-120b`, `llama-3.1-8b-instant`, `llama-3.2-90b-vision`, `whisper-large-v3` |
+| AI / LLM | Groq-hosted `llama-3.3-70b-versatile`, `gpt-oss-120b`, `llama-3.1-8b-instant`, `llama-4-scout-17b` (vision), `whisper-large-v3` |
 | ML | scikit-learn (TF-IDF + LogReg), DistilBERT (HuggingFace Transformers), WELFake |
 | Retrieval | Wikipedia API + DuckDuckGo (keyless) · optional Brave / Google · trafilatura scrape |
 | Data / Auth | MongoDB Atlas (Motor async), JWT (python-jose, passlib/bcrypt) |
@@ -125,8 +147,8 @@ export GROQ_API_KEY="your_groq_key"          # required for LLM + verification
 python server.py            # or: uvicorn server:app --port 8000
 ```
 
-Open **http://localhost:8000/** (landing) or **http://localhost:8000/analyzer/analyzer.html**
-(analyzer workspace). Register an account, paste an article, and run a scan.
+Open **http://localhost:8000/** (landing) or **http://localhost:8000/app**
+(analyzer workspace). Register an account, click **Load a sample article**, and run a scan.
 
 ### Key endpoints
 
@@ -215,3 +237,36 @@ python -m pytest gkin/agentic/tests/ -q     # agentic loop unit tests (state mac
   obscure claims it will (correctly) return INSUFFICIENT rather than guess.
 - The trusted-source allowlist is hand-curated and English-centric; it is a starting point,
   not a complete map of credible sources.
+- **A free account is required** to use the analyzer (register on the public site); there is
+  no guest mode. The landing page and login stay up even if the auth database is briefly down.
+- Screenshot/audio inputs depend on Groq vision/Whisper availability; if a model is busy the
+  app shows a clear message and the core text/URL flow is unaffected.
+
+---
+
+## Deploying & environment (maintainers)
+
+Deploy is automated on push to `main` (GitHub Actions → SSH to the DigitalOcean box →
+`git fetch`/reset + `pm2 restart server`). **The deploy does not run a frontend build or
+`pip install`**, so the box serves exactly the committed files.
+
+**Required server env vars** (set in the box's `.env` / pm2 env — never commit real keys):
+
+| Var | Why | If missing |
+|---|---|---|
+| `GROQ_API_KEY` | all LLM analysis + verification | `/analyze` etc. return 500 |
+| `MONGODB_URI` | register/login (auth) | landing/app stay up; login returns 503 |
+| `SECRET_KEY` | signs JWT auth tokens | **pin a fixed value** — otherwise every restart silently logs users out |
+
+Optional: `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI=https://gkin.app/auth/google/callback` / `FRONTEND_URL=https://gkin.app` (the "Continue with Google" button is hidden until these are set); `BRAVE_API_KEY` / `GOOGLE_API_KEY` (extra search backends).
+
+**Frontend builds → committed assets.** The React frontends are pre-built into `static/`:
+`landing-src/` → `static/landing/` (run `npm --prefix landing-src run build`), and
+`landing/` → `static/analyzer/` (run `npm --prefix landing run build`). Vite emits
+content-hashed bundles, so **always stage the whole `static/` tree after a rebuild**:
+
+```bash
+git add -A static/      # ⚠ NOT `git commit -am` — that skips the new (untracked) JS/CSS
+                        #   and the deployed HTML would 404 its own bundle (white screen)
+git status static/      # confirm new assets/*.js|.css are staged, old ones deleted
+```

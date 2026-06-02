@@ -15,6 +15,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     
     // Set a badge to notify the user
     await chrome.action.setBadgeText({ text: "1" });
-    await chrome.action.setBadgeBackgroundColor({ color: "#6366f1" }); // Indigo
+    await chrome.action.setBadgeBackgroundColor({ color: "#ff385c" }); // Rausch
   }
 });

@@ -10,38 +10,58 @@ import {
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-// "Dossier" — light analytical-briefing / case-file aesthetic.
-// Keys are kept identical to the old dark ramp so every existing reference renders
-// in the new look without a per-site rename. Only paper / ink / navy are used for
-// chrome; the three verdict colors carry MEANING ONLY (see verdictMeta / tierMeta).
+// Airbnb-style: a warm, generous white canvas with a single brand voltage -
+// Rausch (#ff385c) - carrying CTAs / accents / links. Keys are kept identical to
+// the old ramp so every existing reference renders in the new look without a
+// per-site rename. The three verdict colors carry MEANING ONLY (green / red / grey).
 const P = {
-  bg:       "#F2ECDD",                 // paper — page background
-  nav:      "#1C2E4A",                 // navy nav strip
-  card:     "#F2ECDD",                 // paper fill (ruled panel)
-  panel:    "#EAE2CE",                 // paper-2 — recessed wells, metadata cells
-  border:   "#B9AE93",                 // rule-soft — hairline on paper
-  border2:  "#1A1714",                 // ink — heavy hairline
-  border3:  "#1A1714",                 // ink — heavy hairline / emphasis
-  accent:    "#1C2E4A",                // navy — primary accent (was indigo)
-  accentCyan:"#1C2E4A",                // navy (was cyan)
-  accentRose:"#9B1C2E",                // contradicted red (semantic; was rose)
-  accentDim: "#EAE2CE",               // paper-2 wash (was indigo tint)
+  bg:       "#ffffff",                 // canvas - page background
+  nav:      "#ffffff",                 // white top-nav surface
+  card:     "#ffffff",                 // card fill
+  panel:    "#f7f7f7",                 // surface-soft - recessed wells / cells
+  border:   "#dddddd",                 // hairline
+  border2:  "#ebebeb",                 // hairline-soft
+  border3:  "#222222",                 // ink - true emphasis (selected)
+  accent:    "#ff385c",                // Rausch - primary accent
+  accentCyan:"#ff385c",                // Rausch
+  accentRose:"#9B1C2E",                // contradicted red (semantic)
+  accentDim: "#fff0f3",                // pale Rausch wash
   accentGlow:"transparent",            // no glow
-  text:     "#1A1714",                 // ink — primary text
-  text2:    "#403A33",                 // ink-soft — secondary text
-  muted:    "#5B6472",                 // ink-soft / insufficient gray
-  faint:    "#6E665B",                 // muted caption
-  body:     "#1A1714",                 // ink
+  text:     "#222222",                 // ink - primary text
+  text2:    "#3f3f3f",                 // body - secondary text
+  muted:    "#6a6a6a",                 // muted / insufficient grey
+  faint:    "#929292",                 // muted-soft caption
+  body:     "#3f3f3f",                 // body
   green:    "#15633A",                 // supported (verdict)
   red:      "#9B1C2E",                 // contradicted (verdict)
-  yellow:   "#5B6472",                 // disputed/insufficient (neutral; no amber)
-  blue:     "#1C2E4A",                 // navy (was blue)
-  navySoft: "#3A4D6E",                 // navy hover
+  yellow:   "#6a6a6a",                 // disputed/insufficient (neutral grey)
+  blue:     "#ff385c",                 // Rausch (was blue)
+  navySoft: "#e00b41",                 // Rausch active (hover)
 };
 
-// ── Type scaffolding ────────────────────────────────────────────────────────────
-const SLAB  = "'Zilla Slab', Georgia, serif";
-const MONO  = "'IBM Plex Mono', ui-monospace, Menlo, monospace";
+// ── Type scaffolding - full Inter sans (Airbnb feel) ──────────────────────────────
+const SANS  = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif";
+const SLAB  = SANS;   // editorial headings now render in Inter
+const MONO  = SANS;   // former mono labels now render in Inter
+
+// Turn a failed fetch Response into a short, user-facing message - never the raw
+// JSON/HTML body. Maps capacity/timeout statuses to plain copy, and passes through
+// the backend's own {detail} for actionable 4xx (e.g. "couldn't extract content").
+async function friendlyError(r: Response): Promise<string> {
+  let detail = "";
+  try {
+    const body = await r.json();
+    if (body && typeof body.detail === "string") detail = body.detail;
+  } catch {
+    /* non-JSON body (e.g. an HTML 502 page) - fall through to the status map */
+  }
+  if (r.status === 429 || r.status === 503)
+    return "Our analysis models are at capacity right now. Wait a few seconds and try again.";
+  if (r.status === 502 || r.status === 504)
+    return "That request timed out. Try again, or paste the text directly.";
+  if (r.status >= 400 && r.status < 500 && detail) return detail;  // short, user-actionable validation messages
+  return "Something went wrong. Please try again in a moment.";    // never surface a raw 5xx body
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface PersuasionTechnique { technique: string; span?: string; explanation?: string; }
@@ -126,33 +146,33 @@ async function apiFetch(path: string, opts: RequestInit = {}) {
 // the /analyze verdict vocabulary (accurate/false/unverifiable) and the grounded
 // /verify-claims vocabulary (supported/contradicted/insufficient).
 // "fill" describes the square verdict marker: solid for supported/contradicted,
-// hollow for insufficient/unknown — per the Dossier device (not a colored pill).
+// hollow for insufficient/unknown - per the Dossier device (not a colored pill).
 function verdictMeta(raw?: string) {
   const v = (raw || "").toLowerCase().trim();
   // Grounded /verify-claims labels keep their canonical names; the /analyze
   // quick-pass synonyms map onto the same colors.
-  if (v === "supported") return { label: "SUPPORTED", color: P.green, fill: true };
-  if (v === "contradicted") return { label: "CONTRADICTED", color: P.red, fill: true };
-  if (v === "insufficient") return { label: "INSUFFICIENT", color: P.muted, fill: false };
+  if (v === "supported") return { label: "Supported", color: P.green, fill: true };
+  if (v === "contradicted") return { label: "Contradicted", color: P.red, fill: true };
+  if (v === "insufficient") return { label: "Insufficient", color: P.muted, fill: false };
   if (["accurate", "true", "verified", "correct"].includes(v))
-    return { label: "SUPPORTED", color: P.green, fill: true };
+    return { label: "Supported", color: P.green, fill: true };
   if (["false", "inaccurate", "debunked", "incorrect"].includes(v))
-    return { label: "CONTRADICTED", color: P.red, fill: true };
+    return { label: "Contradicted", color: P.red, fill: true };
   if (["misleading", "partially true", "partial", "disputed", "mixed", "conflicting"].includes(v))
-    return { label: "DISPUTED", color: P.muted, fill: false };
-  return { label: "INSUFFICIENT", color: P.muted, fill: false };
+    return { label: "Disputed", color: P.muted, fill: false };
+  return { label: "Insufficient", color: P.muted, fill: false };
 }
 
-// Square verdict marker — filled when supported/contradicted, hollow otherwise.
+// Square verdict marker - filled when supported/contradicted, hollow otherwise.
 function VerdictBadge({ verdict }: { verdict?: string }) {
   const { label, color, fill } = verdictMeta(verdict);
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 600,
-      letterSpacing: "0.08em", color, fontFamily: MONO, textTransform: "uppercase",
+      display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600,
+      letterSpacing: "0", color, fontFamily: SANS,
     }}>
       <span aria-hidden="true" style={{
-        width: 8, height: 8, display: "inline-block",
+        width: 8, height: 8, display: "inline-block", borderRadius: "50%",
         border: `1.5px solid ${color}`, background: fill ? color : "transparent",
       }} />
       {label}
@@ -164,21 +184,21 @@ function VerdictBadge({ verdict }: { verdict?: string }) {
 // 2 established journalism, 3 fact-checkers/reference, 0 unverified.
 function tierMeta(tier?: number, trusted?: boolean) {
   const t = tier ?? 0;
-  if (t === 1) return { label: "TIER-1 · PRIMARY", color: P.text, trusted: true };
-  if (t === 2) return { label: "TIER-2 · JOURNALISM", color: P.text, trusted: true };
-  if (t === 3) return { label: "TIER-3 · FACT-CHECK", color: P.text, trusted: true };
-  return { label: "UNCORROBORATED", color: P.muted, trusted: !!trusted && t > 0 };
+  if (t === 1) return { label: "Tier 1 · Primary", color: P.text, trusted: true };
+  if (t === 2) return { label: "Tier 2 · Journalism", color: P.text, trusted: true };
+  if (t === 3) return { label: "Tier 3 · Fact-check", color: P.text, trusted: true };
+  return { label: "Uncorroborated", color: P.muted, trusted: !!trusted && t > 0 };
 }
 
-// Source tier as a ruled mono chip — navy outline, no colored pill fill.
+// Source tier as a ruled mono chip - navy outline, no colored pill fill.
 function TierBadge({ tier, trusted }: { tier?: number; trusted?: boolean }) {
   const m = tierMeta(tier, trusted);
   const isTrusted = (tier ?? 0) > 0;
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5, fontSize: 9.5, fontWeight: 500,
-      letterSpacing: "0.08em", color: m.color, fontFamily: MONO,
-      border: `1px solid ${isTrusted ? P.accent : P.border}`, padding: "1px 7px",
+      display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 500,
+      letterSpacing: "0", color: m.color, fontFamily: SANS,
+      border: `1px solid ${isTrusted ? P.accent : P.border}`, borderRadius: 9999, padding: "3px 10px",
     }}>
       {isTrusted ? <ShieldCheck size={9} strokeWidth={2.2} color={P.accent} /> : <Shield size={9} strokeWidth={2} />}
       {m.label}
@@ -191,7 +211,7 @@ function hostOf(url: string) {
 }
 
 // ── Gauge ─────────────────────────────────────────────────────────────────────
-// Calm ruled manipulation-index gauge — a bordered track with a solid fill and
+// Calm ruled manipulation-index gauge - a bordered track with a solid fill and
 // real tick marks, not a glowing meter. The fill carries verdict color only when
 // the index is high enough to read as "likely misleading".
 function Gauge({ score }: { score: number }) {
@@ -204,7 +224,7 @@ function Gauge({ score }: { score: number }) {
       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
         <span style={{ fontFamily: SLAB, fontWeight: 700, fontSize: 40, color: P.text, lineHeight: 1 }}>{pct}</span>
         <span style={{ fontFamily: MONO, fontSize: 14, color: P.muted, letterSpacing: "0.02em" }}>/100</span>
-        <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", color, textTransform: "uppercase" }}>{level}</span>
+        <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", color }}>{level}</span>
       </div>
       <div style={{ position: "relative", height: 14, border: `1px solid ${P.text}`, background: P.bg, display: "flex", marginTop: 12 }}>
         <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: `${pct}%`, background: color, zIndex: 1 }} />
@@ -220,7 +240,7 @@ function Gauge({ score }: { score: number }) {
 }
 
 // ── Persuasion summary ────────────────────────────────────────────────────────
-// A calm ruled tally of detected techniques — replaces the old glowing node graph.
+// A calm ruled tally of detected techniques - replaces the old glowing node graph.
 function PersuasionNet({ techniques }: { techniques: PersuasionTechnique[] }) {
   const count = techniques.length;
   const load = count === 0 ? "NONE DETECTED" : count >= 5 ? "HEAVY" : count >= 3 ? "NOTABLE" : "LIGHT";
@@ -228,7 +248,7 @@ function PersuasionNet({ techniques }: { techniques: PersuasionTechnique[] }) {
     <div style={{ border: `1px solid ${P.border}`, background: P.panel }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 12px", borderBottom: `1px solid ${P.border}` }}>
         <span style={{ fontFamily: SLAB, fontWeight: 700, fontSize: 26, color: P.text, lineHeight: 1 }}>{count}</span>
-        <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.1em", color: P.muted, textTransform: "uppercase" }}>{load}</span>
+        <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.1em", color: P.muted }}>{load}</span>
       </div>
       {count === 0
         ? <div style={{ padding: "10px 12px", fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.08em", color: P.faint }}>NO PERSUASION TECHNIQUES FLAGGED</div>
@@ -237,7 +257,7 @@ function PersuasionNet({ techniques }: { techniques: PersuasionTechnique[] }) {
             {techniques.slice(0, 4).map((t, i) => (
               <div key={i} style={{ display: "flex", gap: 8, alignItems: "baseline", padding: "7px 12px", borderTop: i > 0 ? `1px solid ${P.border}` : "none" }}>
                 <span style={{ fontFamily: MONO, fontSize: 9.5, color: P.accent, fontWeight: 600, flexShrink: 0 }}>{String(i + 1).padStart(2, "0")}</span>
-                <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.04em", color: P.text2, textTransform: "uppercase", lineHeight: 1.4 }}>
+                <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.04em", color: P.text2, lineHeight: 1.4 }}>
                   {t.technique.replace(/_/g, " ")}
                 </span>
               </div>
@@ -296,10 +316,10 @@ function NarrativeModal({ claimTimeline, timelineLoading, timelineError, onBuild
       <div
         onClick={e => e.stopPropagation()}
         role="dialog" aria-label="Claim propagation map"
-        style={{ background: P.bg, border: `1.5px solid ${P.text}`, overflow: "hidden", width: 820, maxWidth: "95vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+        style={{ background: P.bg, border: `1px solid ${P.border}`, overflow: "hidden", width: 820, maxWidth: "95vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
 
         {/* header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1.5px solid ${P.text}`, background: P.panel }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${P.border}`, background: P.panel }}>
           <div>
             <div style={{ fontFamily: SLAB, fontWeight: 600, fontSize: 17, color: P.text, letterSpacing: "0.01em" }}>Claim propagation</div>
             <div style={{ fontFamily: MONO, fontSize: 9.5, color: P.muted, letterSpacing: "0.06em", marginTop: 3 }}>
@@ -314,7 +334,7 @@ function NarrativeModal({ claimTimeline, timelineLoading, timelineError, onBuild
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 40 }}>
             <Loader2 size={26} style={{ animation: "spin 1s linear infinite", color: P.accent }} />
             <div style={{ fontFamily: MONO, fontSize: 10.5, color: P.muted, letterSpacing: "0.08em" }}>TRACING CLAIM PROPAGATION…</div>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: P.faint }}>Deeper web scrape — usually 6–10 seconds</div>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: P.faint }}>Deeper web scrape, usually 6–10 seconds</div>
           </div>
         )}
 
@@ -322,7 +342,7 @@ function NarrativeModal({ claimTimeline, timelineLoading, timelineError, onBuild
         {!timelineLoading && timelineError && (
           <div style={{ padding: 32, textAlign: "center" }}>
             <div style={{ fontSize: 13, color: P.red, marginBottom: 14 }}>{timelineError}</div>
-            <button onClick={onBuildTimeline} style={{ background: P.accent, border: "none", color: P.bg, fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", fontWeight: 600, padding: "10px 18px", cursor: "pointer", textTransform: "uppercase" }}>Retry</button>
+            <button onClick={onBuildTimeline} style={{ background: P.accent, border: "none", color: P.bg, fontFamily: SANS, fontSize: 13, letterSpacing: "0", fontWeight: 600, padding: "10px 18px", cursor: "pointer", borderRadius: 8 }}>Retry</button>
           </div>
         )}
 
@@ -393,7 +413,7 @@ function NarrativeModal({ claimTimeline, timelineLoading, timelineError, onBuild
 
         {/* link list at bottom */}
         {nodes.length > 0 && (
-          <div style={{ borderTop: `1.5px solid ${P.text}`, padding: "10px 20px", display: "flex", flexWrap: "wrap", gap: 6, overflowY: "auto", maxHeight: 110 }}>
+          <div style={{ borderTop: `1px solid ${P.border}`, padding: "10px 20px", display: "flex", flexWrap: "wrap", gap: 6, overflowY: "auto", maxHeight: 110 }}>
             {positioned.map((p, i) => (
               <a key={i} href={p.node.url} target="_blank" rel="noopener noreferrer"
                 onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
@@ -410,7 +430,7 @@ function NarrativeModal({ claimTimeline, timelineLoading, timelineError, onBuild
 }
 
 // ── Emotion bars ──────────────────────────────────────────────────────────────
-// Calm ruled bars — navy fill on a paper-2 track, no color-coding, no animation.
+// Calm ruled bars - navy fill on a paper-2 track, no color-coding, no animation.
 function EmotionBars({ scores }: { scores: Record<string, number> }) {
   const order = ["fear", "anger", "disgust", "hope", "guilt", "ingroup_framing"];
   return (
@@ -419,7 +439,7 @@ function EmotionBars({ scores }: { scores: Record<string, number> }) {
         const val = Math.max(0, Math.min(100, scores[k] ?? 0));
         return (
           <div key={k} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontFamily: MONO, fontSize: 9.5, color: P.muted, letterSpacing: "0.08em", width: 110, flexShrink: 0, textTransform: "uppercase" }}>
+            <span style={{ fontFamily: MONO, fontSize: 9.5, color: P.muted, letterSpacing: "0.08em", width: 110, flexShrink: 0 }}>
               {k.replace(/_/g, " ")}
             </span>
             <div style={{ flex: 1, height: 8, background: P.panel, border: `1px solid ${P.border}`, overflow: "hidden" }}>
@@ -454,8 +474,8 @@ function LoginModal({ onClose, onAuth }: { onClose: () => void; onAuth: (t: stri
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(26,23,20,0.55)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div role="dialog" aria-label={mode === "login" ? "Sign in" : "Create account"}
-        style={{ width: 380, maxWidth: "100%", background: P.bg, border: `1.5px solid ${P.text}`, padding: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: `1.5px solid ${P.text}`, background: P.panel }}>
+        style={{ width: 380, maxWidth: "100%", background: P.bg, border: `1px solid ${P.border}`, padding: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: `1px solid ${P.border}`, background: P.panel }}>
           <span style={{ fontFamily: SLAB, fontSize: 18, fontWeight: 600, color: P.text, letterSpacing: "0.01em" }}>
             {mode === "login" ? "Sign in" : "Create account"}
           </span>
@@ -483,7 +503,7 @@ function LoginModal({ onClose, onAuth }: { onClose: () => void; onAuth: (t: stri
             </button>
           </div>
           <button onClick={submit} disabled={loading}
-            style={{ background: P.accent, border: "none", color: P.bg, fontFamily: MONO, fontSize: 11, letterSpacing: "0.1em", fontWeight: 600, padding: "12px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, marginTop: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textTransform: "uppercase" }}>
+            style={{ background: P.accent, border: "none", color: P.bg, fontFamily: SANS, fontSize: 14, letterSpacing: "0", fontWeight: 600, padding: "12px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, marginTop: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 8 }}>
             {loading && <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />}
             {loading ? "Working…" : mode === "login" ? "Sign in" : "Create account"}
           </button>
@@ -500,6 +520,18 @@ function LoginModal({ onClose, onAuth }: { onClose: () => void; onAuth: (t: stri
     </div>
   );
 }
+
+// One-click sample so a first-time visitor can try the analyzer without hunting for
+// an article. Mixes a false/exaggerated claim + conspiracy framing with checkable
+// facts, so the verdicts panel shows CONTRADICTED and SUPPORTED side by side.
+const SAMPLE_ARTICLE =
+  "BREAKING: Scientists confirm the Great Barrier Reef has completely died — 100% gone — " +
+  "and the government is hiding it from the public. In a shocking report this week, insiders " +
+  "revealed the entire reef is dead, yet the mainstream media refuses to cover the story. " +
+  "The reef, located off the coast of Australia, was once the largest living structure on Earth, " +
+  "stretching more than 2,300 kilometres. Officials claim recovery is still possible, but sources " +
+  "say that is a lie designed to protect tourism profits. Wake up — they don't want you to know " +
+  "the truth about what is really happening to our oceans.";
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Analyzer() {
@@ -609,7 +641,7 @@ export default function Analyzer() {
     try {
       const r = await apiFetch("/verify-claims", { method: "POST", body: JSON.stringify({ claims, max_claims: 5 }) });
       if (r.status === 401) { setShowLogin(true); return; }
-      if (!r.ok) throw new Error(await r.text());
+      if (!r.ok) throw new Error(await friendlyError(r));
       const d = await r.json();
       setGroundedVerdicts(d.verdicts || []);
     } catch (e) {
@@ -631,7 +663,7 @@ export default function Analyzer() {
         setLoadingMsg("FETCHING ARTICLE");
         const r = await apiFetch("/fetch-url", { method: "POST", body: JSON.stringify({ url: sourceText }) });
         if (r.status === 401) { setShowLogin(true); return; }
-        if (!r.ok) throw new Error(await r.text());
+        if (!r.ok) throw new Error(await friendlyError(r));
         const d = await r.json();
         articleText = d.text; displayTitle = d.title || sourceText;
         if (d.source_language && d.source_language !== "English") setLangBadge(d.source_language);
@@ -640,7 +672,7 @@ export default function Analyzer() {
       setLoadingMsg("ANALYZING");
       const r2 = await apiFetch("/analyze", { method: "POST", body: JSON.stringify({ article: articleText }) });
       if (r2.status === 401) { setShowLogin(true); return; }
-      if (!r2.ok) throw new Error(await r2.text());
+      if (!r2.ok) throw new Error(await friendlyError(r2));
       const analysis: AnalysisResult = await r2.json();
       saveInvestigation(analysis, displayTitle || sourceText);
       analysis._article_text = articleText;  // for lazy /timeline lookup (not persisted)
@@ -650,6 +682,14 @@ export default function Analyzer() {
     } catch (e: unknown) {
       setScanError(e instanceof Error ? e.message : String(e));
     } finally { setLoading(false); }
+  };
+
+  const loadSample = () => {
+    setActiveTab("TEXT");
+    setInput(SAMPLE_ARTICLE);
+    setScanError("");
+    setResult(null);
+    setFetchedTitle("Sample article (editable)");
   };
 
   // ── Ingestion-hub: Upload / Mic / Link / Youtube ──
@@ -681,7 +721,7 @@ export default function Analyzer() {
         fd.append("file", file);
         const r = await fetch("/analyze-image", { method: "POST", headers: { Authorization: `Bearer ${getToken()}` }, body: fd });
         if (r.status === 401) { setShowLogin(true); return; }
-        if (!r.ok) throw new Error(await r.text());
+        if (!r.ok) throw new Error(await friendlyError(r));
         const analysis: AnalysisResult = await r.json();
         setResult(analysis);
         saveInvestigation(analysis, file.name);
@@ -721,7 +761,7 @@ export default function Analyzer() {
       fd.append("file", fileForUpload);
       const r = await fetch("/transcribe", { method: "POST", headers: { Authorization: `Bearer ${getToken()}` }, body: fd });
       if (r.status === 401) { setShowLogin(true); return; }
-      if (!r.ok) throw new Error(await r.text());
+      if (!r.ok) throw new Error(await friendlyError(r));
       const { transcript } = await r.json();
       if (!transcript || !transcript.trim()) { alert("No speech detected."); return; }
       setActiveTab("TEXT");
@@ -784,8 +824,9 @@ export default function Analyzer() {
     try {
       const r = await apiFetch("/chat", { method: "POST", body: JSON.stringify({ message, analysis: result, history: chatMessages, mode: chatMode }) });
       if (r.status === 401) { setShowLogin(true); setChatLoading(false); return; }
-      if (!r.ok) throw new Error(await r.text());
-      const reader = r.body!.getReader(), decoder = new TextDecoder();
+      if (!r.ok) throw new Error(await friendlyError(r));
+      if (!r.body) throw new Error("no-body");
+      const reader = r.body.getReader(), decoder = new TextDecoder();
       let assistant = "";
       while (true) {
         const { done, value } = await reader.read();
@@ -794,7 +835,10 @@ export default function Analyzer() {
         setChatMessages([...newHistory, { role: "assistant", content: assistant }]);
       }
     } catch (e) {
-      setChatMessages([...newHistory, { role: "assistant", content: "Error: " + String(e) }]);
+      const msg = e instanceof Error && e.message && e.message !== "no-body"
+        ? e.message
+        : "Sorry — I couldn't finish that response. The model may be busy; please try again.";
+      setChatMessages([...newHistory, { role: "assistant", content: msg }]);
     } finally { setChatLoading(false); }
   };
 
@@ -837,27 +881,27 @@ export default function Analyzer() {
     { label: "Source-reliability flag", pct: srcObfPct,  status: srcObfPct >= 70 ? "STRONG" : srcObfPct >= 40 ? "NOTABLE" : "CLEAR" },
   ];
 
-  // ── Shared styles (Dossier: ruled square panels, hairline rules, paper fills) ──
+  // ── Shared styles (Airbnb: soft white cards, hairline rules, rounded corners) ──
+  const CARD_SHADOW = "rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0";
   const S = {
-    // A bordered case-file panel — ink rule, square corners, no shadow.
-    card: { background: P.card, border: `1.5px solid ${P.text}` } as React.CSSProperties,
-    // Panel header strip — mono label on a paper-2 fill.
-    cardHd: { padding: "9px 14px", borderBottom: `1.5px solid ${P.text}`, background: P.panel, display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: MONO, fontSize: 10.5, letterSpacing: "0.12em", color: P.text, fontWeight: 600, textTransform: "uppercase" } as React.CSSProperties,
-    btnFilled: { background: P.accent, border: "none", color: P.bg, fontFamily: MONO, fontSize: 10.5, letterSpacing: "0.1em", fontWeight: 600, padding: "9px 18px", cursor: "pointer", textTransform: "uppercase" } as React.CSSProperties,
-    btnOutline: { background: P.bg, border: `1.5px solid ${P.text}`, color: P.text, fontFamily: MONO, fontSize: 10.5, letterSpacing: "0.1em", fontWeight: 600, padding: "9px 16px", cursor: "pointer", textTransform: "uppercase" } as React.CSSProperties,
-    btnGhost: { background: "transparent", border: `1px solid ${P.text}`, color: P.text, fontFamily: MONO, fontSize: 10.5, letterSpacing: "0.08em", padding: "7px 12px", cursor: "pointer", textTransform: "uppercase" } as React.CSSProperties,
-    tab: (active: boolean): React.CSSProperties => ({ fontFamily: MONO, fontSize: 10.5, letterSpacing: "0.08em", padding: "5px 12px", cursor: "pointer", border: `1px solid ${active ? P.text : P.border}`, background: active ? P.accent : "transparent", color: active ? P.bg : P.text2, textTransform: "uppercase" }),
-    // Section header with decimal numbering — the document scaffold device.
-    secHead: { display: "flex", alignItems: "baseline", gap: 14, borderBottom: `1.5px solid ${P.text}`, paddingBottom: 8, marginBottom: 18, flexWrap: "wrap" } as React.CSSProperties,
-    secNo: { fontFamily: MONO, fontWeight: 600, fontSize: 14, color: P.accent, letterSpacing: "0.04em" } as React.CSSProperties,
-    secTitle: { fontFamily: SLAB, fontWeight: 600, fontSize: 21, letterSpacing: "0.01em", color: P.text, lineHeight: 1.1 } as React.CSSProperties,
-    secKicker: { marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: P.muted } as React.CSSProperties,
+    // A soft white card - hairline + 14px radius + single shadow tier.
+    card: { background: P.card, border: `1px solid ${P.border2}`, borderRadius: 14, boxShadow: CARD_SHADOW, overflow: "hidden" } as React.CSSProperties,
+    // Card header strip - clean Inter label on white, hairline divider beneath.
+    cardHd: { padding: "14px 18px", borderBottom: `1px solid ${P.border2}`, background: P.card, display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: SANS, fontSize: 14, letterSpacing: "0", color: P.text, fontWeight: 600 } as React.CSSProperties,
+    btnFilled: { background: P.accent, border: "none", color: "#ffffff", fontFamily: SANS, fontSize: 14, letterSpacing: "0", fontWeight: 600, padding: "12px 22px", cursor: "pointer", borderRadius: 8 } as React.CSSProperties,
+    btnOutline: { background: "#ffffff", border: `1px solid ${P.text}`, color: P.text, fontFamily: SANS, fontSize: 14, letterSpacing: "0", fontWeight: 600, padding: "11px 20px", cursor: "pointer", borderRadius: 8 } as React.CSSProperties,
+    btnGhost: { background: "transparent", border: `1px solid ${P.border}`, color: P.text, fontFamily: SANS, fontSize: 13, letterSpacing: "0", fontWeight: 500, padding: "9px 14px", cursor: "pointer", borderRadius: 8 } as React.CSSProperties,
+    tab: (active: boolean): React.CSSProperties => ({ fontFamily: SANS, fontSize: 13, letterSpacing: "0", fontWeight: active ? 600 : 500, padding: "8px 16px", cursor: "pointer", border: `1px solid ${active ? P.accent : P.border}`, background: active ? P.accent : "transparent", color: active ? "#ffffff" : P.muted, borderRadius: 9999 }),
+    // Section header - clean hairline rule + Inter title (numbering kept as a small Rausch index).
+    secHead: { display: "flex", alignItems: "baseline", gap: 12, borderBottom: `1px solid ${P.border}`, paddingBottom: 12, marginBottom: 20, flexWrap: "wrap" } as React.CSSProperties,
+    secNo: { fontFamily: SANS, fontWeight: 700, fontSize: 13, color: P.accent, letterSpacing: "0" } as React.CSSProperties,
+    secTitle: { fontFamily: SANS, fontWeight: 700, fontSize: 22, letterSpacing: "-0.02em", color: P.text, lineHeight: 1.2 } as React.CSSProperties,
+    secKicker: { marginLeft: "auto", fontFamily: SANS, fontSize: 13, letterSpacing: "0", color: P.muted } as React.CSSProperties,
   };
 
   // Reusable section header (decimal-numbered, ruled).
-  const SectionHead = ({ no, title, kicker }: { no: string; title: string; kicker?: string }) => (
+  const SectionHead = ({ title, kicker }: { title: string; kicker?: string }) => (
     <div style={S.secHead}>
-      <span style={S.secNo}>{no}</span>
       <span style={S.secTitle}>{title}</span>
       {kicker && <span style={S.secKicker}>{kicker}</span>}
     </div>
@@ -876,39 +920,42 @@ export default function Analyzer() {
         />
       )}
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 0 40px" }}>
+      <div>
 
-        {/* ── Centered nameplate masthead + utility nav (Dossier) ── */}
-        <div style={{ border: `1.5px solid ${P.text}`, borderTop: "none", background: P.bg }}>
-          <nav aria-label="Primary" style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", background: P.nav, borderBottom: `1.5px solid ${P.text}` }}>
-            <a href="/" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", textDecoration: "none", color: P.bg, padding: "9px 18px", cursor: "pointer" }}>Home</a>
-            <button onClick={() => setShowArchives(false)} style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: P.bg, padding: "9px 18px", background: !showArchives ? "rgba(242,236,221,0.12)" : "transparent", border: "none", borderLeft: "1px solid rgba(242,236,221,0.22)", cursor: "pointer", fontWeight: !showArchives ? 600 : 400 }}>Analyze</button>
-            <button onClick={() => setShowArchives(true)} style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: P.bg, padding: "9px 18px", background: showArchives ? "rgba(242,236,221,0.12)" : "transparent", border: "none", borderLeft: "1px solid rgba(242,236,221,0.22)", cursor: "pointer", fontWeight: showArchives ? 600 : 400 }}>History</button>
-            {token
-              ? <button onClick={handleLogout} style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: P.bg, padding: "9px 18px", background: "transparent", border: "none", borderLeft: "1px solid rgba(242,236,221,0.22)", cursor: "pointer" }}>Sign out</button>
-              : <button onClick={() => setShowLogin(true)} style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: P.bg, padding: "9px 18px", background: "rgba(242,236,221,0.10)", border: "none", borderLeft: "1px solid rgba(242,236,221,0.22)", cursor: "pointer", fontWeight: 600 }}>Sign in</button>
-            }
-          </nav>
-          <header style={{ textAlign: "center", padding: "26px 26px 18px", borderBottom: `1.5px solid ${P.text}` }}>
-            <div style={{ fontFamily: SLAB, fontWeight: 700, fontSize: "clamp(40px, 8vw, 56px)", letterSpacing: "0.16em", textIndent: "0.16em", lineHeight: 1, color: P.text }}>GKIN</div>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: P.text2, marginTop: 13, paddingTop: 12, borderTop: `1px solid ${P.border}`, display: "inline-block" }}>
-              {token ? `${username} · Media-Forensics Bureau` : "Ground Knowledge · Media-Forensics Bureau"}
+        {/* ── Full-bleed sticky top nav (wordmark left · actions right) ── */}
+        <header style={{ position: "sticky", top: 0, zIndex: 30, background: P.nav, borderBottom: `1px solid ${P.border}` }}>
+          <nav aria-label="Primary" style={{ maxWidth: 1152, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, padding: "0 24px", minHeight: 72 }}>
+            <a href="/" style={{ display: "inline-flex", alignItems: "baseline", textDecoration: "none", fontFamily: SANS, fontWeight: 800, fontSize: 22, letterSpacing: "-0.02em", color: P.text }}>
+              GKIN<span style={{ color: P.accent }}>.</span>
+            </a>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+              <button onClick={() => setShowArchives(false)} style={{ fontFamily: SANS, fontSize: 15, fontWeight: !showArchives ? 600 : 500, color: !showArchives ? P.text : P.muted, padding: "8px 14px", background: "transparent", border: "none", cursor: "pointer", borderRadius: 8 }}>Analyze</button>
+              <button onClick={() => setShowArchives(true)} style={{ fontFamily: SANS, fontSize: 15, fontWeight: showArchives ? 600 : 500, color: showArchives ? P.text : P.muted, padding: "8px 14px", background: "transparent", border: "none", cursor: "pointer", borderRadius: 8 }}>History</button>
+              {token
+                ? <>
+                    <span style={{ fontFamily: SANS, fontSize: 14, color: P.muted, padding: "0 6px" }}>{username}</span>
+                    <button onClick={handleLogout} style={{ fontFamily: SANS, fontSize: 14, fontWeight: 500, color: P.text, background: "transparent", border: `1px solid ${P.border}`, borderRadius: 9999, padding: "8px 16px", cursor: "pointer" }}>Sign out</button>
+                  </>
+                : <button onClick={() => setShowLogin(true)} style={{ fontFamily: SANS, fontSize: 14, fontWeight: 600, color: "#ffffff", background: P.accent, border: "none", borderRadius: 9999, padding: "9px 18px", cursor: "pointer" }}>Sign in</button>
+              }
             </div>
-          </header>
+          </nav>
+        </header>
 
+        <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 0 40px" }}>
         {/* ── History (Archives) view ── */}
         {showArchives && (
           <div style={{ padding: "26px 26px 8px" }}>
-            <SectionHead no="0.0" title="History" kicker={`${investigations.length} record${investigations.length !== 1 ? "s" : ""} on file`} />
+            <SectionHead title="History" kicker={`${investigations.length} record${investigations.length !== 1 ? "s" : ""} on file`} />
             <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, maxWidth: 560, marginBottom: 20 }}>
               {token ? `Saved analyses for ${username}.` : "Sign in to see your saved analyses."}
             </p>
             {investigations.length === 0 ? (
               <div style={{ border: `1px solid ${P.border}`, background: P.panel, padding: 32, textAlign: "center", fontFamily: MONO, fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>
-                {token ? "NO ANALYSES ON FILE — RUN AN ANALYSIS TO BEGIN" : "SIGN IN TO VIEW YOUR HISTORY"}
+                {token ? "No analyses on file yet. Run an analysis to begin." : "Sign in to view your history."}
               </div>
             ) : (
-              <div style={{ border: `1.5px solid ${P.text}` }}>
+              <div style={{ border: `1px solid ${P.border}` }}>
                 {investigations.map((inv, idx) => {
                   const vs = verdictStyle(inv.verdict);
                   return (
@@ -918,8 +965,8 @@ export default function Analyzer() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
                           <span style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.06em" }}>{inv.id}</span>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: MONO, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: vs.color, textTransform: "uppercase" }}>
-                            <span aria-hidden="true" style={{ width: 7, height: 7, border: `1.5px solid ${vs.color}`, background: vs.fill ? vs.color : "transparent" }} />
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: MONO, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: vs.color }}>
+                            <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", border: `1.5px solid ${vs.color}`, background: vs.fill ? vs.color : "transparent" }} />
                             {verdictLabel(inv.verdict)}
                           </span>
                           <span style={{ fontFamily: MONO, fontSize: 10, color: P.faint, marginLeft: "auto" }}>{timeAgo(inv.timestamp)}</span>
@@ -938,29 +985,38 @@ export default function Analyzer() {
         {/* ── Analyze view ── */}
         {!showArchives && <>
 
-          {/* Document header block — fielded metadata in mono (the signature) */}
-          <div style={{ padding: "18px 26px 16px", borderBottom: `1.5px solid ${P.text}` }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", borderTop: `1px solid ${P.border}`, borderLeft: `1px solid ${P.border}` }}>
-              {([
-                ["Ref", result ? `GKIN-${(investigations[0]?.id || "0000").replace("DX-", "")}` : "GKIN-DRAFT"],
-                ["Date", new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase()],
-                ["Subject", fetchedTitle ? fetchedTitle.slice(0, 48) : "Source under analysis"],
-                ["Intake", activeTab === "URL" ? "URL" : activeTab === "MEDIA" ? "MEDIA" : "TEXT"],
-              ] as [string, string][]).map(([k, v]) => (
-                <div key={k} style={{ borderRight: `1px solid ${P.border}`, borderBottom: `1px solid ${P.border}`, padding: "8px 12px 9px", display: "flex", flexDirection: "column", gap: 3 }}>
-                  <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: P.accent }}>{k}</span>
-                  <span style={{ fontFamily: MONO, fontSize: 13, letterSpacing: "0.01em", color: P.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v}</span>
+          {/* Status banner - subject + assessment chip (Airbnb-clean) */}
+          <div style={{ padding: "20px 24px", borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: SANS, fontSize: 12, color: P.faint, marginBottom: 4 }}>
+                  {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                  {" · "}{activeTab === "URL" ? "URL" : activeTab === "MEDIA" ? "Media" : "Text"}
+                  {" · "}{result ? `GKIN-${(investigations[0]?.id || "0000").replace("DX-", "")}` : "Draft"}
                 </div>
-              ))}
-              <div style={{ gridColumn: "1 / -1", borderRight: `1px solid ${P.border}`, borderBottom: `1px solid ${P.border}`, padding: "8px 12px 9px", display: "flex", flexDirection: "column", gap: 3 }}>
-                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: P.accent }}>Assessment</span>
-                <span style={{ fontFamily: MONO, fontSize: 13, letterSpacing: "0.02em", color: result ? (mi >= 60 ? P.red : P.text) : P.muted }}>
-                  {result
-                    ? `${mi >= 60 ? "LIKELY MISLEADING" : mi >= 40 ? "MIXED SIGNALS" : "NO MAJOR FLAGS"} — MANIPULATION INDEX ${mi}/100`
-                    : "AWAITING A SOURCE — EVERY VERDICT IS TIED TO A SOURCE SENTENCE OR DECLARED INSUFFICIENT"}
-                </span>
+                <div style={{ fontFamily: SANS, fontSize: 18, fontWeight: 600, color: P.text, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 640 }}>
+                  {fetchedTitle ? fetchedTitle : "Source under analysis"}
+                </div>
               </div>
+              {(() => {
+                const statusColor = result ? (mi >= 60 ? P.red : mi >= 40 ? P.muted : P.green) : P.muted;
+                const statusBg = result ? (mi >= 60 ? "#fbeaec" : mi >= 40 ? "#f2f2f2" : "#e8f3ec") : "#f7f7f7";
+                const statusText = result
+                  ? `${mi >= 60 ? "Likely misleading" : mi >= 40 ? "Mixed signals" : "No major flags"} · MI ${mi}/100`
+                  : "Awaiting a source";
+                return (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8, background: statusBg, color: statusColor, fontFamily: SANS, fontSize: 13, fontWeight: 600, padding: "7px 14px", borderRadius: 9999, whiteSpace: "nowrap" }}>
+                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", background: statusColor }} />
+                    {statusText}
+                  </span>
+                );
+              })()}
             </div>
+            {!result && (
+              <p style={{ fontFamily: SANS, fontSize: 13, color: P.muted, marginTop: 10, lineHeight: 1.5, maxWidth: 620 }}>
+                Every verdict is tied to a source sentence, or declared insufficient.
+              </p>
+            )}
           </div>
 
           <div style={{ padding: "26px 26px 8px" }}>
@@ -972,7 +1028,7 @@ export default function Analyzer() {
             </div>
           )}
 
-          {/* Intake — source bar / ingestion */}
+          {/* Intake - source bar / ingestion */}
           <div style={{ ...S.card, marginBottom: 22 }}>
             <div style={S.cardHd}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -990,12 +1046,21 @@ export default function Analyzer() {
                   SOURCE: {fetchedTitle}
                 </div>
               )}
-              <textarea value={input} onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && e.metaKey) executeScan(); }}
-                placeholder={activeTab === "URL" ? "Paste a URL — youtube.com/watch?v=… or any article" : "Paste article text or a headline to analyze…"}
-                rows={6}
-                style={{ background: "transparent", border: "none", outline: "none", resize: "none", color: P.text, fontFamily: "inherit", fontSize: 15, lineHeight: 1.6, width: "100%", padding: "14px", display: "block" }}
-              />
+              {activeTab === "MEDIA" ? (
+                <button type="button" onClick={openFilePicker}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", minHeight: 132, padding: "26px 14px", background: "transparent", border: "none", cursor: "pointer", color: P.muted }}>
+                  <Upload size={20} />
+                  <span style={{ fontSize: 14, color: P.text, fontWeight: 600 }}>Upload a screenshot or audio file</span>
+                  <span style={{ fontSize: 12, color: P.muted, textAlign: "center" }}>PNG / JPG screenshot, or MP3 / WAV / M4A audio — or use the mic below</span>
+                </button>
+              ) : (
+                <textarea value={input} onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && e.metaKey) executeScan(); }}
+                  placeholder={activeTab === "URL" ? "Paste a URL: youtube.com/watch?v=… or any article" : "Paste article text or a headline to analyze…"}
+                  rows={6}
+                  style={{ background: "transparent", border: "none", outline: "none", resize: "none", color: P.text, fontFamily: "inherit", fontSize: 15, lineHeight: 1.6, width: "100%", padding: "14px", display: "block" }}
+                />
+              )}
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", gap: 12, flexWrap: "wrap" }}>
               <div style={{ display: "flex", gap: 6 }}>
@@ -1006,14 +1071,14 @@ export default function Analyzer() {
                   style={{ display: "none" }}
                   onChange={onFileChosen}
                 />
-                <button type="button" style={S.btnGhost} onClick={openFilePicker} title="Upload a file — text, image, or audio" aria-label="Upload file">
+                <button type="button" style={S.btnGhost} onClick={openFilePicker} title="Upload a file: text, image, or audio" aria-label="Upload file">
                   <Upload size={13} />
                 </button>
                 <button
                   type="button"
                   style={{ ...S.btnGhost, color: isRecording ? P.red : P.text, borderColor: isRecording ? P.red : P.text }}
                   onClick={toggleMic}
-                  title={isRecording ? "Stop recording — analyzes on stop" : "Record from microphone"}
+                  title={isRecording ? "Stop recording (analyzes on stop)" : "Record from microphone"}
                   aria-label="Record from microphone"
                   aria-pressed={isRecording}
                 >
@@ -1051,36 +1116,44 @@ export default function Analyzer() {
 
           {/* ── Empty / initial state ── */}
           {!result && !loading && !scanError && (
-            <div style={{ border: `1.5px solid ${P.text}`, padding: "34px 26px", marginBottom: 22 }}>
-              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: P.accent, marginBottom: 14, paddingBottom: 8, borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ ...S.card, padding: "32px 28px", marginBottom: 22 }}>
+              <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: P.accent, marginBottom: 12 }}>
                 Ready when you are
               </div>
-              <p style={{ fontSize: 16, color: P.text, lineHeight: 1.6, maxWidth: 56, maxInlineSize: "56ch", marginBottom: 20 }}>
+              <p style={{ fontSize: 17, color: P.text, lineHeight: 1.6, maxWidth: "58ch", marginBottom: 22 }}>
                 Paste an article, URL, screenshot, or audio clip and run an analysis. GKIN scores manipulation,
-                checks each claim, and ties every verdict to the exact source sentence that backs it — or tells you the record is silent.
+                checks each claim, and ties every verdict to the exact source sentence that backs it, or tells you the record is silent.
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 18, alignItems: "center", marginBottom: 14 }}>
-                <span style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.14em", textTransform: "uppercase" }}>Verdicts</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", marginBottom: 14 }}>
+                <span style={{ fontFamily: SANS, fontSize: 13, color: P.muted, fontWeight: 500 }}>Verdicts</span>
                 <VerdictBadge verdict="supported" />
                 <VerdictBadge verdict="contradicted" />
                 <VerdictBadge verdict="insufficient" />
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                <span style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.14em", textTransform: "uppercase", marginRight: 6 }}>Source tiers</span>
+                <span style={{ fontFamily: SANS, fontSize: 13, color: P.muted, fontWeight: 500, marginRight: 6 }}>Source tiers</span>
                 <TierBadge tier={1} /><TierBadge tier={2} /><TierBadge tier={3} /><TierBadge tier={0} />
+              </div>
+              <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${P.border}`, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
+                <button style={{ ...S.btnFilled, display: "inline-flex", alignItems: "center", gap: 7 }} onClick={loadSample}>
+                  <ArrowRight size={12} /> Load a sample article
+                </button>
+                <span style={{ fontFamily: SANS, fontSize: 13, color: P.muted }}>
+                  New here? Load one with a click, then press Analyze.
+                </span>
               </div>
             </div>
           )}
 
           {/* ── Loading placeholder ── */}
           {loading && !result && (
-            <div style={{ border: `1.5px solid ${P.text}`, padding: "34px 26px", marginBottom: 22, textAlign: "center" }}>
+            <div style={{ ...S.card, padding: "34px 28px", marginBottom: 22, textAlign: "center" }}>
               <Loader2 size={22} style={{ animation: "spin 1s linear infinite", color: P.accent }} />
-              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", color: P.muted, marginTop: 12, textTransform: "uppercase" }}>{loadingMsg}…</div>
+              <div style={{ fontFamily: SANS, fontSize: 14, letterSpacing: "0", color: P.muted, marginTop: 12 }}>{loadingMsg}…</div>
             </div>
           )}
 
-          {/* ════════════════ RESULTS — read top-to-bottom as a case file ════════════════ */}
+          {/* ════════════════ RESULTS - read top-to-bottom as a case file ════════════════ */}
           {result && (() => {
             const sources = result.sources_used || [];
             const trustedCount = sources.filter(s => (s.tier ?? 0) > 0).length;
@@ -1092,10 +1165,10 @@ export default function Analyzer() {
 
               {/* ───────── 1.0 VERDICT ───────── */}
               <section style={{ marginBottom: 26 }}>
-                <SectionHead no="1.0" title="Verdict" kicker="Layer 1 · overall assessment" />
-                <div style={{ border: `1.5px solid ${P.text}`, display: "grid", gridTemplateColumns: "1fr 250px" }} className="verdict-grid">
+                <SectionHead title="Verdict" kicker="Layer 1 · overall assessment" />
+                <div style={{ border: `1px solid ${P.border}`, display: "grid", gridTemplateColumns: "1fr 250px" }} className="verdict-grid">
                   <div style={{ padding: "18px 20px" }}>
-                    <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", color: P.muted, marginBottom: 6 }}>Assessment</div>
+                    <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.1em", color: P.muted, marginBottom: 6 }}>Assessment</div>
                     <div style={{ fontFamily: SLAB, fontWeight: 700, fontSize: 30, lineHeight: 1.05, color: verdictColor, marginBottom: 12 }}>{verdictWord}</div>
                     <p style={{ fontSize: 16, lineHeight: 1.55, maxWidth: "52ch", margin: 0, color: P.text }}>
                       {result.summary || "Summary not available for this source."}
@@ -1106,8 +1179,8 @@ export default function Analyzer() {
                       </div>
                     )}
                   </div>
-                  <div style={{ borderLeft: `1.5px solid ${P.text}`, padding: "18px 18px", display: "flex", flexDirection: "column", justifyContent: "center" }} className="gauge-cell">
-                    <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: P.accent, marginBottom: 8 }}>Manipulation index</div>
+                  <div style={{ borderLeft: `1px solid ${P.border}`, padding: "18px 18px", display: "flex", flexDirection: "column", justifyContent: "center" }} className="gauge-cell">
+                    <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", color: P.accent, marginBottom: 8 }}>Manipulation index</div>
                     <Gauge score={mi} />
                   </div>
                 </div>
@@ -1115,7 +1188,7 @@ export default function Analyzer() {
 
               {/* ───────── 2.0 EVIDENCE ───────── */}
               <section id="evidence" style={{ marginBottom: 26 }}>
-                <SectionHead no="2.0" title="Evidence" kicker={`Layer 2 · ${claims.length} claim${claims.length !== 1 ? "s" : ""}`} />
+                <SectionHead title="Evidence" kicker={`Layer 2 · ${claims.length} claim${claims.length !== 1 ? "s" : ""}`} />
 
                 {/* Grounded fact-check (agentic /verify-claims) */}
                 <div style={{ ...S.card, marginBottom: 16 }}>
@@ -1127,7 +1200,7 @@ export default function Analyzer() {
                     {!groundedVerdicts && !verifying && !verifyError && (
                       <div>
                         <p style={{ fontSize: 14.5, color: P.text2, lineHeight: 1.6, maxWidth: "60ch", margin: "0 0 14px" }}>
-                          Run each extracted claim through GKIN's retrieval-grounded loop. Every supported or contradicted verdict is tied to the exact source sentence that backs it — or returns insufficient. (~10–20s)
+                          Run each extracted claim through GKIN's retrieval-grounded loop. Every supported or contradicted verdict is tied to the exact source sentence that backs it, or returns insufficient. (~10–20s)
                         </p>
                         <button style={{ ...S.btnFilled, display: "inline-flex", alignItems: "center", gap: 7 }} onClick={runGroundedVerification}>
                           <ShieldCheck size={12} /> Verify with sources
@@ -1157,7 +1230,7 @@ export default function Analyzer() {
                           const hard = gv.label === "SUPPORTED" || gv.label === "CONTRADICTED";
                           return (
                             <div key={i} style={{ borderLeft: `3px solid ${P.accent}`, paddingLeft: 14 }}>
-                              <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.12em", color: P.muted, marginBottom: 6 }}>FINDING {String(i + 1).padStart(2, "0")} — CLAIM UNDER REVIEW</div>
+                              <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.12em", color: P.muted, marginBottom: 6 }}>Finding {String(i + 1).padStart(2, "0")} · Claim under review</div>
                               <p style={{ fontFamily: SLAB, fontWeight: 600, fontSize: 16, color: P.text, marginBottom: 10, lineHeight: 1.35 }}>{gv.claim_text}</p>
                               <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", marginBottom: 8 }}>
                                 <VerdictBadge verdict={gv.label} />
@@ -1187,7 +1260,7 @@ export default function Analyzer() {
                             </div>
                           );
                         })}
-                        <button onClick={runGroundedVerification} style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", color: P.accent, fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", cursor: "pointer", padding: 0, textTransform: "uppercase" }}>
+                        <button onClick={runGroundedVerification} style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", color: P.accent, fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", cursor: "pointer", padding: 0 }}>
                           <RefreshCw size={11} /> Re-run
                         </button>
                       </div>
@@ -1206,9 +1279,9 @@ export default function Analyzer() {
                         const v = c.verification?.verdict || "insufficient";
                         const citationIds = c.citation_ids || [];
                         return (
-                          <div key={i} style={{ display: "grid", gridTemplateColumns: "120px 1fr", borderTop: `1.5px solid ${P.text}` }} className="finding-row">
+                          <div key={i} style={{ display: "grid", gridTemplateColumns: "120px 1fr", borderTop: `1px solid ${P.border}` }} className="finding-row">
                             <div style={{ background: P.panel, borderRight: `1px solid ${P.border}`, padding: 14 }}>
-                              <div style={{ fontFamily: MONO, fontWeight: 600, fontSize: 12, color: P.accent, letterSpacing: "0.04em", marginBottom: 9 }}>FINDING {String(i + 1).padStart(2, "0")}</div>
+                              <div style={{ fontFamily: MONO, fontWeight: 600, fontSize: 12, color: P.accent, letterSpacing: "0.04em", marginBottom: 9 }}>Finding {String(i + 1).padStart(2, "0")}</div>
                               <VerdictBadge verdict={v} />
                             </div>
                             <div style={{ padding: 14 }}>
@@ -1247,22 +1320,22 @@ export default function Analyzer() {
 
               {/* ───────── 3.0 APPENDIX / DETAILS ───────── */}
               <section style={{ marginBottom: 26 }}>
-                <SectionHead no="3.0" title="Appendix" kicker="Layer 3 · details" />
-                <div style={{ border: `1.5px solid ${P.text}` }}>
+                <SectionHead title="Appendix" kicker="Layer 3 · details" />
+                <div style={{ border: `1px solid ${P.border}` }}>
 
                   {/* 3.1 Persuasion techniques */}
                   <details open style={{ borderTop: "none" }}>
                     <summary style={{ listStyle: "none", cursor: "pointer", display: "flex", alignItems: "baseline", gap: 14, padding: "13px 16px", userSelect: "none" }}>
                       <span style={{ fontFamily: MONO, fontWeight: 600, fontSize: 12, color: P.accent, width: 34, flexShrink: 0 }}>3.1</span>
                       <span style={{ fontFamily: SLAB, fontWeight: 600, fontSize: 16, color: P.text }}>Persuasion techniques</span>
-                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: P.muted }}>{techniques.length} found</span>
+                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", color: P.muted }}>{techniques.length} found</span>
                     </summary>
                     <div style={{ padding: "4px 16px 16px 64px", borderTop: `1px solid ${P.border}`, background: P.panel }}>
                       {techniques.length === 0
                         ? <p style={{ fontFamily: MONO, fontSize: 11, color: P.faint, padding: "10px 0", letterSpacing: "0.06em" }}>NONE DETECTED</p>
                         : techniques.map((t, i) => (
                           <div key={i} style={{ borderTop: i > 0 ? `1px solid ${P.border}` : "none", padding: "11px 0" }}>
-                            <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: P.accent, marginBottom: 4 }}>{t.technique.replace(/_/g, " ")}</div>
+                            <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: P.accent, marginBottom: 4 }}>{t.technique.replace(/_/g, " ")}</div>
                             {t.span && <p style={{ fontSize: 14, color: P.text2, fontStyle: "italic", lineHeight: 1.5, margin: "0 0 4px" }}>“{t.span}”</p>}
                             {t.explanation && <p style={{ fontSize: 14, color: P.text, lineHeight: 1.5, margin: 0 }}>{t.explanation}</p>}
                           </div>
@@ -1288,7 +1361,7 @@ export default function Analyzer() {
                     <summary style={{ listStyle: "none", cursor: "pointer", display: "flex", alignItems: "baseline", gap: 14, padding: "13px 16px", userSelect: "none" }}>
                       <span style={{ fontFamily: MONO, fontWeight: 600, fontSize: 12, color: P.accent, width: 34, flexShrink: 0 }}>3.3</span>
                       <span style={{ fontFamily: SLAB, fontWeight: 600, fontSize: 16, color: P.text }}>Missing context</span>
-                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: P.muted }}>{gaps.length} gap{gaps.length !== 1 ? "s" : ""}</span>
+                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", color: P.muted }}>{gaps.length} gap{gaps.length !== 1 ? "s" : ""}</span>
                     </summary>
                     <div style={{ padding: "4px 16px 16px 64px", borderTop: `1px solid ${P.border}`, background: P.panel }}>
                       {gaps.length === 0
@@ -1296,7 +1369,7 @@ export default function Analyzer() {
                         : gaps.map((g, i) => (
                           <div key={i} style={{ borderTop: i > 0 ? `1px solid ${P.border}` : "none", padding: "11px 0" }}>
                             <p style={{ fontSize: 14.5, color: P.text, lineHeight: 1.5, margin: "0 0 4px" }}>{g.gap}</p>
-                            {g.why_it_matters && <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.5, margin: 0 }}><span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", color: P.muted }}>Why it matters · </span>{g.why_it_matters}</p>}
+                            {g.why_it_matters && <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.5, margin: 0 }}><span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", color: P.muted }}>Why it matters · </span>{g.why_it_matters}</p>}
                           </div>
                         ))}
                     </div>
@@ -1312,13 +1385,13 @@ export default function Analyzer() {
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="meta-grid">
                         {([
                           ["Source language",  result.source_language || "English"],
-                          ["Bias orientation",  result.bias_orientation || "—"],
-                          ["AI authorship",     result.ai_detection?.verdict?.toUpperCase() || "—"],
+                          ["Bias orientation",  result.bias_orientation || "Unknown"],
+                          ["AI authorship",     result.ai_detection?.verdict?.toUpperCase() || "Unknown"],
                           ["AI score",          `${syntheticPct}%`],
-                          ["Source-reliability flag", result.fake_detection?.verdict?.toUpperCase() || "—"],
+                          ["Source-reliability flag", result.fake_detection?.verdict?.toUpperCase() || "Unknown"],
                         ] as [string, string][]).map(([k, v]) => (
                           <div key={k} style={{ borderBottom: `1px solid ${P.border}`, paddingBottom: 8 }}>
-                            <div style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 3 }}>{k}</div>
+                            <div style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.1em", marginBottom: 3 }}>{k}</div>
                             <div style={{ fontFamily: MONO, fontSize: 13, color: P.text, fontWeight: 500 }}>{v}</div>
                           </div>
                         ))}
@@ -1326,14 +1399,14 @@ export default function Analyzer() {
                       {result.fake_detection?.reasoning && <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6, marginBottom: 12 }}>{result.fake_detection.reasoning}</p>}
                       {(result.fake_detection?.red_flags || []).length > 0 && (
                         <div style={{ marginBottom: 10 }}>
-                          <div style={{ fontFamily: MONO, fontSize: 10, color: P.red, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Red flags</div>
-                          {result.fake_detection!.red_flags!.map((f, i) => <div key={i} style={{ fontSize: 13.5, color: P.text, padding: "2px 0", lineHeight: 1.5 }}>— {f}</div>)}
+                          <div style={{ fontFamily: MONO, fontSize: 10, color: P.red, letterSpacing: "0.1em", marginBottom: 6 }}>Red flags</div>
+                          {result.fake_detection!.red_flags!.map((f, i) => <div key={i} style={{ fontSize: 13.5, color: P.text, padding: "2px 0", lineHeight: 1.5 }}>• {f}</div>)}
                         </div>
                       )}
                       {(result.fake_detection?.trust_signals || []).length > 0 && (
                         <div>
-                          <div style={{ fontFamily: MONO, fontSize: 10, color: P.green, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Trust signals</div>
-                          {result.fake_detection!.trust_signals!.map((f, i) => <div key={i} style={{ fontSize: 13.5, color: P.text, padding: "2px 0", lineHeight: 1.5 }}>— {f}</div>)}
+                          <div style={{ fontFamily: MONO, fontSize: 10, color: P.green, letterSpacing: "0.1em", marginBottom: 6 }}>Trust signals</div>
+                          {result.fake_detection!.trust_signals!.map((f, i) => <div key={i} style={{ fontSize: 13.5, color: P.text, padding: "2px 0", lineHeight: 1.5 }}>• {f}</div>)}
                         </div>
                       )}
                       <p style={{ fontFamily: MONO, fontSize: 10.5, color: P.muted, letterSpacing: "0.02em", lineHeight: 1.6, marginTop: 12, fontStyle: "italic" }}>
@@ -1360,13 +1433,13 @@ export default function Analyzer() {
                     <summary style={{ listStyle: "none", cursor: "pointer", display: "flex", alignItems: "baseline", gap: 14, padding: "13px 16px", userSelect: "none" }}>
                       <span style={{ fontFamily: MONO, fontWeight: 600, fontSize: 12, color: P.accent, width: 34, flexShrink: 0 }}>3.6</span>
                       <span style={{ fontFamily: SLAB, fontWeight: 600, fontSize: 16, color: P.text }}>Sources &amp; citations</span>
-                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: P.muted }}>
+                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", color: P.muted }}>
                         {sources.length > 0 ? `${trustedCount} trusted / ${sources.length}` : "0 sources"}
                       </span>
                     </summary>
                     <div style={{ borderTop: `1px solid ${P.border}`, background: P.panel }}>
                       {sources.length === 0 ? (
-                        <div style={{ padding: "16px 16px 16px 64px", fontFamily: MONO, fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>NO SOURCES RETRIEVED — NO CORROBORATING PAGES FOUND</div>
+                        <div style={{ padding: "16px 16px 16px 64px", fontFamily: MONO, fontSize: 11, color: P.faint, letterSpacing: "0.06em" }}>No sources retrieved. No corroborating pages found.</div>
                       ) : (
                         sources.map((s, i) => {
                           const expanded = expandedSrc === i;
@@ -1385,12 +1458,12 @@ export default function Analyzer() {
                                     {s.published_date && <span style={{ fontFamily: MONO, fontSize: 10, border: `1px solid ${P.border}`, padding: "1px 6px", color: P.text2 }}>{s.published_date}</span>}
                                   </div>
                                   <div style={{ fontSize: 14, color: P.text2, lineHeight: 1.5 }}>
-                                    <span style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.06em", textTransform: "uppercase" }}>Supports: </span>
+                                    <span style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.06em" }}>Supports: </span>
                                     {s.claim_supported}
                                   </div>
                                   {s.relevance_snippet && (
                                     <button onClick={() => setExpandedSrc(expanded ? null : i)}
-                                      style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: P.accent, fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", cursor: "pointer", padding: 0, textTransform: "uppercase" }}>
+                                      style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: P.accent, fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", cursor: "pointer", padding: 0 }}>
                                       {expanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
                                       {expanded ? "Hide excerpt" : "Show excerpt"}
                                     </button>
@@ -1407,12 +1480,12 @@ export default function Analyzer() {
                     </div>
                   </details>
 
-                  {/* 3.7 Claim timeline — lazy-loaded */}
+                  {/* 3.7 Claim timeline - lazy-loaded */}
                   <details style={{ borderTop: `1px solid ${P.border}` }} onToggle={e => { if ((e.target as HTMLDetailsElement).open) setTimelineOpen(true); }}>
                     <summary style={{ listStyle: "none", cursor: "pointer", display: "flex", alignItems: "baseline", gap: 14, padding: "13px 16px", userSelect: "none" }}>
                       <span style={{ fontFamily: MONO, fontWeight: 600, fontSize: 12, color: P.accent, width: 34, flexShrink: 0 }}>3.7</span>
                       <span style={{ fontFamily: SLAB, fontWeight: 600, fontSize: 16, color: P.text }}>Claim timeline</span>
-                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: P.muted }}>lazy</span>
+                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, letterSpacing: "0.1em", color: P.muted }}>lazy</span>
                     </summary>
                     <div style={{ padding: "14px 16px 16px 64px", borderTop: `1px solid ${P.border}`, background: P.panel }}>
                       {!claimTimeline && !timelineLoading && (
@@ -1432,7 +1505,7 @@ export default function Analyzer() {
                       {timelineError && <p style={{ fontSize: 13, color: P.red, lineHeight: 1.6 }}>{timelineError}</p>}
                       {gdeltCoverage && gdeltCoverage.article_count > 0 && (
                         <div style={{ border: `1px solid ${P.border}`, background: P.panel, padding: "10px 12px", marginBottom: 14 }}>
-                          <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.14em", textTransform: "uppercase", color: P.accent, marginBottom: 6 }}>
+                          <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: "0.14em", color: P.accent, marginBottom: 6 }}>
                             Coverage · GDELT global news index
                           </div>
                           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontFamily: MONO, fontSize: 11, color: P.text2 }}>
@@ -1446,7 +1519,7 @@ export default function Analyzer() {
                             </div>
                           )}
                           <div style={{ marginTop: 7, fontFamily: MONO, fontSize: 9, color: P.faint, letterSpacing: "0.04em", lineHeight: 1.5 }}>
-                            Coverage breadth, not a truth signal — verdicts rest on the cited sources above.
+                            Coverage breadth, not a truth signal; verdicts rest on the cited sources above.
                           </div>
                         </div>
                       )}
@@ -1458,7 +1531,7 @@ export default function Analyzer() {
                           {claimTimeline.map((ct, ci) => (
                             <div key={ci}>
                               <div style={{ marginBottom: 10 }}>
-                                <div style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Claim</div>
+                                <div style={{ fontFamily: MONO, fontSize: 10, color: P.muted, letterSpacing: "0.1em", marginBottom: 4 }}>Claim</div>
                                 <p style={{ fontFamily: SLAB, fontSize: 15, color: P.text, lineHeight: 1.4, fontWeight: 600, margin: 0 }}>{ct.claim}</p>
                                 {ct.first_reported && <div style={{ fontFamily: MONO, fontSize: 10, color: P.accent, marginTop: 6, letterSpacing: "0.04em" }}>FIRST REPORTED: {ct.first_reported}</div>}
                               </div>
@@ -1487,7 +1560,7 @@ export default function Analyzer() {
 
               {/* ───────── 4.0 ASK A QUESTION (chat, secondary panel) ───────── */}
               <section style={{ marginBottom: 26 }}>
-                <SectionHead no="4.0" title="Ask a question" kicker="Conversational follow-up" />
+                <SectionHead title="Ask a question" kicker="Conversational follow-up" />
                 <div style={S.card}>
                   <div style={S.cardHd}>
                     <span>Assistant</span>
@@ -1499,7 +1572,7 @@ export default function Analyzer() {
                   {chatMode === "conspiracy" && (
                     <div style={{ margin: "12px 16px 0", padding: "8px 12px", background: P.panel, border: `1px solid ${P.red}`, fontFamily: MONO, fontSize: 11, color: P.red, display: "flex", alignItems: "center", gap: 8, letterSpacing: "0.02em" }}>
                       <AlertTriangle size={13} />
-                      Speculative mode — alternative theories for critical thinking only.
+                      Speculative mode: alternative theories for critical thinking only.
                     </div>
                   )}
 
@@ -1557,8 +1630,8 @@ export default function Analyzer() {
           {/* ── Recent analyses ── */}
           {investigations.length > 0 && (
             <div style={{ marginTop: 30 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1.5px solid ${P.text}`, paddingBottom: 8, marginBottom: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: MONO, fontSize: 11, color: P.text, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${P.border}`, paddingBottom: 8, marginBottom: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: MONO, fontSize: 11, color: P.text, letterSpacing: "0.12em" }}>
                   <Clock size={12} /> Recent analyses
                 </div>
                 <button style={S.btnGhost} onClick={() => setShowArchives(true)}>View all</button>
@@ -1571,8 +1644,8 @@ export default function Analyzer() {
                       style={{ ...S.card, padding: 14, cursor: "pointer" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                         <span style={{ fontFamily: MONO, fontSize: 10, color: P.muted }}>{inv.id}</span>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: MONO, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: vs.color, textTransform: "uppercase" }}>
-                          <span aria-hidden="true" style={{ width: 7, height: 7, border: `1.5px solid ${vs.color}`, background: vs.fill ? vs.color : "transparent" }} />
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: MONO, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: vs.color }}>
+                          <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", border: `1.5px solid ${vs.color}`, background: vs.fill ? vs.color : "transparent" }} />
                           {verdictLabel(inv.verdict)}
                         </span>
                       </div>
@@ -1592,11 +1665,11 @@ export default function Analyzer() {
           </>}
 
           {/* ── Colophon ── */}
-          <div style={{ padding: "16px 26px 22px", borderTop: `1.5px solid ${P.text}`, display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", fontFamily: MONO, fontSize: 10.5, letterSpacing: "0.08em", color: P.muted, textTransform: "uppercase" }}>
-            <span>GKIN — Ground Knowledge · Media-Forensics Bureau</span>
-            <span style={{ color: P.accent }}>Every verdict tied to a source sentence — or declared insufficient</span>
+          <div style={{ padding: "20px 24px 28px", borderTop: `1px solid ${P.border}`, display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", fontFamily: SANS, fontSize: 13, letterSpacing: "0", color: P.muted }}>
+            <span><span style={{ fontWeight: 600, color: P.text }}>GKIN</span> · Ground Knowledge</span>
+            <span style={{ color: P.accent }}>Every verdict tied to a source sentence, or declared insufficient.</span>
           </div>
-        </div> {/* /sheet */}
+        </div> {/* /content */}
       </div>
 
       <style>{`
@@ -1608,7 +1681,7 @@ export default function Analyzer() {
         }
         @media (max-width: 760px) {
           .verdict-grid { grid-template-columns: 1fr !important; }
-          .gauge-cell { border-left: none !important; border-top: 1.5px solid ${P.text} !important; }
+          .gauge-cell { border-left: none !important; border-top: 1px solid ${P.border} !important; }
           .finding-row { grid-template-columns: 1fr !important; }
           .meta-grid { grid-template-columns: 1fr !important; }
           .recent-grid { grid-template-columns: 1fr !important; }

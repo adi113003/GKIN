@@ -3,15 +3,15 @@ import { ArrowUp, Square, FileText, Globe, AlertTriangle } from "lucide-react";
 
 const cn = (...c: (string | undefined | null | false)[]) => c.filter(Boolean).join(" ");
 
-// "Dossier" palette anchor points — matches Analyzer.tsx P object (paper/ink/navy).
+// Airbnb-style palette - matches Analyzer.tsx P object (white canvas / Rausch).
 const COLORS = {
-  bg: "#F2ECDD",            // paper
-  panel: "#EAE2CE",         // paper-2
-  border: "#B9AE93",        // rule-soft
-  borderFocus: "#1A1714",   // ink
-  text: "#1A1714",          // ink
-  muted: "#5B6472",         // ink-soft / insufficient
-  navy: "#1C2E4A",          // navy accent
+  bg: "#ffffff",            // canvas
+  panel: "#f7f7f7",         // surface-soft
+  border: "#dddddd",        // hairline
+  borderFocus: "#222222",   // ink (focus)
+  text: "#222222",          // ink
+  muted: "#6a6a6a",         // muted / insufficient
+  navy: "#ff385c",          // Rausch accent
   red: "#9B1C2E",           // contradicted
 };
 
@@ -93,10 +93,11 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
     return (
       <div
         ref={ref}
-        className={cn("p-1 transition-colors", className)}
+        className={cn("p-2 transition-colors", className)}
         style={{
           background: COLORS.bg,
           border: `1px solid ${focused ? COLORS.borderFocus : COLORS.border}`,
+          borderRadius: 14,
         }}
         onFocus={() => setFocused(true)}
         onBlur={(e) => {
@@ -110,13 +111,13 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           rows={1}
-          className="block w-full bg-transparent border-0 outline-none resize-none px-2 py-1"
+          className="block w-full bg-transparent border-0 outline-none resize-none px-3 py-2"
           style={{
             color: COLORS.text,
             fontFamily: "inherit",
-            fontSize: 11,
-            lineHeight: 1.6,
-            minHeight: 24,
+            fontSize: 14,
+            lineHeight: 1.5,
+            minHeight: 28,
             letterSpacing: "0",
           }}
         />
@@ -137,19 +138,20 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
                     aria-pressed={active}
                     className="transition-colors flex items-center gap-1.5"
                     style={{
-                      height: 22,
-                      padding: "0 8px",
+                      height: 28,
+                      padding: "0 12px",
+                      borderRadius: 9999,
                       background: active ? m.color : "transparent",
                       border: `1px solid ${active ? m.color : COLORS.border}`,
-                      color: active ? COLORS.bg : COLORS.muted,
+                      color: active ? "#ffffff" : COLORS.muted,
                       cursor: "pointer",
-                      fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+                      fontFamily: "inherit",
                     }}
                   >
-                    <Icon className="w-2.5 h-2.5" />
+                    <Icon className="w-3 h-3" />
                     <span
                       className="font-medium whitespace-nowrap"
-                      style={{ fontSize: 9.5, letterSpacing: "0.06em", textTransform: "uppercase" }}
+                      style={{ fontSize: 11.5, letterSpacing: "0" }}
                     >
                       {m.label}
                     </span>
@@ -168,8 +170,9 @@ export const PromptInputBox = React.forwardRef<HTMLDivElement, PromptInputBoxPro
             aria-label={isLoading ? "Stop" : "Send message"}
             className="inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed"
             style={{
-              height: 24,
-              width: 24,
+              height: 32,
+              width: 32,
+              borderRadius: 9999,
               background: isLoading ? "transparent" : sendBg,
               color: isLoading ? COLORS.red : sendIconColor,
               border: isLoading ? `1px solid ${COLORS.red}` : `1px solid ${canSend ? COLORS.navy : COLORS.border}`,

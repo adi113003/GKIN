@@ -4,25 +4,58 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: "#F2ECDD",
-        "paper-2": "#EAE2CE",
+        // ── Airbnb-style system ───────────────────────────────────────────
+        // Single brand voltage — Rausch — carries every primary CTA / link.
+        rausch: {
+          DEFAULT: "#ff385c",
+          active: "#e00b41",
+          disabled: "#ffd1da",
+        },
+        canvas: "#ffffff",
+        "surface-soft": "#f7f7f7",
+        "surface-strong": "#f2f2f2",
         ink: {
-          DEFAULT: "#1A1714",
-          soft: "#403A33",
+          DEFAULT: "#222222", // headlines + primary text (never pure black)
+          soft: "#6a6a6a", // muted secondary text
         },
-        navy: {
-          DEFAULT: "#1C2E4A",
-          soft: "#3A4D6E",
+        "body-text": "#3f3f3f",
+        muted: {
+          DEFAULT: "#6a6a6a",
+          soft: "#929292",
         },
-        "rule-soft": "#B9AE93",
+        hairline: {
+          DEFAULT: "#dddddd",
+          soft: "#ebebeb",
+        },
+        "border-strong": "#c1c1c1",
+        // verdict colors — MEANING ONLY, kept distinct from Rausch.
         supported: "#15633A",
         contradicted: "#9B1C2E",
-        insufficient: "#5B6472",
+        insufficient: "#6a6a6a",
+        // ── Legacy-name remaps (so any un-migrated class stays on-palette) ──
+        paper: "#ffffff",
+        "paper-2": "#f7f7f7",
+        navy: {
+          DEFAULT: "#ff385c", // accent is now Rausch
+          soft: "#e00b41",
+        },
+        "rule-soft": "#dddddd",
       },
       fontFamily: {
-        slab: ["Zilla Slab", "Georgia", "serif"],
-        serif: ["Source Serif 4", "Georgia", "serif"],
-        mono: ["IBM Plex Mono", "ui-monospace", "Menlo", "monospace"],
+        // Full Inter sans — the Airbnb feel. Legacy slab/serif/mono all resolve
+        // to Inter so leftover classes render cleanly.
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'sans-serif'],
+        slab: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+      },
+      borderRadius: {
+        card: "14px", // {rounded.md} — property/result cards
+        pill: "9999px",
+      },
+      boxShadow: {
+        // Airbnb's single elevation tier — used on hover-floated cards & dropdowns.
+        card: "rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0",
       },
       keyframes: {
         appear: {
