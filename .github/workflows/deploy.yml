@@ -17,6 +17,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd ~/GKIN
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
             unzip -o WELFake_Dataset.csv.zip
             pm2 restart server
